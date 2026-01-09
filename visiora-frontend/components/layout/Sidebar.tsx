@@ -64,7 +64,7 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
             </nav>
 
             {/* New Generation Button */}
-            <div className="p-3 border-t border-slate-200 dark:border-gray-700">
+            <div className="p-3">
                 <Link
                     href="/generate"
                     className="w-full flex items-center justify-center gap-2 rounded-lg h-9 px-4 bg-teal-500 hover:bg-teal-600 text-white text-sm font-bold shadow-md shadow-teal-500/20 transition-all"

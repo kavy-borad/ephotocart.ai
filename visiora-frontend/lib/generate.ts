@@ -84,6 +84,35 @@ export interface UserCredits {
     balance: number;
 }
 
+// Model type for AI models
+export interface Model {
+    id: string;
+    name: string;
+    category?: string;
+    style?: string;
+    description?: string;
+    thumbnail?: string;
+    isPremium?: boolean;
+}
+
+// Style type for generation styles
+export interface Style {
+    id: string;
+    name: string;
+    description?: string;
+    thumbnail?: string;
+    category?: string;
+}
+
+// Background type for background options
+export interface Background {
+    id: string;
+    name: string;
+    description?: string;
+    thumbnail?: string;
+    color?: string;
+}
+
 // Helper response type
 export interface ApiResponse<T = any> {
     success: boolean;
@@ -100,6 +129,36 @@ export const generateApi = {
             return { success: true, data: res.data };
         } catch (err: any) {
             return { success: false, error: err.response?.data?.message || 'Failed to load categories' };
+        }
+    },
+
+    // Get available AI models
+    getModels: async (): Promise<ApiResponse<Model[]>> => {
+        try {
+            const res = await api.get('/generate/models');
+            return { success: true, data: res.data };
+        } catch (err: any) {
+            return { success: false, error: err.response?.data?.message || 'Failed to load models' };
+        }
+    },
+
+    // Get available generation styles
+    getStyles: async (): Promise<ApiResponse<Style[]>> => {
+        try {
+            const res = await api.get('/generate/styles');
+            return { success: true, data: res.data };
+        } catch (err: any) {
+            return { success: false, error: err.response?.data?.message || 'Failed to load styles' };
+        }
+    },
+
+    // Get available backgrounds
+    getBackgrounds: async (): Promise<ApiResponse<Background[]>> => {
+        try {
+            const res = await api.get('/generate/backgrounds');
+            return { success: true, data: res.data };
+        } catch (err: any) {
+            return { success: false, error: err.response?.data?.message || 'Failed to load backgrounds' };
         }
     },
 

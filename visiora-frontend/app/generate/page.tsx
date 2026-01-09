@@ -89,13 +89,23 @@ export default function GenerateImagesPage() {
             // Store in localStorage for client-side navigation
             localStorage.setItem('generateType', selectedType);
 
-            // Navigate to upload page (Step 2)
-            router.push('/generate/upload');
+            // Navigate based on selected type
+            if (selectedType === 'batch_image') {
+                // E-Commerce Bundle - go to options page first
+                router.push('/generate/ecommerce-options');
+            } else {
+                // Single Image - go directly to upload
+                router.push('/generate/upload');
+            }
         } catch (error) {
             console.warn('Failed to save generation type:', error);
             // Still navigate even if API fails
             localStorage.setItem('generateType', selectedType);
-            router.push('/generate/upload');
+            if (selectedType === 'batch_image') {
+                router.push('/generate/ecommerce-options');
+            } else {
+                router.push('/generate/upload');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -244,23 +254,34 @@ export default function GenerateImagesPage() {
                             </div>
 
                             {/* Next Button */}
-                            <div className="flex justify-end pt-5 border-t border-slate-200/60 dark:border-gray-700 mt-5 shrink-0">
+                            <div className="flex justify-end pt-5 mt-5 shrink-0">
                                 <button
                                     onClick={handleNextStep}
                                     disabled={isSubmitting}
-                                    className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                                    className="group relative flex items-center gap-2.5 bg-gradient-to-b from-slate-800 to-slate-900 text-white px-7 py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 backdrop-blur-xl border border-slate-700/50 hover:border-slate-600/50 overflow-hidden"
                                 >
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Processing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Next Step
-                                            <ArrowRight className="w-4 h-4" />
-                                        </>
-                                    )}
+                                    {/* Glossy top highlight line */}
+                                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+
+                                    {/* Glass shine overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
+
+                                    {/* Hover shine effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
+
+                                    <span className="relative z-10 flex items-center gap-2">
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Next Step
+                                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                            </>
+                                        )}
+                                    </span>
                                 </button>
                             </div>
                         </div>
