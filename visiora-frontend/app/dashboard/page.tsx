@@ -439,21 +439,16 @@ export default function DashboardPage() {
                                             {/* SVG Area Chart with smooth curves */}
                                             {/* Dynamic Path Generation with dynamic scaling */}
                                             {(() => {
-                                                // Calculate max value for dynamic scaling with 15% headroom
                                                 const maxVal = Math.max(...lineChartPoints, 1);
-                                                // Add 15% headroom so max value appears at ~85% height (professional look)
                                                 const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
 
                                                 const points = lineChartPoints.map((val, i) => {
                                                     const x = (i / (lineChartPoints.length - 1)) * 100;
-                                                    // Scale value relative to max (0-100% range, but max value will be at ~80%)
                                                     const normalizedVal = (val / scaleMax) * 100;
                                                     const y = 100 - normalizedVal;
                                                     return `${x},${y}`;
                                                 });
 
-                                                // Create a path that connects all points
-                                                // Using L (Line) for accurate representation of data points
                                                 const pathD = points.length > 0
                                                     ? `M ${points[0]} ${points.slice(1).map(p => `L ${p}`).join(' ')}`
                                                     : 'M 0,100 L 100,100';
@@ -468,42 +463,21 @@ export default function DashboardPage() {
                                                                 <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.02" />
                                                             </linearGradient>
                                                         </defs>
-                                                        {/* Area fill */}
-                                                        <path
-                                                            d={areaD}
-                                                            fill="url(#areaGradient)"
-                                                            className="opacity-0 animate-fade-in-delay"
-                                                            style={{ transition: 'd 0.5s ease' }}
-                                                        />
-                                                        {/* Line stroke */}
-                                                        <path
-                                                            d={pathD}
-                                                            fill="none"
-                                                            stroke="#14b8a6"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            vectorEffect="non-scaling-stroke"
-                                                            className="animate-draw-line"
-                                                            style={{ transition: 'd 0.5s ease' }}
-                                                        />
+                                                        <path d={areaD} fill="url(#areaGradient)" className="opacity-0 animate-fade-in-delay" style={{ transition: 'd 0.5s ease' }} />
+                                                        <path d={pathD} fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" className="animate-draw-line" style={{ transition: 'd 0.5s ease' }} />
                                                     </svg>
                                                 );
                                             })()}
-                                            {/* Data points with hover effect - dynamic scaling */}
+                                            {/* Data points - Jelly only on direct point hover */}
                                             {(() => {
                                                 const maxVal = Math.max(...lineChartPoints, 1);
-                                                // Match chart scaling with 15% headroom
                                                 const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
 
                                                 return (
                                                     <div className="absolute inset-0">
                                                         {lineChartPoints.map((p, i) => {
                                                             const normalizedPercent = (p / scaleMax) * 100;
-                                                            // Calculate X position same as SVG (0% to 100%)
-                                                            const xPercent = lineChartPoints.length > 1
-                                                                ? (i / (lineChartPoints.length - 1)) * 100
-                                                                : 50;
+                                                            const xPercent = lineChartPoints.length > 1 ? (i / (lineChartPoints.length - 1)) * 100 : 50;
                                                             return (
                                                                 <div
                                                                     key={i}
@@ -514,14 +488,10 @@ export default function DashboardPage() {
                                                                         transform: 'translate(-50%, -50%)'
                                                                     }}
                                                                 >
-                                                                    <div
-                                                                        className="w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-500 shadow-sm group-hover:scale-125 group-hover:shadow-md transition-all cursor-pointer"
-                                                                    />
-                                                                    {/* Tooltip on hover */}
-                                                                    <div
-                                                                        className="absolute left-1/2 -translate-x-1/2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap"
-                                                                    >
+                                                                    <div className="w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-pointer transition-all group-hover:scale-125 group-hover:shadow-md group-hover:animate-[jelly_1s_ease-in-out_infinite]" />
+                                                                    <div className="absolute left-1/2 -translate-x-1/2 -top-7 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap">
                                                                         {p} images
+                                                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                                     </div>
                                                                 </div>
                                                             );
@@ -529,6 +499,7 @@ export default function DashboardPage() {
                                                     </div>
                                                 );
                                             })()}
+
                                         </div>
                                         {/* X-axis labels */}
                                         <div className="flex justify-between text-[9px] text-slate-400 pt-1 shrink-0">
@@ -550,7 +521,7 @@ export default function DashboardPage() {
                                             <span className="text-slate-500 dark:text-gray-400">Paid</span>
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <div className="size-2 rounded-full bg-gradient-to-t from-slate-300 to-slate-200" />
+                                            <div className="size-2 rounded-full bg-gradient-to-t from-emerald-200 to-emerald-100" />
                                             <span className="text-slate-500 dark:text-gray-400">Free</span>
                                         </div>
                                     </div>
@@ -592,13 +563,13 @@ export default function DashboardPage() {
                                                             <div className="w-full flex flex-col justify-end" style={{ height: `${normalizedHeight}%` }}>
                                                                 {/* Free segment (top) */}
                                                                 <div
-                                                                    className="w-full rounded-t-md bg-gradient-to-t from-slate-300 to-slate-200 group-hover:from-slate-400 group-hover:to-slate-300 transition-all"
+                                                                    className="w-full rounded-t-md bg-gradient-to-t from-emerald-200 to-emerald-100 group-hover:from-emerald-300 group-hover:to-emerald-200 transition-all"
                                                                     style={{ height: `${height > 0 ? (freeHeight / height) * 100 : 0}%`, minHeight: freeHeight > 0 ? '2px' : 0 }}
                                                                 />
                                                                 {/* Paid segment (bottom) */}
                                                                 {paidHeight > 0 && (
                                                                     <div
-                                                                        className="w-full bg-gradient-to-t from-teal-600 to-teal-400 group-hover:from-teal-700 group-hover:to-teal-500 transition-all shadow-sm"
+                                                                        className="w-full bg-gradient-to-t from-teal-600 to-teal-500 group-hover:from-teal-700 group-hover:to-teal-500 transition-all shadow-sm"
                                                                         style={{ height: `${height > 0 ? (paidHeight / height) * 100 : 0}%` }}
                                                                     />
                                                                 )}
