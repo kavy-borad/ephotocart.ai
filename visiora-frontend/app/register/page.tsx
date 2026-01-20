@@ -140,7 +140,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className={`h-screen flex flex-col relative overflow-hidden antialiased transition-colors duration-300 ${isDarkMode
+        <div className={`h-full flex flex-col relative overflow-hidden antialiased transition-colors duration-300 ${isDarkMode
             ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
             : "bg-gradient-hero"
             }`}>
@@ -160,27 +160,25 @@ export default function RegisterPage() {
             />
 
             {/* Main Content */}
-            <main className="flex-1 flex items-center justify-center px-4 md:px-6 z-10 min-h-0 py-4 sm:py-2 overflow-hidden">
+            <main className="flex-1 flex items-center justify-center px-4 md:px-6 z-10 py-2 overflow-y-auto">
                 <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-stretch my-auto">
                     {/* Left Panel - Form */}
-                    <div className={`glass-panel rounded-2xl p-4 sm:p-5 md:p-6 flex flex-col justify-center relative overflow-visible transition-colors duration-300 ${isDarkMode
+                    <div className={`glass-panel rounded-2xl p-4 flex flex-col justify-center relative overflow-visible transition-colors duration-300 ${isDarkMode
                         ? "bg-gray-800/90 border border-gray-700 shadow-2xl shadow-black/30"
                         : "bg-white/85 border border-white/60 shadow-[20px_20px_60px_-15px_rgba(13,148,136,0.1),0_8px_10px_-6px_rgba(0,0,0,0.01)]"
                         }`}>
-                        {/* Top highlight line */}
-                        <div className={`absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent ${isDarkMode ? "opacity-20" : "opacity-50"}`}></div>
 
                         {/* Header */}
-                        <div className="text-center mb-4 relative z-10">
-                            <div className={`inline-flex mb-3 p-2 rounded-xl shadow-sm transition-colors ${isDarkMode ? "bg-teal-900/50 text-teal-400" : "bg-teal-50 text-teal-500 shadow-teal-100/50"}`}>
-                                <Sparkles className="w-6 h-6" />
+                        <div className="text-center mb-2 relative z-10">
+                            <div className={`inline-flex mb-2 p-1.5 rounded-xl shadow-sm transition-colors ${isDarkMode ? "bg-teal-900/50 text-teal-400" : "bg-teal-50 text-teal-500 shadow-teal-100/50"}`}>
+                                <Sparkles className="w-5 h-5" />
                             </div>
-                            <h1 className={`text-lg sm:text-xl md:text-2xl font-bold mb-1 tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>Create Account</h1>
-                            <p className={`text-xs transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`}>Join the AI revolution and start creating today</p>
+                            <h1 className={`text-lg sm:text-xl font-bold mb-0.5 tracking-tight transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>Create Account</h1>
+                            <p className={`text-[11px] transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`}>Join the AI revolution and start creating today</p>
                         </div>
 
                         {/* Error/Success Messages */}
-                        <div className="min-h-[44px] mb-2">
+                        <div className="min-h-[40px] mb-1">
                             {error && (
                                 <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${isDarkMode ? "bg-red-900/30 border border-red-800 text-red-400" : "bg-red-50 border border-red-200 text-red-600"}`}>
                                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -196,7 +194,7 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Form */}
-                        <form className="space-y-2.5 relative z-10" onSubmit={handleSubmit}>
+                        <form className="space-y-2 relative z-10" onSubmit={handleSubmit}>
                             {/* Full Name */}
                             <div className="space-y-0.5">
                                 <label className={`text-[10px] font-semibold uppercase tracking-wider ml-1 transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`} htmlFor="fullname">
@@ -205,7 +203,7 @@ export default function RegisterPage() {
                                 <div className="relative group/input">
                                     <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
                                     <input
-                                        className={`w-full pl-9 pr-3 py-2.5 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
+                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
                                             ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
                                             : "bg-white/60 border-slate-200 text-slate-800"
                                             }`}
@@ -227,7 +225,7 @@ export default function RegisterPage() {
                                 <div className="relative group/input">
                                     <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
                                     <input
-                                        className={`w-full pl-9 pr-3 py-2.5 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
+                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
                                             ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
                                             : "bg-white/60 border-slate-200 text-slate-800"
                                             }`}
@@ -249,7 +247,7 @@ export default function RegisterPage() {
                                 <div className="relative group/input">
                                     <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
                                     <input
-                                        className={`w-full pl-9 pr-9 py-2.5 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
+                                        className={`w-full pl-9 pr-9 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
                                             ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
                                             : "bg-white/60 border-slate-200 text-slate-800"
                                             }`}
@@ -281,7 +279,7 @@ export default function RegisterPage() {
                                 <div className="relative group/input">
                                     <KeyRound className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 group-focus-within/input:text-teal-500 transition-colors ${isDarkMode ? "text-gray-500" : "text-slate-400"}`} />
                                     <input
-                                        className={`w-full pl-9 pr-9 py-2.5 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
+                                        className={`w-full pl-9 pr-9 py-2 border rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm ${isDarkMode
                                             ? "bg-gray-700/50 border-gray-600 text-white placeholder-gray-500"
                                             : "bg-white/60 border-slate-200 text-slate-800"
                                             }`}
@@ -303,7 +301,7 @@ export default function RegisterPage() {
                             </div>
 
                             {/* Terms Checkbox */}
-                            <div className="flex items-start gap-2 mt-3 ml-1">
+                            <div className="flex items-start gap-2 mt-2 ml-1">
                                 <div className="relative flex items-center pt-0.5">
                                     <input
                                         className={`w-3.5 h-3.5 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${isDarkMode ? "border-gray-600 bg-gray-700" : "border-slate-300"}`}
@@ -328,7 +326,7 @@ export default function RegisterPage() {
 
                             {/* Submit Button */}
                             <button
-                                className="w-full py-2.5 px-4 bg-gradient-to-r from-teal-500 to-slate-600 hover:from-teal-600 hover:to-slate-700 text-white font-semibold rounded-lg shadow-lg shadow-teal-500/20 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 group/btn mt-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                className="w-full py-2 px-4 bg-gradient-to-r from-teal-500 to-slate-600 hover:from-teal-600 hover:to-slate-700 text-white font-semibold rounded-lg shadow-lg shadow-teal-500/20 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 group/btn mt-1.5 text-sm disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                                 type="submit"
                                 disabled={isLoading}
                             >
@@ -347,7 +345,7 @@ export default function RegisterPage() {
                         </form>
 
                         {/* Sign In Link */}
-                        <div className="mt-4 text-center relative z-10">
+                        <div className="mt-3 text-center relative z-10">
                             <p className={`text-xs transition-colors ${isDarkMode ? "text-gray-400" : "text-slate-500"}`}>
                                 Already have an account?{" "}
                                 <Link className={`font-semibold transition-colors ${isDarkMode ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`} href="/login">
@@ -358,24 +356,24 @@ export default function RegisterPage() {
                     </div>
 
                     {/* Right Panel - Features */}
-                    <div className={`glass-panel rounded-2xl p-4 sm:p-5 md:p-6 flex-col justify-center relative hidden lg:flex transition-colors duration-300 ${isDarkMode
+                    <div className={`glass-panel rounded-2xl p-4 flex-col justify-center relative hidden lg:flex transition-colors duration-300 ${isDarkMode
                         ? "bg-gray-800/40 border border-gray-700"
                         : "bg-white/40 border border-white/50"
                         }`}>
                         <div className="relative z-10">
-                            <h2 className={`text-lg font-bold mb-4 text-center lg:text-left transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>Why Join Us?</h2>
-                            <div className="grid gap-2">
+                            <h2 className={`text-base font-bold mb-3 text-center lg:text-left transition-colors ${isDarkMode ? "text-white" : "text-slate-800"}`}>Why Join Us?</h2>
+                            <div className="grid gap-1.5">
                                 {features.map((feature, index) => {
                                     const colorClasses = getColorClasses(feature.color);
                                     return (
                                         <div
                                             key={index}
-                                            className={`group backdrop-blur-md p-2.5 rounded-xl flex items-center gap-3 transition-all hover:-translate-y-0.5 ${isDarkMode
+                                            className={`group backdrop-blur-md p-2 rounded-xl flex items-center gap-3 transition-all hover:-translate-y-0.5 ${isDarkMode
                                                 ? "bg-gray-700/60 border border-gray-600 hover:bg-gray-700/80 hover:shadow-lg"
                                                 : `bg-white/60 border border-white/60 hover:bg-white/80 hover:shadow-md ${colorClasses.shadow}`
                                                 }`}
                                         >
-                                            <div className={`w-9 h-9 rounded-lg ${isDarkMode ? "bg-opacity-30" : ""} ${colorClasses.bg} flex items-center justify-center shrink-0 ${colorClasses.text} group-hover:scale-110 transition-transform`}>
+                                            <div className={`w-8 h-8 rounded-lg ${isDarkMode ? "bg-opacity-30" : ""} ${colorClasses.bg} flex items-center justify-center shrink-0 ${colorClasses.text} group-hover:scale-110 transition-transform`}>
                                                 <feature.icon className="w-4 h-4" />
                                             </div>
                                             <div>

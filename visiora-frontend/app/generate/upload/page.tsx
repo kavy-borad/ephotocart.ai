@@ -13,7 +13,7 @@ import {
     X,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { generateApi, UserCredits } from "@/lib/generate";
+import { generateApi } from "@/lib/generate";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
 
@@ -32,7 +32,7 @@ export default function UploadPage() {
 
 
     // API state
-    const [userCredits, setUserCredits] = useState<UserCredits | null>(null);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showUploadError, setShowUploadError] = useState(false);
@@ -41,7 +41,7 @@ export default function UploadPage() {
     const [userName, setUserName] = useState("Jane");
     const [userInitial, setUserInitial] = useState("J");
 
-    // Fetch user credits on mount
+    // Fetch user info on mount
     useEffect(() => {
         // Load user from localStorage
         const storedUser = authApi.getCurrentUser();
@@ -50,20 +50,7 @@ export default function UploadPage() {
             setUserName(firstName);
             setUserInitial(firstName.charAt(0).toUpperCase());
         }
-
-        fetchUserCredits();
     }, []);
-
-    const fetchUserCredits = async () => {
-        try {
-            const response = await generateApi.getUserCredits();
-            if (response.success && response.data) {
-                setUserCredits(response.data);
-            }
-        } catch (error) {
-            console.warn('Failed to fetch user credits:', error);
-        }
-    };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -160,8 +147,15 @@ export default function UploadPage() {
                 localStorage.setItem('uploadedImage', filePreview);
             }
 
-            // Navigate to details page
-            router.push('/generate/details');
+            // Check generate type and route accordingly
+            const generateType = localStorage.getItem('generateType');
+            if (generateType === 'batch_image') {
+                // E-commerce bundle: go to options page
+                router.push('/generate/ecommerce-options');
+            } else {
+                // Single image: go to details page
+                router.push('/generate/details');
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -169,19 +163,17 @@ export default function UploadPage() {
         }
     };
 
-    // User credits display values (fallback)
-    const freeCredits = userCredits?.freeCredits ?? 1;
-    const balance = userCredits?.balance ?? 12.00;
+
 
 
 
     return (
-        <div className="h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
+        <div className="h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="generate" />
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
@@ -189,15 +181,13 @@ export default function UploadPage() {
                         { label: "Generate", href: "/generate" },
                         { label: "Upload" }
                     ]}
-                    freeCredits={freeCredits}
-                    balance={balance}
                 />
 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
-                    {/* Content - No Scroll */}
-                    <div className="flex-1 p-4 sm:p-5 overflow-hidden flex flex-col">
-                        <div className="flex flex-col gap-2 h-full">
+                    {/* Content - Scrollable on mobile */}
+                    <div className="flex-1 p-4 sm:p-5 overflow-y-auto flex flex-col">
+                        <div className="flex flex-col gap-2 min-h-full">
                             {/* Page Header */}
                             <div className="mb-2 shrink-0">
                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">Generate Images</h1>
@@ -246,15 +236,15 @@ export default function UploadPage() {
                                 </div>
                             </div>
                             {/* Upload Section - Centered and Clean */}
-                            <div className="flex-1 min-h-0 flex flex-col justify-center">
+                            <div className="flex-1 flex flex-col justify-center">
                                 <div className="max-w-4xl mx-auto w-full">
                                     {/* Section Header */}
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                                         <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                             <span className="w-1 h-5 bg-teal-500 rounded-full"></span>
                                             Upload Product Image
                                         </h3>
-                                        <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Supported: JPG, PNG, WEBP</span>
+                                        <span className="self-start sm:self-auto text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Supported: JPG, PNG, WEBP</span>
                                     </div>
 
                                     {/* Upload Cards Grid */}

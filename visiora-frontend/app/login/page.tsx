@@ -90,7 +90,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col overflow-x-hidden">
+        <div className="h-full flex flex-col overflow-x-hidden">
             {/* Custom gradient background */}
             <div className={`fixed inset-0 -z-10 transition-colors duration-300 ${isDarkMode
                 ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
@@ -292,9 +292,8 @@ export default function LoginPage() {
             </main>
 
             {/* Footer */}
-            <footer className={`w-full py-2 text-center text-xs transition-colors duration-300 ${isDarkMode ? "text-slate-600" : "text-slate-400"
-                }`}>
-                © {new Date().getFullYear()} Visiora. All rights reserved.
+            <footer className="text-center py-2 text-[10px] text-slate-400 z-10 shrink-0">
+                © 2026 Visiora AI. All rights reserved.
             </footer>
         </div>
     );

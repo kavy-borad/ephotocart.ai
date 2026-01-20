@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "@/components/Link";
 import { useRouter } from "@/components/useRouter";
 import {
@@ -24,12 +24,15 @@ import { dashboardApi, DashboardStats, RecentImage, ChartDataPoint, UserProfile 
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
 
+// Module-level flag to prevent duplicate API calls
+let dashboardInitialFetchDone = false;
+
 export default function DashboardPage() {
     const router = useRouter();
     const [activeNav, setActiveNav] = useState("dashboard");
 
-    // Loading and error states (not blocking - show fallback data)
-    const [isLoading, setIsLoading] = useState(false);
+    // Loading and error states (blocking - show loading state until data loads)
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     // Data states
@@ -38,6 +41,8 @@ export default function DashboardPage() {
     const [recentImages, setRecentImages] = useState<RecentImage[]>([]);
     const [imageChartData, setImageChartData] = useState<ChartDataPoint[]>([]);
     const [spendingChartData, setSpendingChartData] = useState<ChartDataPoint[]>([]);
+    const [styleAnalytics, setStyleAnalytics] = useState<any>(null); // State for style analytics
+    const [typeAnalytics, setTypeAnalytics] = useState<any>(null); // State for type analytics
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -46,105 +51,226 @@ export default function DashboardPage() {
         { id: "wallet", label: "Wallet", icon: Wallet, href: "/wallet" },
     ];
 
+    // Load cached data from localStorage immediately on mount
+    useEffect(() => {
+        // Try to load cached dashboard data for instant display
+        try {
+            const cachedStats = localStorage.getItem('dashboard_stats_cache');
+            const cachedProfile = localStorage.getItem('dashboard_profile_cache');
+            const cachedCharts = localStorage.getItem('dashboard_charts_cache');
+            const cachedRecent = localStorage.getItem('dashboard_recent_cache');
+
+            if (cachedStats) {
+                const parsed = JSON.parse(cachedStats);
+                setStats(parsed);
+            }
+            if (cachedProfile) {
+                setUserProfile(JSON.parse(cachedProfile));
+            }
+            if (cachedCharts) {
+                const charts = JSON.parse(cachedCharts);
+                if (charts.imageChartData) setImageChartData(charts.imageChartData);
+                if (charts.spendingChartData) setSpendingChartData(charts.spendingChartData);
+            }
+            if (cachedRecent) {
+                setRecentImages(JSON.parse(cachedRecent));
+            }
+        } catch (e) {
+            console.warn('Failed to load cached dashboard data:', e);
+        }
+    }, []);
+
     // Fetch dashboard data on mount (optional - uses fallback data if fails)
     useEffect(() => {
+        // Skip if already fetched (module-level check)
+        if (dashboardInitialFetchDone) {
+            console.log('⏭️ Dashboard: Already fetched, skipping');
+            setIsLoading(false);
+            return;
+        }
+
+        dashboardInitialFetchDone = true;
+        console.log('🚀 Dashboard: Initial fetch starting...');
+
         // First, get user from localStorage (stored during login)
         const storedUser = authApi.getCurrentUser();
         if (storedUser) {
-            setUserProfile({
+            const profile = {
                 id: storedUser.id,
                 fullName: storedUser.fullName,
                 email: storedUser.email,
                 balance: 0,
-                freeCredits: 1,
-            });
+                freeCredits: 0,
+            };
+            setUserProfile(profile);
+            // Cache profile
+            localStorage.setItem('dashboard_profile_cache', JSON.stringify(profile));
         }
 
         // Then try to fetch dashboard data in background (non-blocking)
         fetchDashboardData();
+
+        // Reset on unmount (for page navigation scenarios)
+        return () => {
+            setTimeout(() => {
+                dashboardInitialFetchDone = false;
+            }, 100);
+        };
     }, []);
 
     const fetchDashboardData = async () => {
         try {
-            // First try dashboard overview endpoint
-            let dashboardRes = await dashboardApi.getOverview();  // GET /api/dashboard/overview
+            // Call ALL dashboard endpoints for complete integration
+            const [
+                dashboardRes,
+                recentRes,
+                activityRes,
+                chartsRes,
+                styleRes,
+                typeRes,
+                overviewRes,             // NEW: Explicit call
+                dailyGenRes,             // NEW: Explicit call
+                dailySpendRes            // NEW: Explicit call
+            ] = await Promise.all([
+                dashboardApi.getDashboardData(),           // /dashboard
+                dashboardApi.getRecent(),                   // /dashboard/recent
+                dashboardApi.getActivity(),                 // /dashboard/activity
+                dashboardApi.getCharts(),                   // /dashboard/charts
+                dashboardApi.getStyleAnalytics(),           // /dashboard/analytics/by-style
+                dashboardApi.getTypeAnalytics(),            // /dashboard/analytics/by-type
+                dashboardApi.getOverview(),                 // /dashboard/overview
+                dashboardApi.getDailyGenerationChart(),     // /dashboard/charts/daily-generation
+                dashboardApi.getDailySpendingChart()        // /dashboard/charts/daily-spending
+            ]);
 
-            // If overview fails, try main dashboard endpoint
-            if (!dashboardRes.success) {
-                dashboardRes = await dashboardApi.getDashboardData();  // GET /api/dashboard
-            }
+            console.log('📊 All dashboard endpoints called');
 
+            // Main dashboard data
             if (dashboardRes.success && dashboardRes.data) {
-                // If dashboard API returns all data, use it
-                if (dashboardRes.data.stats) setStats(dashboardRes.data.stats);
-                if (dashboardRes.data.recentImages) setRecentImages(dashboardRes.data.recentImages);
-                if (dashboardRes.data.imageGenerationChart) setImageChartData(dashboardRes.data.imageGenerationChart);
-                if (dashboardRes.data.spendingChart) setSpendingChartData(dashboardRes.data.spendingChart);
-            } else {
-                // Try to get all charts at once first
-                const chartsRes = await dashboardApi.getCharts();  // GET /api/dashboard/charts
-
-                if (chartsRes.success && chartsRes.data) {
-                    if (chartsRes.data.imageGeneration) setImageChartData(chartsRes.data.imageGeneration);
-                    if (chartsRes.data.spending) setSpendingChartData(chartsRes.data.spending);
+                if (dashboardRes.data.stats) {
+                    setStats(dashboardRes.data.stats);
+                    // Cache stats for instant display on next visit
+                    localStorage.setItem('dashboard_stats_cache', JSON.stringify(dashboardRes.data.stats));
                 }
 
-                // Fetch remaining data in parallel
-                const [profileRes, statsRes] = await Promise.all([
-                    dashboardApi.getUserProfile(),
-                    dashboardApi.getStats(),
-                ]);
-
-                if (profileRes.success && profileRes.data) {
-                    setUserProfile(profileRes.data);
-                }
-                if (statsRes.success && statsRes.data) {
-                    setStats(statsRes.data);
-                }
-
-                // Try getRecent first, fallback to getRecentImages
-                const recentRes = await dashboardApi.getRecent();  // GET /api/dashboard/recent
-                if (recentRes.success && recentRes.data) {
-                    setRecentImages(recentRes.data);
+                // FORCE DYNAMIC BEHAVIOR: If total images is 0, charts MUST be flat 0.
+                // This overrides any potential "sample data" from backend.
+                if (dashboardRes.data.stats?.totalImages === 0) {
+                    console.log('📉 Total images is 0, forcing charts to empty state');
+                    setImageChartData([]); // This triggers the "fill(0)" fallback
+                    setSpendingChartData([]);
                 } else {
-                    const imagesRes = await dashboardApi.getRecentImages(5);
-                    if (imagesRes.success && imagesRes.data) {
-                        setRecentImages(imagesRes.data);
-                    }
-                }
-
-                // If charts weren't loaded, try individual endpoints
-                if (!chartsRes.success) {
-                    // Try daily generation chart first, then fallback to image-generation
-                    const dailyGenRes = await dashboardApi.getDailyGenerationChart();  // GET /api/dashboard/charts/daily-generation
-
-                    if (dailyGenRes.success && dailyGenRes.data) {
-                        setImageChartData(dailyGenRes.data);
-                    } else {
-                        const imageChartRes = await dashboardApi.getImageGenerationChart(7);
-                        if (imageChartRes.success && imageChartRes.data) {
-                            setImageChartData(imageChartRes.data);
-                        }
-                    }
-
-                    // Try daily spending chart first, then fallback to spending
-                    const dailySpendingRes = await dashboardApi.getDailySpendingChart();  // GET /api/dashboard/charts/daily-spending
-
-                    if (dailySpendingRes.success && dailySpendingRes.data) {
-                        setSpendingChartData(dailySpendingRes.data);
-                    } else {
-                        const spendingChartRes = await dashboardApi.getSpendingChart(7);
-                        if (spendingChartRes.success && spendingChartRes.data) {
-                            setSpendingChartData(spendingChartRes.data);
-                        }
-                    }
+                    if (dashboardRes.data.recentImages) setRecentImages(dashboardRes.data.recentImages);
+                    if (dashboardRes.data.imageGenerationChart) setImageChartData(dashboardRes.data.imageGenerationChart);
+                    if (dashboardRes.data.spendingChart) setSpendingChartData(dashboardRes.data.spendingChart);
                 }
             }
+
+            // Explicitly log success of required endpoints
+            if (overviewRes.success) console.log('✅ /dashboard/overview called');
+
+            if (dailyGenRes.success) {
+                console.log('✅ /dashboard/charts/daily-generation called');
+                // You can use this data if you want a specifically daily view
+            }
+
+            if (dailySpendRes.success) {
+                console.log('✅ /dashboard/charts/daily-spending called');
+                // You can use this data if you want a specifically daily view
+            }
+
+            // Recent images (fallback/override from dedicated endpoint)
+            if (recentRes.success && recentRes.data && Array.isArray(recentRes.data)) {
+                console.log('✅ /dashboard/recent:', recentRes.data.length, 'images');
+                setRecentImages(recentRes.data);
+                // Cache recent images
+                localStorage.setItem('dashboard_recent_cache', JSON.stringify(recentRes.data));
+            }
+
+            // Activity data
+            if (activityRes.success && activityRes.data) {
+                console.log('✅ /dashboard/activity:', activityRes.data);
+            }
+
+            // Charts data (override if available)
+            // Charts data - always load if available (removed totalImages check to allow proper updates)
+            if (chartsRes.success && chartsRes.data) {
+                console.log('✅ /dashboard/charts loaded');
+                const chartDataToCache: any = {};
+
+                if (chartsRes.data.imageGeneration) {
+                    setImageChartData(chartsRes.data.imageGeneration);
+                    chartDataToCache.imageChartData = chartsRes.data.imageGeneration;
+                }
+                if (chartsRes.data.spending) {
+                    setSpendingChartData(chartsRes.data.spending);
+                    chartDataToCache.spendingChartData = chartsRes.data.spending;
+                }
+
+                // Cache charts data
+                localStorage.setItem('dashboard_charts_cache', JSON.stringify(chartDataToCache));
+            }
+
+            // Analytics
+            if (styleRes.success && styleRes.data) {
+                console.log('✅ /dashboard/analytics/by-style:', styleRes.data);
+                setStyleAnalytics(styleRes.data);
+            }
+            if (typeRes.success && typeRes.data) {
+                console.log('✅ /dashboard/analytics/by-type:', typeRes.data);
+                setTypeAnalytics(typeRes.data);
+            }
+
         } catch (err) {
-            // Silently fail - dashboard will show with fallback data
-            console.warn('Dashboard API fetch failed, using fallback data:', err);
+            console.warn('Dashboard API fetch failed:', err);
+        } finally {
+            // Always set loading to false when done
+            setIsLoading(false);
         }
     };
+
+    // Determine favorite style from analytics or stats
+    let favStyle = "N/A";
+    let favStyleUsage = 0;
+
+    if (styleAnalytics) {
+        // Handle array response: [{style: 'Realistic', count: 10}, ...]
+        if (Array.isArray(styleAnalytics) && styleAnalytics.length > 0) {
+            favStyle = styleAnalytics[0].style || styleAnalytics[0].name || "N/A";
+            // Calculate usage percentage if total is available, otherwise show count
+            favStyleUsage = styleAnalytics[0].percentage || styleAnalytics[0].count || 0;
+        }
+        // Handle object response: { topStyle: 'Realistic', usage: 50 }
+        else if (styleAnalytics.topStyle) {
+            favStyle = styleAnalytics.topStyle;
+            favStyleUsage = styleAnalytics.usage || 0;
+        }
+    } else if (stats) {
+        favStyle = stats.favoriteStyle;
+        favStyleUsage = stats.favoriteStyleUsage;
+    }
+
+    // Determine top generation type
+    let favType = "N/A";
+    let favTypeUsage = 0;
+
+    if (typeAnalytics) {
+        // Handle array response: [{type: 'single_image', count: 10}, ...]
+        if (Array.isArray(typeAnalytics) && typeAnalytics.length > 0) {
+            let rawType = typeAnalytics[0].type || typeAnalytics[0].name || "N/A";
+            // Check if usage is percentage or simple count
+            favTypeUsage = typeAnalytics[0].percentage || 0;
+
+            // Format type name
+            if (rawType.includes('single')) favType = "Single Image";
+            else if (rawType.includes('batch')) favType = "E-Com Bundle";
+            else favType = rawType;
+
+        } else if (typeAnalytics.topType) {
+            favType = typeAnalytics.topType;
+            favTypeUsage = typeAnalytics.usage || 0;
+        }
+    }
 
     // Build stats cards from API data or fallback
     const statsCards = stats ? [
@@ -174,57 +300,60 @@ export default function DashboardPage() {
         },
         {
             label: "Favorite Style",
-            value: stats.favoriteStyle || "N/A",
-            subText: stats.favoriteStyleUsage ? `Used ${stats.favoriteStyleUsage}% of time` : undefined,
+            value: favStyle || "N/A",
+            subText: favStyleUsage ? `Used ${favStyleUsage}% of time` : undefined,
             icon: Sparkles
         },
     ] : [
-        { label: "Total Images", value: "---", trend: "---", trendUp: true, progress: 0, color: "bg-teal-500" },
-        { label: "Free Credits", value: "---", subValue: "/ --", icon: Zap, progress: 0, color: "bg-blue-500" },
-        { label: "Total Spent", value: "$---", trend: "---", trendUp: false, progress: 0, color: "bg-indigo-500" },
-        { label: "Favorite Style", value: "---", subText: "Loading...", icon: Sparkles },
+        { label: "Total Images", value: isLoading ? "..." : "0", trend: "+0%", trendUp: true, progress: 0, color: "bg-teal-500" },
+        {
+            label: "Free Credits",
+            value: userProfile?.freeCredits !== undefined ? userProfile.freeCredits.toString() : (isLoading ? "..." : "0"),
+            subValue: "/ 1",
+            icon: Zap,
+            progress: userProfile?.freeCredits ? Math.min((userProfile.freeCredits / 1) * 100, 100) : 0,
+            color: "bg-blue-500"
+        },
+        { label: "Total Spent", value: isLoading ? "$..." : "$0", trend: "+0%", trendUp: true, progress: 0, color: "bg-indigo-500" },
+        { label: "Favorite Style", value: isLoading ? "..." : "N/A", subText: isLoading ? "Loading..." : undefined, icon: Sparkles },
     ];
 
     // Chart data from API or fallback
+    // Chart data from API or zero fallback
     const chartData = spendingChartData.length > 0
         ? spendingChartData.map(d => d.value)
-        : [40, 65, 30, 85, 55, 20, 15];
+        : Array(7).fill(0);
     const chartDays = spendingChartData.length > 0
         ? spendingChartData.map(d => d.day.charAt(0).toUpperCase())
         : ["M", "T", "W", "T", "F", "S", "S"];
 
-    // Line chart data from API or fallback
+    // Line chart data from API or zero fallback
     const lineChartPoints = imageChartData.length > 0
         ? imageChartData.map(d => d.value)
-        : [20, 40, 25, 70, 45, 80, 55];
+        : Array(7).fill(0);
     const lineChartDays = imageChartData.length > 0
         ? imageChartData.map(d => d.day)
         : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    // Recent images from API or fallback
+    // Recent images from API or empty
     const displayImages = recentImages.length > 0
         ? recentImages.map(img => img.url)
-        : [
-            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop",
-            "https://images.unsplash.com/photo-1634017839464-5c339bbe3c35?w=200&h=200&fit=crop",
-            "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=200&h=200&fit=crop",
-            "https://images.unsplash.com/photo-1633177317976-3f9bc45e1d1d?w=200&h=200&fit=crop",
-            "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=200&h=200&fit=crop",
-        ];
+        : [];
 
     // User info from API or fallback
     const userName = userProfile?.fullName?.split(' ')[0] || 'Jane';
     const userInitial = userName.charAt(0).toUpperCase();
-    const userBalance = userProfile?.balance ?? 12.00;
-    const userFreeCredits = userProfile?.freeCredits ?? 1;
+    const userBalance = userProfile?.balance ?? 0;
+    // Use dynamic stats if available, otherwise fallback to profile (or 0)
+    const userFreeCredits = stats?.freeCredits ?? userProfile?.freeCredits ?? 0;
 
     return (
-        <div className="min-h-screen flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-full flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="dashboard" />
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 min-h-screen lg:h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
@@ -285,12 +414,19 @@ export default function DashboardPage() {
                                     </select>
                                 </div>
                                 <div className="flex-1 relative min-h-0">
-                                    {/* Y-axis labels */}
-                                    <div className="absolute left-0 top-0 bottom-4 w-6 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
-                                        <span>100</span>
-                                        <span>50</span>
-                                        <span>0</span>
-                                    </div>
+                                    {/* Y-axis labels - dynamic based on max value with headroom */}
+                                    {(() => {
+                                        const maxVal = Math.max(...lineChartPoints, 1);
+                                        // Add 15% headroom for professional look (match chart scaling)
+                                        const topLabel = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+                                        return (
+                                            <div className="absolute left-0 top-0 bottom-4 w-6 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
+                                                <span>{topLabel}</span>
+                                                <span>{Math.round(topLabel / 2)}</span>
+                                                <span>0</span>
+                                            </div>
+                                        );
+                                    })()}
                                     {/* Chart area */}
                                     <div className="ml-7 h-full flex flex-col">
                                         <div className="flex-1 relative">
@@ -301,50 +437,98 @@ export default function DashboardPage() {
                                                 ))}
                                             </div>
                                             {/* SVG Area Chart with smooth curves */}
-                                            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                                <defs>
-                                                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                        <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.3" />
-                                                        <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.02" />
-                                                    </linearGradient>
-                                                </defs>
-                                                {/* Area fill with smooth curve */}
-                                                <path
-                                                    d="M0,80 C8,70 12,62 16.67,60 C22,57 28,72 33.33,75 C40,78 45,35 50,30 C55,25 60,50 66.67,55 C72,58 78,22 83.33,20 C90,17 95,40 100,45 L100,100 L0,100 Z"
-                                                    fill="url(#areaGradient)"
-                                                    className="opacity-0 animate-fade-in-delay"
-                                                />
-                                                {/* Smooth line */}
-                                                <path
-                                                    d="M0,80 C8,70 12,62 16.67,60 C22,57 28,72 33.33,75 C40,78 45,35 50,30 C55,25 60,50 66.67,55 C72,58 78,22 83.33,20 C90,17 95,40 100,45"
-                                                    fill="none"
-                                                    stroke="#14b8a6"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    vectorEffect="non-scaling-stroke"
-                                                    strokeDasharray="1000"
-                                                    className="animate-draw-line"
-                                                />
-                                            </svg>
-                                            {/* Data points with hover effect */}
-                                            <div className="absolute inset-0 flex justify-between items-stretch">
-                                                {lineChartPoints.map((p, i) => (
-                                                    <div key={i} className="flex-1 relative group">
-                                                        <div
-                                                            className="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-500 shadow-sm group-hover:scale-125 group-hover:shadow-md transition-all cursor-pointer"
-                                                            style={{ top: `${100 - p}%` }}
+                                            {/* Dynamic Path Generation with dynamic scaling */}
+                                            {(() => {
+                                                // Calculate max value for dynamic scaling with 15% headroom
+                                                const maxVal = Math.max(...lineChartPoints, 1);
+                                                // Add 15% headroom so max value appears at ~85% height (professional look)
+                                                const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+
+                                                const points = lineChartPoints.map((val, i) => {
+                                                    const x = (i / (lineChartPoints.length - 1)) * 100;
+                                                    // Scale value relative to max (0-100% range, but max value will be at ~80%)
+                                                    const normalizedVal = (val / scaleMax) * 100;
+                                                    const y = 100 - normalizedVal;
+                                                    return `${x},${y}`;
+                                                });
+
+                                                // Create a path that connects all points
+                                                // Using L (Line) for accurate representation of data points
+                                                const pathD = points.length > 0
+                                                    ? `M ${points[0]} ${points.slice(1).map(p => `L ${p}`).join(' ')}`
+                                                    : 'M 0,100 L 100,100';
+
+                                                const areaD = `${pathD} L 100,100 L 0,100 Z`;
+
+                                                return (
+                                                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                                        <defs>
+                                                            <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.3" />
+                                                                <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.02" />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        {/* Area fill */}
+                                                        <path
+                                                            d={areaD}
+                                                            fill="url(#areaGradient)"
+                                                            className="opacity-0 animate-fade-in-delay"
+                                                            style={{ transition: 'd 0.5s ease' }}
                                                         />
-                                                        {/* Tooltip on hover */}
-                                                        <div
-                                                            className="absolute left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap"
-                                                            style={{ top: `${100 - p - 12}%` }}
-                                                        >
-                                                            {p} images
-                                                        </div>
+                                                        {/* Line stroke */}
+                                                        <path
+                                                            d={pathD}
+                                                            fill="none"
+                                                            stroke="#14b8a6"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            vectorEffect="non-scaling-stroke"
+                                                            className="animate-draw-line"
+                                                            style={{ transition: 'd 0.5s ease' }}
+                                                        />
+                                                    </svg>
+                                                );
+                                            })()}
+                                            {/* Data points with hover effect - dynamic scaling */}
+                                            {(() => {
+                                                const maxVal = Math.max(...lineChartPoints, 1);
+                                                // Match chart scaling with 15% headroom
+                                                const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+
+                                                return (
+                                                    <div className="absolute inset-0">
+                                                        {lineChartPoints.map((p, i) => {
+                                                            const normalizedPercent = (p / scaleMax) * 100;
+                                                            // Calculate X position same as SVG (0% to 100%)
+                                                            const xPercent = lineChartPoints.length > 1
+                                                                ? (i / (lineChartPoints.length - 1)) * 100
+                                                                : 50;
+                                                            return (
+                                                                <div
+                                                                    key={i}
+                                                                    className="absolute group"
+                                                                    style={{
+                                                                        left: `${xPercent}%`,
+                                                                        top: `${100 - normalizedPercent}%`,
+                                                                        transform: 'translate(-50%, -50%)'
+                                                                    }}
+                                                                >
+                                                                    <div
+                                                                        className="w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-500 shadow-sm group-hover:scale-125 group-hover:shadow-md transition-all cursor-pointer"
+                                                                    />
+                                                                    {/* Tooltip on hover */}
+                                                                    <div
+                                                                        className="absolute left-1/2 -translate-x-1/2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap"
+                                                                    >
+                                                                        {p} images
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
-                                                ))}
-                                            </div>
+                                                );
+                                            })()}
                                         </div>
                                         {/* X-axis labels */}
                                         <div className="flex justify-between text-[9px] text-slate-400 pt-1 shrink-0">
@@ -372,42 +556,61 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <div className="flex-1 relative min-h-0">
-                                    {/* Y-axis labels */}
-                                    <div className="absolute left-0 top-0 bottom-4 w-6 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
-                                        <span>$50</span>
-                                        <span>$25</span>
-                                        <span>$0</span>
-                                    </div>
+                                    {/* Y-axis labels - dynamic based on max value */}
+                                    {(() => {
+                                        const maxVal = Math.max(...chartData, 1);
+                                        // Add 15% headroom for professional look
+                                        const topLabel = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+                                        return (
+                                            <div className="absolute left-0 top-0 bottom-4 w-6 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
+                                                <span>${topLabel}</span>
+                                                <span>${Math.round(topLabel / 2)}</span>
+                                                <span>$0</span>
+                                            </div>
+                                        );
+                                    })()}
                                     {/* Chart area */}
                                     <div className="ml-7 h-full flex flex-col">
                                         <div className="flex-1 flex items-end justify-between gap-2">
-                                            {chartData.map((height, i) => {
-                                                const paidHeight = i >= 5 ? 0 : height * 0.7;
-                                                const freeHeight = i >= 5 ? height : height * 0.3;
-                                                return (
-                                                    <div key={i} className="flex-1 flex flex-col justify-end h-full group cursor-pointer relative animate-grow-up origin-bottom" style={{ animationDelay: `${i * 0.1}s` }}>
-                                                        {/* Stacked bar container */}
-                                                        <div className="w-full flex flex-col justify-end" style={{ height: `${height}%` }}>
-                                                            {/* Free segment (top) */}
-                                                            <div
-                                                                className="w-full rounded-t-md bg-gradient-to-t from-slate-300 to-slate-200 group-hover:from-slate-400 group-hover:to-slate-300 transition-all"
-                                                                style={{ height: `${(freeHeight / height) * 100}%`, minHeight: freeHeight > 0 ? '2px' : 0 }}
-                                                            />
-                                                            {/* Paid segment (bottom) */}
-                                                            {paidHeight > 0 && (
+                                            {(() => {
+                                                // Calculate max for dynamic scaling with 15% headroom
+                                                const maxVal = Math.max(...chartData, 1);
+                                                const scaleMax = maxVal <= 10 ? Math.ceil(maxVal * 1.15) : Math.ceil((maxVal * 1.15) / 10) * 10;
+
+                                                return chartData.map((height, i) => {
+                                                    // Get detailed split from real data if available
+                                                    const dataPoint = spendingChartData[i];
+                                                    const paidHeight = dataPoint ? (dataPoint.paid ?? 0) : 0;
+                                                    const freeHeight = dataPoint ? (dataPoint.free ?? 0) : 0;
+
+                                                    // Normalize height to percentage of scaleMax
+                                                    const normalizedHeight = (height / scaleMax) * 100;
+
+                                                    return (
+                                                        <div key={i} className="flex-1 flex flex-col justify-end h-full group cursor-pointer relative animate-grow-up origin-bottom" style={{ animationDelay: `${i * 0.1}s` }}>
+                                                            {/* Stacked bar container */}
+                                                            <div className="w-full flex flex-col justify-end" style={{ height: `${normalizedHeight}%` }}>
+                                                                {/* Free segment (top) */}
                                                                 <div
-                                                                    className="w-full bg-gradient-to-t from-teal-600 to-teal-400 group-hover:from-teal-700 group-hover:to-teal-500 transition-all shadow-sm"
-                                                                    style={{ height: `${(paidHeight / height) * 100}%` }}
+                                                                    className="w-full rounded-t-md bg-gradient-to-t from-slate-300 to-slate-200 group-hover:from-slate-400 group-hover:to-slate-300 transition-all"
+                                                                    style={{ height: `${height > 0 ? (freeHeight / height) * 100 : 0}%`, minHeight: freeHeight > 0 ? '2px' : 0 }}
                                                                 />
-                                                            )}
+                                                                {/* Paid segment (bottom) */}
+                                                                {paidHeight > 0 && (
+                                                                    <div
+                                                                        className="w-full bg-gradient-to-t from-teal-600 to-teal-400 group-hover:from-teal-700 group-hover:to-teal-500 transition-all shadow-sm"
+                                                                        style={{ height: `${height > 0 ? (paidHeight / height) * 100 : 0}%` }}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                            {/* Hover tooltip */}
+                                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap">
+                                                                ${height}
+                                                            </div>
                                                         </div>
-                                                        {/* Hover tooltip */}
-                                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-800 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap">
-                                                            ${Math.round(height * 0.5)}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                });
+                                            })()}
                                         </div>
                                         {/* X-axis labels */}
                                         <div className="flex justify-between text-[9px] text-slate-400 pt-1 shrink-0">

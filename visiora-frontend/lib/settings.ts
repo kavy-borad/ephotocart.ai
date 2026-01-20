@@ -57,7 +57,8 @@ export const settingsApi = {
     // Get user profile
     getProfile: async (): Promise<ApiResponse<UserProfile>> => {
         try {
-            const res = await api.get('/user/profile');
+            // Updated to use /auth/me as /user/profile does not exist
+            const res = await api.get('/auth/me');
             return { success: true, data: res.data };
         } catch (err: any) {
             return { success: false, error: err.response?.data?.message || 'Failed to load profile' };
@@ -124,13 +125,23 @@ export const settingsApi = {
         }
     },
 
-    // Get user credits (for header)
+    // Get user credits (for header and settings)
     getUserCredits: async (): Promise<ApiResponse<UserCredits>> => {
         try {
-            const res = await api.get('/user/credits');
-            return { success: true, data: res.data };
+            const res = await api.get('/wallet');
+            const data = res.data?.data || res.data || {};
+
+            return {
+                success: true,
+                data: {
+                    freeCredits: data.freeCredits ?? 0,
+                    balance: data.balance ?? 0
+                }
+            };
         } catch (err: any) {
-            return { success: false, error: err.response?.data?.message || 'Failed to get credits' };
+            console.error('settingsApi.getUserCredits error:', err);
+            // Return 0s on error instead of high mock values
+            return { success: false, data: { freeCredits: 0, balance: 0 }, error: err.response?.data?.message };
         }
     },
 

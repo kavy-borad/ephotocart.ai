@@ -15,25 +15,20 @@ import {
     Loader2,
     X,
     Plus,
+    ShoppingBag,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { generateApi, GenerateFormData, CategoryOption, UserCredits } from "@/lib/generate";
+import { generateApi, GenerateFormData, Category, ModelPreset, BundleOptionsPayload } from "@/lib/generate";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
 import AILoader from "@/components/AILoader";
 
-// Model options for E-commerce category
-interface ModelOption {
-    id: number;
-    name: string;
-    image: string;
-}
-
-const ecommerceModels: ModelOption[] = [
-    { id: 1, name: "Studio Pro", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAoJOWZv8vNa6RFDGdXaIvLaH1_pdkuYu-Agf7KHBV7dZLL6lcg3dEQbFGXKIlQS8k254SLSMQmiUvXsfxyiyDIShg3_S6o7I3rlYsqBKUCj0VB_EMEh1TtDXrCHQ2qPuJBNBAlw608JzNFmmiHNT23G9GauVMPNytrEt2AeIBiMWrVSotyFe9LHsUqOn6t6aFqPb2D7o50F3IXGSt3vaBD8clHz2Y-RHF2ndjeX1nOgYAyCbzu3eIVNWJemxHa-bj9mZ80mTFKQGcp" },
-    { id: 2, name: "Executive", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9rDTml0LTJBFVE5t-U0Omqgfb3Tw_BE6o52TdSubE-ysc2NDMpXscqBfiyX2KhpE4RoQ6kBC_Dj2vXNAi_fu_xtmOkXF6EM-fAPGHyaHdbCY9wbfrpGtB--He0zEzAFos5unfLFbQZ2V7kYoSytJIvUrjKL3kKOKdxJHfKr32yJtZUnWg_INO1zRvni1fcNR4nPd66JVMNwnvLhtySvbEFZrz8oqbqn-FausNQF0ldgK9O-tvkJWojn698Nu5EXkW2GRm2dnNA-" },
-    { id: 3, name: "Lifestyle", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD9ACO1yIxW2Q7hu0tsE3eHwUUyjVdJ3HyZErsD7Ap3NW63vnNqc8gOdANW1nzeQVqympPmOP2inFzBfiXvwhVGE3xpqCC1irVol8sqcNER4J-SZyXKkJDH3nNE8b2i_PkFaHMI-Hx9D0fjiEAm8dy4rzuJsRf7Zng4ZKT-oa7BjWqQF5CofzFaMSlBuoMUlJQOy3x92VoZ4R0oYRHLXUUv1wmYczzDtfp5A4PFZE2L1XvSmtqI8m4aEM2I8r8jHvsFZvvGnOiWHGwr" },
-    { id: 4, name: "Creative", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1u8i7swl0DmbulakI3kpCNdVj7fB698D3HvZ_xJESOKhpQaYDaUNljdmhCvBCgWQ5XkV9oemtOMlPedi_cxlTr1Ec01YU4ytL0Pfzlg__0ERYd0znaAyjeTyIen3w4zaMUwW38VaAT5aaGg0pzAVeLmFGhu_gYQOXRKOg-Gf2EWxKsWZDB6nkY7O3aGrjB3jNlfeAlweHLdEIKlDr4ylvItyL_FHfrnySOHlrFVtk1NIu0n817Dc7E5MPGfVnIz0gcWHcG5_zRevL" },
+// Fallback model presets when API fails
+const fallbackModelPresets: ModelPreset[] = [
+    { id: "f_professional", name: "Professional Woman", description: "Natural-looking professional woman for business wear", prompt_description: "", gender: "female", age_range: "young", style: "professional", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuAoJOWZv8vNa6RFDGdXaIvLaH1_pdkuYu-Agf7KHBV7dZLL6lcg3dEQbFGXKIlQS8k254SLSMQmiUvXsfxyiyDIShg3_S6o7I3rlYsqBKUCj0VB_EMEh1TtDXrCHQ2qPuJBNBAlw608JzNFmmiHNT23G9GauVMPNytrEt2AeIBiMWrVSotyFe9LHsUqOn6t6aFqPb2D7o50F3IXGSt3vaBD8clHz2Y-RHF2ndjeX1nOgYAyCbzu3eIVNWJemxHa-bj9mZ80mTFKQGcp" },
+    { id: "m_professional", name: "Professional Man", description: "Natural-looking professional man for business wear", prompt_description: "", gender: "male", age_range: "young", style: "professional", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuBpG9rDTml0LTJBFVE5t-U0Omqgfb3Tw_BE6o52TdSubE-ysc2NDMpXscqBfiyX2KhpE4RoQ6kBC_Dj2vXNAi_fu_xtmOkXF6EM-fAPGHyaHdbCY9wbfrpGtB--He0zEzAFos5unfLFbQZ2V7kYoSytJIvUrjKL3kKOKdxJHfKr32yJtZUnWg_INO1zRvni1fcNR4nPd66JVMNwnvLhtySvbEFZrz8oqbqn-FausNQF0ldgK9O-tvkJWojn698Nu5EXkW2GRm2dnNA-" },
+    { id: "f_casual", name: "Casual Woman", description: "Natural casual woman for everyday wear", prompt_description: "", gender: "female", age_range: "young", style: "casual", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuD9ACO1yIxW2Q7hu0tsE3eHwUUyjVdJ3HyZErsD7Ap3NW63vnNqc8gOdANW1nzeQVqympPmOP2inFzBfiXvwhVGE3xpqCC1irVol8sqcNER4J-SZyXKkJDH3nNE8b2i_PkFaHMI-Hx9D0fjiEAm8dy4rzuJsRf7Zng4ZKT-oa7BjWqQF5CofzFaMSlBuoMUlJQOy3x92VoZ4R0oYRHLXUUv1wmYczzDtfp5A4PFZE2L1XvSmtqI8m4aEM2I8r8jHvsFZvvGnOiWHGwr" },
+    { id: "m_athletic", name: "Athletic Man", description: "Natural fit man for sports and fitness wear", prompt_description: "", gender: "male", age_range: "young", style: "athletic", thumbnail: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1u8i7swl0DmbulakI3kpCNdVj7fB698D3HvZ_xJESOKhpQaYDaUNljdmhCvBCgWQ5XkV9oemtOMlPedi_cxlTr1Ec01YU4ytL0Pfzlg__0ERYd0znaAyjeTyIen3w4zaMUwW38VaAT5aaGg0pzAVeLmFGhu_gYQOXRKOg-Gf2EWxKsWZDB6nkY7O3aGrjB3jNlfeAlweHLdEIKlDr4ylvItyL_FHfrnySOHlrFVtk1NIu0n817Dc7E5MPGfVnIz0gcWHcG5_zRevL" },
 ];
 
 export default function DetailsPage() {
@@ -64,8 +59,8 @@ export default function DetailsPage() {
     const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
 
     // API state
-    const [categories, setCategories] = useState<CategoryOption[]>([]);
-    const [userCredits, setUserCredits] = useState<UserCredits | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -76,10 +71,21 @@ export default function DetailsPage() {
     const [userName, setUserName] = useState("Jane");
     const [userInitial, setUserInitial] = useState("J");
 
-    // Selected model for E-commerce category
-    const [selectedModel, setSelectedModel] = useState<number | null>(1);
+    // Selected model preset for categories with show_model: true
+    const [selectedModelPreset, setSelectedModelPreset] = useState<string | null>(null);
+
+    // Model presets from API
+    const [modelPresets, setModelPresets] = useState<ModelPreset[]>([]);
+    const [modelPresetsLoading, setModelPresetsLoading] = useState(false);
+
+    // Filter states for model presets
+    const [genderFilter, setGenderFilter] = useState<'female' | 'male' | 'unisex' | 'all'>('all');
+    const [styleFilter, setStyleFilter] = useState<'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all'>('all');
 
     // Load generation type and uploaded image from previous step
+    // Load ecommerce bundle options from localStorage (for batch_image)
+    const [savedBundleOptions, setSavedBundleOptions] = useState<any>(null);
+
     useEffect(() => {
         const savedType = localStorage.getItem("generateType");
         if (savedType === "single_image" || savedType === "batch_image") {
@@ -97,6 +103,17 @@ export default function DetailsPage() {
         if (savedFileId) {
             setUploadedFileId(savedFileId);
         }
+
+        // Load ecommerce options for batch_image
+        const ecommerceOptionsStr = localStorage.getItem("ecommerceOptions");
+        if (ecommerceOptionsStr) {
+            try {
+                const ecommerceOptions = JSON.parse(ecommerceOptionsStr);
+                setSavedBundleOptions(ecommerceOptions);
+            } catch (e) {
+                console.warn('Failed to parse ecommerce options:', e);
+            }
+        }
     }, []);
 
     // Fetch categories and user credits on mount
@@ -110,30 +127,78 @@ export default function DetailsPage() {
         }
 
         fetchCategories();
-        fetchUserCredits();
+
     }, []);
 
     const fetchCategories = async () => {
         try {
             const response = await generateApi.getCategories();
-            if (response.success && response.data) {
-                setCategories(response.data);
+            if (response.success && response.data && response.data.data) {
+                // Extract the categories array from the CategoriesResponse
+                setCategories(response.data.data);
             }
         } catch (error) {
             console.warn('Failed to fetch categories:', error);
         }
     };
 
-    const fetchUserCredits = async () => {
+
+
+    // Fetch model presets from API
+    const fetchModelPresets = async () => {
+        setModelPresetsLoading(true);
         try {
-            const response = await generateApi.getUserCredits();
-            if (response.success && response.data) {
-                setUserCredits(response.data);
+            const response = await generateApi.getModelPresets({
+                gender: genderFilter,
+                style: styleFilter
+            });
+            if (response.success && response.data && response.data.data) {
+                setModelPresets(response.data.data);
+                // Auto-select first preset if none selected
+                if (!selectedModelPreset && response.data.data.length > 0) {
+                    setSelectedModelPreset(response.data.data[0].id);
+                }
+            } else {
+                // Use fallback presets if API fails - filter by gender and style
+                const filteredFallbacks = filterFallbackPresets(fallbackModelPresets, genderFilter, styleFilter);
+                setModelPresets(filteredFallbacks);
+                // Auto-select first if available
+                if (!selectedModelPreset && filteredFallbacks.length > 0) {
+                    setSelectedModelPreset(filteredFallbacks[0].id);
+                }
             }
         } catch (error) {
-            console.warn('Failed to fetch user credits:', error);
+            console.warn('Failed to fetch model presets:', error);
+            // Use fallback presets - filter by gender and style
+            const filteredFallbacks = filterFallbackPresets(fallbackModelPresets, genderFilter, styleFilter);
+            setModelPresets(filteredFallbacks);
+            if (!selectedModelPreset && filteredFallbacks.length > 0) {
+                setSelectedModelPreset(filteredFallbacks[0].id);
+            }
+        } finally {
+            setModelPresetsLoading(false);
         }
     };
+
+    // Helper function to filter fallback presets by gender and style
+    const filterFallbackPresets = (
+        presets: ModelPreset[],
+        gender: 'female' | 'male' | 'unisex' | 'all',
+        style: 'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all'
+    ): ModelPreset[] => {
+        return presets.filter(preset => {
+            // Filter by gender
+            const genderMatch = gender === 'all' || preset.gender === gender;
+            // Filter by style
+            const styleMatch = style === 'all' || preset.style === style;
+            return genderMatch && styleMatch;
+        });
+    };
+
+    // Fetch model presets when component mounts or filters change
+    useEffect(() => {
+        fetchModelPresets();
+    }, [genderFilter, styleFilter]);
 
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -155,38 +220,92 @@ export default function DetailsPage() {
         }
     };
 
+    // Helper to convert data URL to File
+    const dataURLtoFile = (dataurl: string, filename: string) => {
+        try {
+            const arr = dataurl.split(',');
+            const mime = arr[0].match(/:(.*?);/)?.[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, { type: mime });
+        } catch (e) {
+            console.error("Error converting data URL to file:", e);
+            return undefined;
+        }
+    };
+
     const handleSubmit = async () => {
         setIsSubmitting(true);
         setError(null);
 
         try {
-            // Get current user for user_id
-            const currentUser = authApi.getCurrentUser();
-            const userId = currentUser?.id || 'unknown';
+            // Get selected category to check show_model
+            const selectedCategory = displayCategories.find(c => c.id === businessCategory);
+            const shouldShowModel = selectedCategory?.show_model || false;
 
-            // Build form data matching backend API format
+            // Build bundle options for batch_image (E-commerce bundle)
+            let bundleOptionsPayload: BundleOptionsPayload | undefined = undefined;
+            if (generationType === 'batch_image' && savedBundleOptions) {
+                bundleOptionsPayload = {
+                    product_views: savedBundleOptions.productViews || 'views_standard',
+                    background: savedBundleOptions.backgroundType || 'bg_white',
+                    format: savedBundleOptions.transparentBg || 'format_png_transparent',
+                    platform: savedBundleOptions.platformSize || 'platform_marketplace',
+                    lighting: savedBundleOptions.lightingStyle || 'lighting_soft',
+                    effects: {
+                        natural_shadow: savedBundleOptions.naturalShadow ?? true,
+                        reflection: savedBundleOptions.reflection ?? false,
+                    },
+                    image_count: parseInt(savedBundleOptions.numberOfImages) || imageCount,
+                };
+            }
+
+            // Convert uploaded image URL to File object if available
+            let imageFile: File | undefined = undefined;
+            if (uploadedImageUrl) {
+                imageFile = dataURLtoFile(uploadedImageUrl, "input_image.png");
+            }
+
+            // Build form data matching new backend API format
             const formData: GenerateFormData = {
                 generationType: generationType,
                 uploadType: 'file',
                 fileId: uploadedFileId || undefined,
+                imageFile: imageFile,
                 modelId: modelId,
-                modelCategory: modelCategory,
+                modelCategory: businessCategory || 'clothes',
                 modelStyle: modelStyle,
-                businessCategory: businessCategory || 'business',
-                brandName: brandName || 'My Brand',
+                businessCategory: businessCategory || 'clothes',
+                brandName: brandName || '',
                 imageCount: imageCount,
                 resolution: resolution,
                 format: format,
                 background: background,
+                // New API fields
+                humanModelPreset: shouldShowModel ? (selectedModelPreset || undefined) : undefined,
+                showModel: shouldShowModel,
+                instagramUsername: instagramUsername || undefined,
+                websiteUrl: websiteUrl || undefined,
+                // Bundle options for batch generation
+                bundleOptions: bundleOptionsPayload,
             };
 
-            // Call API with user info
-            const response = await generateApi.generateImages(formData, userId, 'free');
+            // Call API
+            const response = await generateApi.generateImages(formData);
 
             if (response.success && response.data) {
-                // Store job ID and redirect to gallery or processing page
-                localStorage.setItem('lastJobId', response.data.jobId);
-                router.push('/gallery');
+                // Store request ID
+                if (response.data.data?.request_id) {
+                    localStorage.setItem('lastRequestId', response.data.data.request_id);
+                }
+                // Store complete response for result page to display generated images
+                localStorage.setItem('generatedResult', JSON.stringify(response.data));
+                // Redirect to result page (user can then go to gallery from there)
+                router.push('/generate/result');
             } else {
                 setError(response.error || 'Failed to generate images');
             }
@@ -198,16 +317,15 @@ export default function DetailsPage() {
     };
 
     // Fallback categories if API fails
-    const displayCategories = categories.length > 0 ? categories : [
-        { value: "ecommerce", label: "E-commerce & Retail" },
-        { value: "realestate", label: "Real Estate" },
-        { value: "food", label: "Food & Beverage" },
-        { value: "tech", label: "Technology & SaaS" },
+    const displayCategories: Category[] = categories.length > 0 ? categories : [
+        { id: "clothes", name: "Clothes & Apparel", description: "T-shirts, shirts, dresses, pants, etc.", show_model: true, recommended_model: "portrait_master", icon: null },
+        { id: "furniture", name: "Furniture", description: "Chairs, tables, sofas, etc.", show_model: false, recommended_model: "interior_design", icon: null },
+        { id: "electronics", name: "Electronics", description: "Phones, laptops, gadgets, etc.", show_model: false, recommended_model: "product_studio", icon: null },
+        { id: "food", name: "Food & Beverage", description: "Food items, drinks, etc.", show_model: false, recommended_model: "food_photography", icon: null },
     ];
 
     // User credits display values (fallback)
-    const freeCredits = userCredits?.freeCredits ?? 1;
-    const balance = userCredits?.balance ?? 12.00;
+
 
 
 
@@ -219,12 +337,12 @@ export default function DetailsPage() {
                 text="Generating your images..."
             />
 
-            <div className="h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
+            <div className="h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
                 {/* Reusable Sidebar */}
                 <Sidebar activeNav="generate" />
 
                 {/* Main Content */}
-                <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+                <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                     {/* Reusable Header with dynamic breadcrumbs */}
                     <Header
                         breadcrumbs={[
@@ -232,15 +350,13 @@ export default function DetailsPage() {
                             { label: "Generate", href: "/generate" },
                             { label: "Details" }
                         ]}
-                        freeCredits={freeCredits}
-                        balance={balance}
                     />
 
                     {/* Main Content Area */}
                     <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
-                        {/* Content - No Scroll */}
-                        <div className="flex-1 p-4 sm:p-5 overflow-hidden flex flex-col">
-                            <div className="flex flex-col gap-2 h-full">
+                        {/* Content - Scrollable on mobile, Fixed on Desktop */}
+                        <div className="flex-1 p-4 sm:p-5 overflow-y-auto md:overflow-hidden flex flex-col">
+                            <div className="flex flex-col gap-2 min-h-full md:min-h-0 md:flex-1">
                                 {/* Page Header */}
                                 <div className="mb-2 shrink-0">
                                     <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">Generate Images</h1>
@@ -290,32 +406,37 @@ export default function DetailsPage() {
                                 </div>
 
                                 {/* Form Content - Compact Layout */}
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-                                    <div className="p-4 sm:p-5 flex flex-col gap-4 flex-1 overflow-hidden">
+                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm md:flex-1 flex flex-col">
+                                    <div className="p-3 sm:p-5 md:p-6 lg:p-6flex flex-col gap-1md:flex-1">
                                         {/* Row 1: Image Type, Category, Brand Info - Side by Side */}
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 shrink-0">
                                             {/* Image Type */}
                                             <div className="flex flex-col gap-1">
                                                 <h2 className="text-gray-900 dark:text-white text-xs font-bold flex items-center gap-1.5">
-                                                    <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                    {generationType === 'batch_image' ? (
+                                                        <ShoppingBag className="w-3.5 h-3.5 text-teal-500" />
+                                                    ) : (
+                                                        <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                    )}
                                                     Image Type
                                                 </h2>
                                                 <div
-                                                    onClick={() => setGenerationType("single_image")}
-                                                    className={`group flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all ${generationType === "single_image"
-                                                        ? "border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20"
-                                                        : "border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-teal-400"
-                                                        }`}
+                                                    className="group flex items-center gap-2 h-[52px] px-3 rounded-lg cursor-pointer transition-all border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/20"
                                                 >
-                                                    <div className={`p-1.5 rounded-lg flex-shrink-0 ${generationType === "single_image"
-                                                        ? "bg-white dark:bg-gray-800 text-teal-500"
-                                                        : "bg-gray-100 dark:bg-gray-600 text-gray-500"
-                                                        }`}>
-                                                        <ImageIcon className="w-3.5 h-3.5" />
+                                                    <div className="p-1.5 rounded-lg flex-shrink-0 bg-white dark:bg-gray-800 text-teal-500">
+                                                        {generationType === 'batch_image' ? (
+                                                            <ShoppingBag className="w-3.5 h-3.5" />
+                                                        ) : (
+                                                            <ImageIcon className="w-3.5 h-3.5" />
+                                                        )}
                                                     </div>
                                                     <div>
-                                                        <span className="text-gray-900 dark:text-white font-semibold text-xs">Single Image</span>
-                                                        <p className="text-gray-500 text-[9px]">Generate from a single source</p>
+                                                        <span className="text-gray-900 dark:text-white font-semibold text-xs">
+                                                            {generationType === 'batch_image' ? "E-Commerce Bundle" : "Single Image"}
+                                                        </span>
+                                                        <p className="text-gray-500 text-[9px]">
+                                                            {generationType === 'batch_image' ? "Multiple angles & styles" : "Generate from a single source"}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -323,21 +444,21 @@ export default function DetailsPage() {
                                             {/* Category Selection */}
                                             <div className="flex flex-col gap-1">
                                                 <h2 className="text-gray-900 dark:text-white text-xs font-bold flex items-center gap-1.5">
-                                                    <Tag className="w-3.5 h-3.5 text-gray-400" />
+                                                    <Tag className="w-3.5 h-3.5 text-teal-500" />
                                                     Category
                                                 </h2>
                                                 <div className="relative">
                                                     <select
                                                         value={businessCategory}
                                                         onChange={(e) => setBusinessCategory(e.target.value)}
-                                                        className="w-full h-[52px] pl-3 pr-8 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 appearance-none text-sm font-medium cursor-pointer"
+                                                        className="w-full h-[52px] pl-3 pr-8 rounded-lg bg-gradient-to-b from-teal-50 to-white dark:from-teal-900/30 dark:to-gray-700 border border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 appearance-none text-sm font-medium cursor-pointer shadow-sm hover:shadow-md transition-all"
                                                     >
                                                         <option value="">Select category...</option>
                                                         {displayCategories.map((cat) => (
-                                                            <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
                                                         ))}
                                                     </select>
-                                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-500 pointer-events-none" />
                                                 </div>
                                             </div>
 
@@ -357,9 +478,10 @@ export default function DetailsPage() {
                                             </div>
                                         </div>
 
-                                        {/* Row 2: E-commerce Layout - Branding Info + Models Side by Side */}
-                                        {businessCategory === "ecommerce" && (
-                                            <div className="flex-1 min-h-0 flex flex-col gap-2">
+                                        {/* Row 2: Model Selection - Shows when category has show_model: true AND not batch_image */}
+
+                                        {(generationType !== 'batch_image' && displayCategories.find(c => c.id === businessCategory)?.show_model) && (
+                                            <div className="md:flex-1 md:min-h-0 flex flex-col gap-2">
                                                 {/* Branding Info Row - Compact */}
                                                 <div className="shrink-0 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 border border-gray-200 dark:border-gray-600">
                                                     <div className="flex items-center gap-2 mb-1.5">
@@ -427,62 +549,109 @@ export default function DetailsPage() {
                                                 </div>
 
                                                 {/* Models Grid - Below Branding Info */}
-                                                <div className="flex-1 min-h-0 flex flex-col">
-                                                    <div className="flex items-center gap-2 mb-1.5 shrink-0">
-                                                        <Grid3X3 className="w-3.5 h-3.5 text-gray-400" />
-                                                        <h3 className="text-xs font-bold text-gray-900 dark:text-white">Select Model</h3>
-                                                        <span className="text-[9px] font-normal text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">Optional</span>
+                                                <div className="md:flex-1 md:min-h-0 flex flex-col">
+                                                    <div className="flex items-center justify-between mb-2 shrink-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <Grid3X3 className="w-3.5 h-3.5 text-gray-400" />
+                                                            <h3 className="text-xs font-bold text-gray-900 dark:text-white">Select Human Model</h3>
+                                                            <span className="text-[9px] font-normal text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">Optional</span>
+                                                        </div>
+                                                        {/* Filter Dropdowns - Professional Teal Theme */}
+                                                        <div className="flex items-center gap-2">
+                                                            <select
+                                                                value={genderFilter}
+                                                                onChange={(e) => setGenderFilter(e.target.value as 'female' | 'male' | 'unisex' | 'all')}
+                                                                className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-b from-teal-50 to-white dark:from-teal-900/30 dark:to-gray-700 border border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-300 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                                                            >
+                                                                <option value="all">All Genders</option>
+                                                                <option value="female">Female</option>
+                                                                <option value="male">Male</option>
+                                                                <option value="unisex">Unisex</option>
+                                                            </select>
+                                                            <select
+                                                                value={styleFilter}
+                                                                onChange={(e) => setStyleFilter(e.target.value as 'professional' | 'casual' | 'athletic' | 'elegant' | 'diverse' | 'all')}
+                                                                className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-b from-teal-50 to-white dark:from-teal-900/30 dark:to-gray-700 border border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-300 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                                                            >
+                                                                <option value="all">All Styles</option>
+                                                                <option value="professional">Professional</option>
+                                                                <option value="casual">Casual</option>
+                                                                <option value="athletic">Athletic</option>
+                                                                <option value="elegant">Elegant</option>
+                                                                <option value="diverse">Diverse</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
 
-                                                    <div className="flex-1 min-h-0 pb-4">
-                                                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 2xl:grid-cols-8 gap-3">
-                                                            {ecommerceModels.map((model) => (
-                                                                <div
-                                                                    key={model.id}
-                                                                    className="flex flex-col cursor-pointer group"
-                                                                    onClick={() => setSelectedModel(model.id)}
-                                                                >
-                                                                    <div className={`relative rounded-lg bg-gray-100 dark:bg-gray-700 h-[125px] overflow-hidden transition-all ${selectedModel === model.id
-                                                                        ? "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-gray-800"
-                                                                        : "border border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-teal-400 hover:ring-offset-1"
-                                                                        }`}>
-                                                                        <img
-                                                                            src={model.image}
-                                                                            alt={model.name}
-                                                                            className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-110"
-                                                                        />
-                                                                        {selectedModel === model.id && (
-                                                                            <div className="absolute bottom-0.5 right-0.5 bg-teal-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-lg">
-                                                                                <Check className="w-2 h-2" />
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    <p className={`text-[9px] font-medium text-center mt-1 pb-0.5 ${selectedModel === model.id
-                                                                        ? "text-teal-500"
-                                                                        : "text-gray-500 dark:text-gray-400"
-                                                                        }`}>
-                                                                        {model.name}
-                                                                    </p>
-                                                                </div>
-                                                            ))}
-
-                                                            {/* Custom Add Button */}
-                                                            <div className="flex flex-col cursor-pointer group">
-                                                                <div className="rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 transition-colors h-[125px]">
-                                                                    <Plus className="w-4 h-4 text-gray-300 dark:text-gray-500 group-hover:text-gray-400" />
-                                                                </div>
-                                                                <p className="text-[9px] font-medium text-center mt-1 pb-0.5 text-gray-400">Custom</p>
+                                                    <div className="md:flex-1 md:min-h-0 p-1 pb-4 overflow-y-auto">
+                                                        {modelPresetsLoading ? (
+                                                            <div className="flex items-center justify-center h-32">
+                                                                <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
                                                             </div>
-                                                        </div>
+                                                        ) : (
+                                                            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 2xl:grid-cols-8 gap-3">
+                                                                {(modelPresets.length > 0 ? modelPresets : fallbackModelPresets).map((preset) => (
+                                                                    <div
+                                                                        key={preset.id}
+                                                                        className="flex flex-col cursor-pointer group"
+                                                                        onClick={() => setSelectedModelPreset(preset.id)}
+                                                                        title={preset.description}
+                                                                    >
+                                                                        <div className={`relative rounded-lg bg-gray-100 dark:bg-gray-700 h-[125px] overflow-hidden transition-all ${selectedModelPreset === preset.id
+                                                                            ? "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-gray-800"
+                                                                            : "border border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-teal-400 hover:ring-offset-1"
+                                                                            }`}>
+                                                                            {preset.thumbnail ? (
+                                                                                <img
+                                                                                    src={preset.thumbnail}
+                                                                                    alt={preset.name}
+                                                                                    className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-110"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700">
+                                                                                    <span className="text-2xl font-bold text-gray-400 dark:text-gray-500">
+                                                                                        {preset.gender === 'female' ? '👩' : preset.gender === 'male' ? '👨' : '🧑'}
+                                                                                    </span>
+                                                                                </div>
+                                                                            )}
+                                                                            {/* Gender & Style badges */}
+                                                                            <div className="absolute top-1 left-1 flex gap-1">
+                                                                                <span className="text-[7px] px-1 py-0.5 rounded bg-black/50 text-white capitalize">{preset.gender}</span>
+                                                                            </div>
+                                                                            {selectedModelPreset === preset.id && (
+                                                                                <div className="absolute bottom-0.5 right-0.5 bg-teal-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-lg">
+                                                                                    <Check className="w-2 h-2" />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <p className={`text-[9px] font-medium text-center mt-1 pb-0.5 truncate ${selectedModelPreset === preset.id
+                                                                            ? "text-teal-500"
+                                                                            : "text-gray-500 dark:text-gray-400"
+                                                                            }`}>
+                                                                            {preset.name}
+                                                                        </p>
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* Custom Add Button */}
+                                                                <div className="flex flex-col cursor-pointer group">
+                                                                    <div className="rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 transition-colors h-[125px]">
+                                                                        <Plus className="w-4 h-4 text-gray-300 dark:text-gray-500 group-hover:text-gray-400" />
+                                                                    </div>
+                                                                    <p className="text-[9px] font-medium text-center mt-1 pb-0.5 text-gray-400">Custom</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* Row 2 Alternative: Additional Info - Shows when NOT E-commerce */}
-                                        {businessCategory !== "ecommerce" && (
-                                            <div className="flex-1 min-h-0 flex flex-col mt-4">
-                                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600 flex-1 flex flex-col">
+                                        {/* Row 2 Alternative: Additional Info - Shows when category doesn't have show_model or no category selected OR is batch_image */}
+
+                                        {(generationType === 'batch_image' || !displayCategories.find(c => c.id === businessCategory)?.show_model) && (
+                                            <div className="md:flex-1 md:min-h-0 flex flex-col mt-4">
+                                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600 md:flex-1 flex flex-col">
                                                     <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                                         <Briefcase className="w-4 h-4 text-gray-400" />
                                                         Additional Branding Info

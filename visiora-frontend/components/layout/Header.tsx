@@ -15,8 +15,10 @@ import {
     Sparkles,
     Image,
     Wallet,
+    Home,
 } from "lucide-react";
 import { authApi } from "@/lib/auth";
+import { walletApi } from "@/lib/wallet";
 import { useRouter } from "@/components/useRouter";
 
 export interface BreadcrumbItem {
@@ -32,8 +34,8 @@ interface HeaderProps {
 
 export default function Header({
     breadcrumbs,
-    freeCredits = 1,
-    balance = 12.00
+    freeCredits = 0,
+    balance = 0
 }: HeaderProps) {
     const router = useRouter();
     const [userName, setUserName] = useState("User");
@@ -42,6 +44,46 @@ export default function Header({
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    // Dynamic wallet state - Initialize with props but then rely on internal fetching
+    const [displayCredits, setDisplayCredits] = useState(freeCredits);
+    const [displayBalance, setDisplayBalance] = useState(balance);
+
+    // Sync with props when they change (e.g. parent dashboard fetches fresh data)
+    useEffect(() => {
+        if (typeof freeCredits !== 'undefined') setDisplayCredits(freeCredits);
+        if (typeof balance !== 'undefined') setDisplayBalance(balance);
+    }, [freeCredits, balance]);
+
+    // Listen for wallet-updated events and ALSO fetch on mount for dynamic credits
+    useEffect(() => {
+        // Fetch wallet data on mount to ensure dynamic credits display
+        const fetchWalletData = async () => {
+            try {
+                const response = await walletApi.getUserCredits();
+                if (response.success && response.data) {
+                    setDisplayCredits(response.data.freeCredits);
+                    setDisplayBalance(response.data.balance);
+                }
+            } catch (error) {
+                console.error('Failed to fetch wallet info for header:', error);
+            }
+        };
+
+        // Initial fetch
+        fetchWalletData();
+
+        // Also listen for wallet-updated events for real-time updates
+        const handleWalletUpdate = () => {
+            fetchWalletData();
+        };
+
+        window.addEventListener('wallet-updated', handleWalletUpdate);
+
+        return () => {
+            window.removeEventListener('wallet-updated', handleWalletUpdate);
+        };
+    }, []);
 
     // Navigation items for mobile menu
     const navItems = [
@@ -188,7 +230,7 @@ export default function Header({
             </div>
 
             {/* Right Section */}
-            <div className="flex-1 lg:flex-none flex justify-end items-center gap-4">
+            <div className="flex-1 lg:flex-none flex justify-end items-center gap-2 sm:gap-4">
                 {/* Credits Badge */}
                 <Link
                     href="/wallet"
@@ -196,14 +238,14 @@ export default function Header({
                 >
                     <div className="flex items-center gap-1">
                         <Zap className="w-3.5 h-3.5 text-teal-500 fill-teal-500" />
-                        <span className="text-xs font-bold text-slate-700 dark:text-gray-300">{freeCredits} FREE</span>
+                        <span className="text-xs font-bold text-slate-700 dark:text-gray-300">{displayCredits} FREE</span>
                     </div>
                     <div className="w-px h-3 bg-slate-200 dark:bg-gray-600"></div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">${balance.toFixed(2)}</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">${displayBalance.toFixed(2)}</span>
                 </Link>
 
                 {/* Notifications */}
-                <div className="relative">
+                <div className="relative notification-dropdown-container">
                     <button
                         onClick={() => {
                             setShowNotificationDropdown(!showNotificationDropdown);
@@ -215,7 +257,7 @@ export default function Header({
                         <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800"></span>
                     </button>
                     {showNotificationDropdown && (
-                        <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-slate-200 dark:border-gray-700 py-2 z-50">
+                        <div className="absolute right-[-60px] sm:right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-slate-200 dark:border-gray-700 py-2 z-50">
                             <div className="px-4 py-2 border-b border-slate-100 dark:border-gray-700">
                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h4>
                             </div>
@@ -234,7 +276,7 @@ export default function Header({
                 </div>
 
                 {/* Profile Dropdown */}
-                <div className="relative flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-gray-700">
+                <div className="relative flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-gray-700 profile-dropdown-container">
                     <button
                         onClick={() => {
                             setShowProfileDropdown(!showProfileDropdown);

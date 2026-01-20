@@ -16,6 +16,9 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Visiora - AI Image Generation",
   description: "Upload an image and get professional variations powered by AI",
+  icons: {
+    icon: '/logo.png', // Fix favicon error by using existing logo
+  },
 };
 
 export default function RootLayout({

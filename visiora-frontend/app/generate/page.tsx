@@ -22,7 +22,7 @@ import {
     Loader2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { generateApi, UserCredits } from "@/lib/generate";
+
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
 
@@ -30,7 +30,7 @@ export default function GenerateImagesPage() {
     const router = useRouter();
     const [selectedType, setSelectedType] = useState<"single_image" | "batch_image">("single_image");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [userCredits, setUserCredits] = useState<UserCredits | null>(null);
+
 
     // User profile state
     const [userName, setUserName] = useState("Jane");
@@ -49,7 +49,7 @@ export default function GenerateImagesPage() {
         { id: 3, label: "Details", completed: false, current: false },
     ];
 
-    // Fetch user credits on mount
+    // Fetch user info on mount
     useEffect(() => {
         // Check if user is authenticated
         if (!authApi.isAuthenticated()) {
@@ -64,39 +64,20 @@ export default function GenerateImagesPage() {
             setUserName(firstName);
             setUserInitial(firstName.charAt(0).toUpperCase());
         }
-
-        fetchUserCredits();
     }, [router]);
-
-    const fetchUserCredits = async () => {
-        try {
-            const response = await generateApi.getUserCredits();
-            if (response.success && response.data) {
-                setUserCredits(response.data);
-            }
-        } catch (error) {
-            // Silently ignore - user will be redirected if not authenticated
-            // Default values will be used
-        }
-    };
 
     const handleNextStep = async () => {
         setIsSubmitting(true);
         try {
             // Save selection to session (optional - for backend tracking)
-            await generateApi.saveGenerationType(selectedType);
+            // await generateApi.saveGenerationType(selectedType);
 
             // Store in localStorage for client-side navigation
             localStorage.setItem('generateType', selectedType);
 
-            // Navigate based on selected type
-            if (selectedType === 'batch_image') {
-                // E-Commerce Bundle - go to options page first
-                router.push('/generate/ecommerce-options');
-            } else {
-                // Single Image - go directly to upload
-                router.push('/generate/upload');
-            }
+            // Navigate to upload page for both types
+            // Upload page will redirect to appropriate next step based on type
+            router.push('/generate/upload');
         } catch (error) {
             console.warn('Failed to save generation type:', error);
             // Still navigate even if API fails
@@ -112,30 +93,27 @@ export default function GenerateImagesPage() {
     };
 
     // User credits display values (fallback if API not available)
-    const freeCredits = userCredits?.freeCredits ?? 1;
-    const balance = userCredits?.balance ?? 12.00;
+
 
     return (
-        <div className="min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
-            <div className="flex flex-1 min-h-screen lg:h-screen overflow-x-hidden lg:overflow-hidden">
+        <div className="h-full flex flex-col overflow-x-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
+            <div className="flex flex-1 h-full overflow-x-hidden lg:overflow-hidden">
                 {/* Reusable Sidebar */}
                 <Sidebar activeNav="generate" />
 
                 {/* Main Content Area */}
-                <div className="flex flex-col flex-1 min-w-0 bg-slate-50 dark:bg-gray-900 overflow-x-hidden lg:overflow-hidden transition-colors duration-300">
+                <div className="flex flex-col flex-1 min-w-0 bg-slate-50 dark:bg-gray-900 overflow-x-hidden transition-colors duration-300">
                     {/* Reusable Header with dynamic breadcrumbs */}
                     <Header
                         breadcrumbs={[
                             { label: "Home", href: "/?view=landing" },
                             { label: "Generate Images" }
                         ]}
-                        freeCredits={freeCredits}
-                        balance={balance}
                     />
 
-                    {/* Main Content - No Scroll */}
-                    <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto lg:overflow-hidden bg-slate-50/50 dark:bg-gray-900/50 transition-colors duration-300">
-                        <div className="flex flex-col h-full">
+                    {/* Main Content - Scrollable */}
+                    <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto bg-slate-50/50 dark:bg-gray-900/50 transition-colors duration-300">
+                        <div className="flex flex-col min-h-full">
                             {/* Page Header */}
                             <div className="mb-6 shrink-0">
                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">Generate Images</h1>
@@ -193,9 +171,9 @@ export default function GenerateImagesPage() {
                             </div>
 
                             {/* Type Selection Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-1 min-h-0 max-w-5xl mx-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 md:mb-0 md:flex-1 md:min-h-0 max-w-5xl mx-auto w-full">
                                 {/* Single Image Card */}
-                                <label className="relative group cursor-pointer">
+                                <label className="relative group cursor-pointer h-auto md:h-full">
                                     <input
                                         type="radio"
                                         name="create_type"
@@ -224,7 +202,7 @@ export default function GenerateImagesPage() {
                                 </label>
 
                                 {/* E-Commerce Bundle Card */}
-                                <label className="relative group cursor-pointer">
+                                <label className="relative group cursor-pointer h-auto md:h-full">
                                     <input
                                         type="radio"
                                         name="create_type"
@@ -254,7 +232,7 @@ export default function GenerateImagesPage() {
                             </div>
 
                             {/* Next Button */}
-                            <div className="flex justify-end pt-5 mt-5 shrink-0">
+                            <div className="flex justify-end pt-5 mt-auto md:mt-5 shrink-0 pb-4 md:pb-0">
                                 <button
                                     onClick={handleNextStep}
                                     disabled={isSubmitting}

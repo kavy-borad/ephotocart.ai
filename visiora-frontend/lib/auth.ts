@@ -116,7 +116,8 @@ export const authApi = {
     // POST /api/auth/logout
     logout: async () => {
         try {
-            await api.post("/auth/logout");
+            const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : '';
+            await api.post("/auth/logout", { refreshToken: refreshToken || '' });
         } catch (err) {
             // Ignore errors, clear storage anyway
         }

@@ -16,12 +16,12 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { authApi } from "@/lib/auth";
-import { generateApi, UserCredits } from "@/lib/generate";
+import { generateApi, BundleOptionsData, BundleOption, BundleEffects } from "@/lib/generate";
 import { Sidebar, Header } from "@/components/layout";
 
 export default function EcommerceOptionsPage() {
     const router = useRouter();
-    const [userCredits, setUserCredits] = useState<UserCredits | null>(null);
+
 
     // Form state
     const [productViews, setProductViews] = useState("standard_4");
@@ -40,6 +40,11 @@ export default function EcommerceOptionsPage() {
     const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
     const [showImagesDropdown, setShowImagesDropdown] = useState(false);
 
+    // Bundle options from API
+    const [bundleOptions, setBundleOptions] = useState<BundleOptionsData | null>(null);
+    const [bundleEffects, setBundleEffects] = useState<BundleEffects | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
     const steps = [
         { id: 1, label: "Type", completed: true, current: false },
         { id: 2, label: "Upload", completed: false, current: true },
@@ -51,17 +56,44 @@ export default function EcommerceOptionsPage() {
             router.push('/login');
             return;
         }
-        fetchUserCredits();
+        fetchBundleOptions();
     }, [router]);
 
-    const fetchUserCredits = async () => {
+    // Fetch bundle options from API
+    const fetchBundleOptions = async () => {
+        setIsLoading(true);
         try {
-            const response = await generateApi.getUserCredits();
-            if (response.success && response.data) {
-                setUserCredits(response.data);
+            const response = await generateApi.getBundleOptions();
+            if (response.success && response.data && response.data.data) {
+                setBundleOptions(response.data.data);
+                setBundleEffects(response.data.effects);
+
+                // Set defaults from API
+                const defaultView = response.data.data.product_views.find(v => v.is_default);
+                if (defaultView) setProductViews(defaultView.id);
+
+                const defaultBg = response.data.data.background.find(b => b.is_default);
+                if (defaultBg) setBackgroundType(defaultBg.id);
+
+                const defaultFormat = response.data.data.format.find(f => f.is_default);
+                if (defaultFormat) setTransparentBg(defaultFormat.id);
+
+                const defaultPlatform = response.data.data.platform.find(p => p.is_default);
+                if (defaultPlatform) setPlatformSize(defaultPlatform.id);
+
+                const defaultLighting = response.data.data.lighting.find(l => l.is_default);
+                if (defaultLighting) setLightingStyle(defaultLighting.id);
+
+                // Set effects
+                if (response.data.effects) {
+                    setNaturalShadow(response.data.effects.natural_shadow?.default ?? true);
+                    setReflection(response.data.effects.reflection?.default ?? false);
+                }
             }
         } catch (error) {
-            // Silently ignore
+            console.warn('Failed to fetch bundle options:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -78,38 +110,54 @@ export default function EcommerceOptionsPage() {
             numberOfImages,
         };
         localStorage.setItem('ecommerceOptions', JSON.stringify(ecommerceOptions));
-        router.push('/generate/upload');
+        router.push('/generate/details');
     };
 
-    const freeCredits = userCredits?.freeCredits ?? 1;
-    const balance = userCredits?.balance ?? 12.00;
 
-    const viewsOptions = [
-        { value: "standard_4", label: "Standard (4 views)", desc: "Front, back, side & detail shots" },
-        { value: "basic_2", label: "Basic (2 views)", desc: "Front & back shots" },
-        { value: "premium_6", label: "Premium (6 views)", desc: "All angles + detail shots" },
-        { value: "complete_8", label: "Complete (8 views)", desc: "Full 360° coverage" },
+
+    // Fallback options if API fails
+    const fallbackViewsOptions: BundleOption[] = [
+        { id: "views_standard", name: "Standard (4 views)", description: "Front, back, side & detail shots", is_default: true },
+        { id: "views_basic", name: "Basic (2 views)", description: "Front & back shots", is_default: false },
+        { id: "views_extended", name: "Extended (6 views)", description: "All angles + detail shots", is_default: false },
     ];
 
-    const platformOptions = [
-        { value: "marketplace_standard", label: "Marketplace Standard", desc: "Amazon / Shopify" },
-        { value: "social_media", label: "Social Media", desc: "Instagram / Facebook" },
-        { value: "custom", label: "Custom Size", desc: "Define your own dimensions" },
+    const fallbackPlatformOptions: BundleOption[] = [
+        { id: "platform_marketplace", name: "Marketplace Standard", description: "Amazon / Shopify", is_default: true },
+        { id: "platform_social", name: "Social Media", description: "Instagram / Facebook", is_default: false },
     ];
 
-    const lightingOptions = [
-        { value: "soft_studio", label: "Soft studio (Recommended)" },
-        { value: "high_contrast", label: "High contrast" },
+    const fallbackLightingOptions: BundleOption[] = [
+        { id: "lighting_soft", name: "Soft Studio (Recommended)", is_default: true },
+        { id: "lighting_high_contrast", name: "High Contrast", is_default: false },
     ];
+
+    const fallbackBackgroundOptions: BundleOption[] = [
+        { id: "bg_white", name: "White", description: "Pure white background", is_default: true },
+        { id: "bg_gray", name: "Light Gray", description: "Modern stores", is_default: false },
+        { id: "bg_transparent", name: "Transparent", description: "Cutout background", is_default: false },
+    ];
+
+    const fallbackFormatOptions: BundleOption[] = [
+        { id: "format_png_transparent", name: "Transparent (PNG)", is_default: true },
+        { id: "format_jpg", name: "JPG", is_default: false },
+    ];
+
+    // Use API data or fallbacks
+    const viewsOptions = bundleOptions?.product_views || fallbackViewsOptions;
+    const platformOptions = bundleOptions?.platform || fallbackPlatformOptions;
+    const lightingOptions = bundleOptions?.lighting || fallbackLightingOptions;
+    const backgroundOptions = bundleOptions?.background || fallbackBackgroundOptions;
+    const formatOptions = bundleOptions?.format || fallbackFormatOptions;
 
     return (
-        <div className="min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
+        <div className="min-h-screen flex flex-col overflow-x-hidden bg-[#f8fafc] dark:bg-gray-900 antialiased transition-colors duration-300">
             <div className="flex flex-1 min-h-screen lg:h-screen overflow-x-hidden lg:overflow-hidden">
                 {/* Sidebar */}
                 <Sidebar activeNav="generate" />
 
                 {/* Main Content Area */}
-                <div className="flex flex-col flex-1 min-w-0 bg-slate-50 dark:bg-gray-900 overflow-x-hidden lg:overflow-hidden transition-colors duration-300">
+                <div className="flex flex-col flex-1 min-w-0 bg-[#f8fafc] dark:bg-gray-900 overflow-x-hidden lg:overflow-hidden transition-colors duration-300">
                     {/* Header */}
                     <Header
                         breadcrumbs={[
@@ -117,15 +165,13 @@ export default function EcommerceOptionsPage() {
                             { label: "Generate Images", href: "/generate" },
                             { label: "E-Commerce Options" }
                         ]}
-                        freeCredits={freeCredits}
-                        balance={balance}
                     />
 
                     {/* Main Content */}
-                    <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
+                    <main className="flex-1 flex flex-col bg-[#f8fafc] dark:bg-gray-900">
                         {/* Content - No Scroll */}
-                        <div className="flex-1 p-4 sm:p-5 overflow-hidden flex flex-col">
-                            <div className="flex flex-col gap-2 h-full">
+                        <div className="flex-1 p-4 sm:p-5 flex flex-col">
+                            <div className="flex flex-col gap-2 flex-1">
                                 {/* Page Header */}
                                 <div className="mb-2 shrink-0">
                                     <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">Generate Images</h1>
@@ -169,7 +215,7 @@ export default function EcommerceOptionsPage() {
                                 </div>
 
                                 {/* Main Content Card */}
-                                <div className="flex-1 min-h-0 max-w-4xl mx-auto w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-slate-200/60 dark:border-gray-700 p-3 overflow-hidden">
+                                <div className="flex-1 min-h-0 max-w-4xl mx-auto w-full bg-white dark:bg-gray-800 rounded-2xl  border border-slate-200/60 dark:border-gray-700 p-3 overflow-hidden">
                                     <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-2">E-Commerce Bundle Options</h2>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2">
@@ -184,7 +230,7 @@ export default function EcommerceOptionsPage() {
                                                         className="w-full flex items-center justify-between px-3 py-1.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-lg text-left hover:border-teal-400 transition-colors text-sm"
                                                     >
                                                         <span className="text-slate-900 dark:text-white font-medium">
-                                                            {viewsOptions.find(v => v.value === productViews)?.label}
+                                                            {viewsOptions.find(v => v.id === productViews)?.name}
                                                         </span>
                                                         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showViewsDropdown ? 'rotate-180' : ''}`} />
                                                     </button>
@@ -192,66 +238,81 @@ export default function EcommerceOptionsPage() {
                                                         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg z-10 overflow-hidden">
                                                             {viewsOptions.map((option) => (
                                                                 <button
-                                                                    key={option.value}
+                                                                    key={option.id}
                                                                     onClick={() => {
-                                                                        setProductViews(option.value);
+                                                                        setProductViews(option.id);
                                                                         setShowViewsDropdown(false);
                                                                     }}
-                                                                    className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors ${productViews === option.value ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
+                                                                    className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors ${productViews === option.id ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
                                                                 >
-                                                                    <p className="font-medium text-slate-900 dark:text-white text-sm">{option.label}</p>
-                                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400">{option.desc}</p>
+                                                                    <p className="font-medium text-slate-900 dark:text-white text-sm">{option.name}</p>
+                                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400">{option.description}</p>
                                                                 </button>
                                                             ))}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-gray-400">Front, back, side & detail shots</p>
+                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-gray-400">{viewsOptions.find(v => v.id === productViews)?.description || 'Front, back, side & detail shots'}</p>
                                             </div>
 
                                             {/* Background */}
                                             <div>
                                                 <label className="block text-[11px] font-semibold text-slate-700 dark:text-gray-300 mb-0.5">Background</label>
                                                 <div className="space-y-1.5">
-                                                    {/* White Background */}
+                                                    {/* Background Selection */}
                                                     <div className="relative">
                                                         <button
                                                             onClick={() => setShowBgDropdown(!showBgDropdown)}
                                                             className="w-full flex items-center justify-between px-3 py-1.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-lg text-left hover:border-teal-400 transition-colors text-sm"
                                                         >
-                                                            <span className="text-slate-900 dark:text-white font-medium">White</span>
+                                                            <span className="text-slate-900 dark:text-white font-medium">{backgroundOptions.find(b => b.id === backgroundType)?.name || 'White'}</span>
                                                             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showBgDropdown ? 'rotate-180' : ''}`} />
                                                         </button>
                                                         {showBgDropdown && (
                                                             <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg z-10 overflow-hidden">
-                                                                {['White', 'Gray', 'Black', 'Custom Color'].map((color) => (
+                                                                {backgroundOptions.map((option) => (
                                                                     <button
-                                                                        key={color}
+                                                                        key={option.id}
                                                                         onClick={() => {
-                                                                            setBackgroundType(color.toLowerCase());
+                                                                            setBackgroundType(option.id);
                                                                             setShowBgDropdown(false);
                                                                         }}
-                                                                        className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors text-slate-900 dark:text-white text-sm"
+                                                                        className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors text-slate-900 dark:text-white text-sm ${backgroundType === option.id ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
                                                                     >
-                                                                        {color}
+                                                                        {option.name}
                                                                     </button>
                                                                 ))}
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400 -mt-0.5">Marketplace-ready background</p>
+                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400 -mt-0.5">Download Format</p>
 
-                                                    {/* Transparent PNG */}
+                                                    {/* Download Format */}
                                                     <div className="relative">
                                                         <button
                                                             onClick={() => setShowTransparentDropdown(!showTransparentDropdown)}
                                                             className="w-full flex items-center justify-between px-3 py-1.5 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-lg text-left hover:border-teal-400 transition-colors text-sm"
                                                         >
-                                                            <span className="text-slate-900 dark:text-white font-medium">Transparent (PNG)</span>
+                                                            <span className="text-slate-900 dark:text-white font-medium">{formatOptions.find(f => f.id === transparentBg)?.name || 'Transparent (PNG)'}</span>
                                                             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showTransparentDropdown ? 'rotate-180' : ''}`} />
                                                         </button>
+                                                        {showTransparentDropdown && (
+                                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg z-10 overflow-hidden">
+                                                                {formatOptions.map((option) => (
+                                                                    <button
+                                                                        key={option.id}
+                                                                        onClick={() => {
+                                                                            setTransparentBg(option.id);
+                                                                            setShowTransparentDropdown(false);
+                                                                        }}
+                                                                        className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors text-slate-900 dark:text-white text-sm ${transparentBg === option.id ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
+                                                                    >
+                                                                        {option.name}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400 -mt-0.5">Compliant with Amazon & Shopify</p>
                                                 </div>
                                             </div>
 
@@ -312,10 +373,10 @@ export default function EcommerceOptionsPage() {
                                                     >
                                                         <div>
                                                             <span className="block text-slate-900 dark:text-white font-medium text-sm">
-                                                                {platformOptions.find(p => p.value === platformSize)?.label}
+                                                                {platformOptions.find(p => p.id === platformSize)?.name}
                                                             </span>
                                                             <span className="block text-[10px] text-slate-500 dark:text-gray-400 -mt-0.5">
-                                                                {platformOptions.find(p => p.value === platformSize)?.desc}
+                                                                {platformOptions.find(p => p.id === platformSize)?.description}
                                                             </span>
                                                         </div>
                                                         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showPlatformDropdown ? 'rotate-180' : ''}`} />
@@ -324,21 +385,21 @@ export default function EcommerceOptionsPage() {
                                                         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg z-10 overflow-hidden">
                                                             {platformOptions.map((option) => (
                                                                 <button
-                                                                    key={option.value}
+                                                                    key={option.id}
                                                                     onClick={() => {
-                                                                        setPlatformSize(option.value);
+                                                                        setPlatformSize(option.id);
                                                                         setShowPlatformDropdown(false);
                                                                     }}
-                                                                    className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors ${platformSize === option.value ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
+                                                                    className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors ${platformSize === option.id ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
                                                                 >
-                                                                    <p className="font-medium text-slate-900 dark:text-white text-sm">{option.label}</p>
-                                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400">{option.desc}</p>
+                                                                    <p className="font-medium text-slate-900 dark:text-white text-sm">{option.name}</p>
+                                                                    <p className="text-[10px] text-slate-500 dark:text-gray-400">{option.description}</p>
                                                                 </button>
                                                             ))}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-gray-400">Optimized for Amazon & Shopify</p>
+                                                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-gray-400">{platformOptions.find(p => p.id === platformSize)?.description || 'Optimized for Amazon & Shopify'}</p>
                                             </div>
 
                                             {/* Lighting Style */}
@@ -350,23 +411,23 @@ export default function EcommerceOptionsPage() {
                                                 <div className="space-y-1.5">
                                                     {lightingOptions.map((option) => (
                                                         <button
-                                                            key={option.value}
-                                                            onClick={() => setLightingStyle(option.value)}
-                                                            className={`w-full flex items-center gap-3 p-1.5 rounded-lg border transition-all ${lightingStyle === option.value
+                                                            key={option.id}
+                                                            onClick={() => setLightingStyle(option.id)}
+                                                            className={`w-full flex items-center gap-3 p-1.5 rounded-lg border transition-all ${lightingStyle === option.id
                                                                 ? 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800 ring-1 ring-teal-200 dark:ring-teal-800'
                                                                 : 'bg-slate-50 dark:bg-gray-700/50 border-transparent hover:border-slate-200 dark:hover:border-gray-600'
                                                                 }`}
                                                         >
-                                                            <div className={`shrink-0 size-5 rounded-full flex items-center justify-center ${lightingStyle === option.value
+                                                            <div className={`shrink-0 size-5 rounded-full flex items-center justify-center ${lightingStyle === option.id
                                                                 ? 'bg-teal-500 text-white shadow-sm'
                                                                 : 'bg-white dark:bg-gray-600 border border-slate-200 dark:border-gray-500'
                                                                 }`}>
-                                                                {lightingStyle === option.value && <Check className="w-3 h-3" />}
+                                                                {lightingStyle === option.id && <Check className="w-3 h-3" />}
                                                             </div>
                                                             <div className="text-left">
-                                                                <span className={`block text-xs font-medium ${lightingStyle === option.value ? 'text-teal-900 dark:text-teal-100' : 'text-slate-700 dark:text-gray-300'
+                                                                <span className={`block text-xs font-medium ${lightingStyle === option.id ? 'text-teal-900 dark:text-teal-100' : 'text-slate-700 dark:text-gray-300'
                                                                     }`}>
-                                                                    {option.label}
+                                                                    {option.name}
                                                                 </span>
                                                             </div>
                                                         </button>
@@ -411,32 +472,32 @@ export default function EcommerceOptionsPage() {
                                 </div>
                             </div>
                         </div>
-                    </main>
 
-                    {/* Navigation Buttons - Fixed Footer */}
-                    <div className="shrink-0 px-5 py-2 bg-[#f8fafc] dark:bg-gray-900">
-                        <div className="flex items-center justify-between">
-                            <Link
-                                href="/generate"
-                                className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                Back
-                            </Link>
-                            <button
-                                onClick={handleNextStep}
-                                className="group relative flex items-center gap-2.5 bg-gradient-to-b from-slate-800 to-slate-900 text-white px-7 py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:-translate-y-0.5 backdrop-blur-xl border border-slate-700/50 hover:border-slate-600/50 overflow-hidden"
-                            >
-                                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
-                                <span className="relative z-10 flex items-center gap-2">
-                                    Next Step
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                                </span>
-                            </button>
+                        {/* Navigation Buttons - Footer */}
+                        <div className="shrink-0 px-3 py-2 bg-[#f8fafc] dark:bg-gray-900">
+                            <div className="flex items-center justify-between">
+                                <Link
+                                    href="/generate"
+                                    className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Back
+                                </Link>
+                                <button
+                                    onClick={handleNextStep}
+                                    className="group relative flex items-center gap-2.5 bg-gradient-to-b from-slate-800 to-slate-900 text-white px-7 py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] hover:-translate-y-0.5 backdrop-blur-xl border border-slate-700/50 hover:border-slate-600/50 overflow-hidden"
+                                >
+                                    <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none"></div>
+                                    <span className="relative z-10 flex items-center gap-2">
+                                        Next Step
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                    </span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </main>
                 </div>
             </div>
         </div>
