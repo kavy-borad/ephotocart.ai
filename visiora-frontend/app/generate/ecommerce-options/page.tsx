@@ -19,6 +19,9 @@ import { authApi } from "@/lib/auth";
 import { generateApi, BundleOptionsData, BundleOption, BundleEffects } from "@/lib/generate";
 import { Sidebar, Header } from "@/components/layout";
 
+// Module-level caching
+let globalBundlePromise: Promise<any> | null = null;
+
 export default function EcommerceOptionsPage() {
     const router = useRouter();
 
@@ -51,37 +54,55 @@ export default function EcommerceOptionsPage() {
         { id: 3, label: "Details", completed: false, current: false },
     ];
 
+    // Module-level cache for the active fetch request to prevent duplicates
+    // and ensure data loads even if component remounts immediately (Strict Mode)
+
     useEffect(() => {
         if (!authApi.isAuthenticated()) {
             router.push('/login');
             return;
         }
+
         fetchBundleOptions();
-    }, [router]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Fetch bundle options from API
     const fetchBundleOptions = async () => {
         setIsLoading(true);
         try {
-            const response = await generateApi.getBundleOptions();
+            // Use existing promise or create new one
+            if (!globalBundlePromise) {
+                globalBundlePromise = generateApi.getBundleOptions();
+            }
+
+            const response = await globalBundlePromise;
+
             if (response.success && response.data && response.data.data) {
                 setBundleOptions(response.data.data);
                 setBundleEffects(response.data.effects);
 
-                // Set defaults from API
-                const defaultView = response.data.data.product_views.find(v => v.is_default);
+                // Set defaults from API - Only if state is using default (initial) values
+                // This prevents overwriting user selection if re-fetching (though we cache promise so it's same data)
+                const data = response.data.data;
+
+                // Only set if we haven't modified defaults, but since we just loaded, it's fine.
+                // Or better: ensure we don't reset user selection if they navigated back? 
+                // Currently prompts reset on mount anyway.
+
+                const defaultView = data.product_views.find((v: any) => v.is_default);
                 if (defaultView) setProductViews(defaultView.id);
 
-                const defaultBg = response.data.data.background.find(b => b.is_default);
+                const defaultBg = data.background.find((b: any) => b.is_default);
                 if (defaultBg) setBackgroundType(defaultBg.id);
 
-                const defaultFormat = response.data.data.format.find(f => f.is_default);
+                const defaultFormat = data.format.find((f: any) => f.is_default);
                 if (defaultFormat) setTransparentBg(defaultFormat.id);
 
-                const defaultPlatform = response.data.data.platform.find(p => p.is_default);
+                const defaultPlatform = data.platform.find((p: any) => p.is_default);
                 if (defaultPlatform) setPlatformSize(defaultPlatform.id);
 
-                const defaultLighting = response.data.data.lighting.find(l => l.is_default);
+                const defaultLighting = data.lighting.find((l: any) => l.is_default);
                 if (defaultLighting) setLightingStyle(defaultLighting.id);
 
                 // Set effects
@@ -92,6 +113,7 @@ export default function EcommerceOptionsPage() {
             }
         } catch (error) {
             console.warn('Failed to fetch bundle options:', error);
+            globalBundlePromise = null; // Reset on error
         } finally {
             setIsLoading(false);
         }
@@ -165,6 +187,7 @@ export default function EcommerceOptionsPage() {
                             { label: "Generate Images", href: "/generate" },
                             { label: "E-Commerce Options" }
                         ]}
+                        disableWalletFetch={true}
                     />
 
                     {/* Main Content */}

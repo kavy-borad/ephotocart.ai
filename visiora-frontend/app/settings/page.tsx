@@ -23,14 +23,17 @@ import {
     Sliders,
     Zap,
     ChevronRight,
+    ChevronDown,
     Mail,
-    Smartphone
+    Smartphone,
+    CircleHelp
 } from "lucide-react";
 import { useRouter } from "@/components/useRouter";
 import { authApi } from "@/lib/auth";
 import { useState, useEffect, useRef } from "react";
 import { settingsApi, UserProfile } from "@/lib/settings";
 import { walletApi } from "@/lib/wallet";
+import { helpApi, HelpCategory } from "@/lib/help";
 import { Sidebar, Header } from "@/components/layout";
 import { useTheme } from "@/lib/theme";
 import { motion, AnimatePresence } from "framer-motion";
@@ -162,10 +165,11 @@ export default function SettingsPage() {
 
     // Derived state for display
     const displayName = userProfile?.name || storedUser?.fullName || "User";
-    const displayRole = userProfile?.role || "Member";
+    const displayRole = userProfile?.role || "User";
     const displayInitial = displayName.charAt(0).toUpperCase();
 
     // Profile Form State
+    const [fullName, setFullName] = useState(storedUser?.fullName || "");
     const [email, setEmail] = useState(storedUser?.email || "");
     const [phone, setPhone] = useState("");
     const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -222,9 +226,10 @@ export default function SettingsPage() {
         setIsSavingProfile(true);
         setProfileMessage(null);
         try {
-            const response = await settingsApi.updateProfile({ email, phone });
-            if (response.success && response.data) {
-                setUserProfile(response.data);
+            const response = await settingsApi.editProfile({ full_name: fullName });
+            if (response.success) {
+                // Update localStorage so name persists after refresh
+                authApi.updateCurrentUser({ fullName: fullName });
                 setProfileMessage({ type: 'success', text: 'Profile updated successfully!' });
             } else {
                 setProfileMessage({ type: 'error', text: response.error || 'Failed to update profile' });
@@ -255,7 +260,11 @@ export default function SettingsPage() {
         setPasswordMessage(null);
 
         try {
-            const response = await settingsApi.changePassword({ currentPassword, newPassword, confirmPassword });
+            const response = await settingsApi.editProfile({
+                old_password: currentPassword,
+                new_password: newPassword,
+                confirm_new_password: confirmPassword
+            });
             if (response.success) {
                 setPasswordMessage({ type: 'success', text: 'Password updated successfully!' });
                 setCurrentPassword("");
@@ -287,9 +296,13 @@ export default function SettingsPage() {
     // Dynamic wallet state
     const [freeCredits, setFreeCredits] = useState(0);
     const [balance, setBalance] = useState(0);
+    const hasFetchedWallet = useRef(false);
 
-    // Fetch wallet credits on mount
+    // Fetch wallet credits on mount (with duplicate prevention)
     useEffect(() => {
+        if (hasFetchedWallet.current) return;
+        hasFetchedWallet.current = true;
+
         const fetchWalletCredits = async () => {
             try {
                 const response = await walletApi.getUserCredits();
@@ -304,18 +317,76 @@ export default function SettingsPage() {
         fetchWalletCredits();
     }, []);
 
+    // Help & Support state
+    const [helpCategories, setHelpCategories] = useState<HelpCategory[]>([]);
+    const [isLoadingHelp, setIsLoadingHelp] = useState(false);
+    const [selectedFaq, setSelectedFaq] = useState<{ question: string; answer: string } | null>(null);
+    const hasFetchedHelp = useRef(false);
+
+    // Fetch help & support data once (with duplicate prevention)
+    useEffect(() => {
+        if (hasFetchedHelp.current) return;
+        hasFetchedHelp.current = true;
+
+        const fetchHelpData = async () => {
+            setIsLoadingHelp(true);
+            try {
+                const response = await helpApi.getHelpSupport();
+                if (response.success && response.data) {
+                    setHelpCategories(response.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch help data:', error);
+            } finally {
+                setIsLoadingHelp(false);
+            }
+        };
+        fetchHelpData();
+    }, []);
+
+    // Icon mapping for help categories
+    const getIconForCategory = (iconName: string) => {
+        switch (iconName) {
+            case 'magic_wand':
+                return Sparkles;
+            case 'user_security':
+                return User;
+            case 'credit_card':
+                return CreditCard;
+            default:
+                return CircleHelp;
+        }
+    };
+
+    // Color mapping for active state
+    const getColorForCategory = (iconName: string, isOpen: boolean) => {
+        if (!isOpen) return 'bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-gray-400';
+
+        switch (iconName) {
+            case 'magic_wand': // Generation -> Purple
+                return 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+            case 'user_security': // Account -> Emerald/Green
+                return 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
+            case 'credit_card': // Billing -> Amber/Orange
+                return 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
+            default: // Default -> Teal
+                return 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400';
+        }
+    };
+
     const tabs = [
         { id: "profile", label: "Profile", icon: User, description: "Manage your personal information" },
         { id: "security", label: "Security", icon: Shield, description: "Password and account security" },
         { id: "billing", label: "Usage & Billing", icon: CreditCard, description: "Credits and plan details" },
         { id: "notifications", label: "Notifications", icon: Bell, description: "Configure your alerts" },
         { id: "preferences", label: "Preferences", icon: Sliders, description: "Theme and app settings" },
+        { id: "help", label: "Help & Support", icon: CircleHelp, description: "FAQs and support" },
     ];
 
     // --- Render Components ---
 
     const renderProfileTab = () => (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-2xl">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold text-2xl">
@@ -329,6 +400,19 @@ export default function SettingsPage() {
 
                 <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
+                        <label className="text-xs font-semibold uppercase text-slate-500 dark:text-gray-400 tracking-wider">Full Name</label>
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                placeholder="Enter your name"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
                         <label className="text-xs font-semibold uppercase text-slate-500 dark:text-gray-400 tracking-wider">Email Address</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -336,19 +420,8 @@ export default function SettingsPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-500 dark:text-gray-400 tracking-wider">Phone Number</label>
-                        <div className="relative">
-                            <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input
-                                type="text"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                                disabled
+                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 text-sm cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -620,8 +693,8 @@ export default function SettingsPage() {
     );
 
     const renderPreferencesTab = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm h-full flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-sm h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                         {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
@@ -649,7 +722,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm h-full flex flex-col border-l-4 border-l-red-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-sm h-full flex flex-col border-l-4 border-l-red-500">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
                         <LogOut className="w-5 h-5" />
@@ -677,6 +750,176 @@ export default function SettingsPage() {
         </div>
     );
 
+    // Help & Support State - open category
+    const [helpOpen, setHelpOpen] = useState<string | null>(null);
+
+    const toggleHelp = (id: string) => {
+        setHelpOpen(helpOpen === id ? null : id);
+    };
+
+    // Set first category open when data loads
+    useEffect(() => {
+        if (helpCategories.length > 0 && helpOpen === null) {
+            setHelpOpen(helpCategories[0].id);
+        }
+    }, [helpCategories]);
+
+    const renderHelpTab = () => (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+            {/* Left Column - FAQ Accordion */}
+            <div className="lg:col-span-2 space-y-4">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-slate-100 dark:border-gray-700">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-teal-600 dark:text-teal-400">
+                                <CircleHelp className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Help & Support</h3>
+                                <p className="text-sm text-slate-500 dark:text-gray-400">Common questions and troubleshooting guides</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-2 max-h-[300px] overflow-y-auto">
+                        {isLoadingHelp ? (
+                            // Loading skeleton
+                            <div className="space-y-2 p-2">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="p-4 rounded-lg">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                                            <div className="h-5 w-40 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : helpCategories.length === 0 ? (
+                            // Empty state
+                            <div className="p-8 text-center">
+                                <CircleHelp className="w-12 h-12 mx-auto text-slate-300 dark:text-gray-600 mb-4" />
+                                <p className="text-slate-500 dark:text-gray-400">No help topics available</p>
+                            </div>
+                        ) : (
+                            // Dynamic categories from API
+                            <div className="space-y-1">
+                                {helpCategories.map((category) => {
+                                    const IconComponent = getIconForCategory(category.icon);
+                                    const isOpen = helpOpen === category.id;
+
+                                    const iconColorClass = getColorForCategory(category.icon, isOpen);
+
+                                    return (
+                                        <div key={category.id} className="rounded-lg overflow-hidden transition-all duration-300">
+                                            <button
+                                                onClick={() => toggleHelp(category.id)}
+                                                className={`w-full flex items-center justify-between p-4 transition-colors ${isOpen ? 'bg-slate-50 dark:bg-gray-700/50' : 'hover:bg-slate-50 dark:hover:bg-gray-700/30'}`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-2 rounded-lg ${iconColorClass}`}>
+                                                        <IconComponent className="w-5 h-5" />
+                                                    </div>
+                                                    <span className={`font-semibold ${isOpen ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-gray-300'}`}>{category.title}</span>
+                                                </div>
+                                                <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+                                            <AnimatePresence>
+                                                {isOpen && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: "auto", opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        className="bg-slate-50/50 dark:bg-gray-700/20"
+                                                    >
+                                                        <div className="px-4 pb-2">
+                                                            {category.items.map((item) => (
+                                                                <button
+                                                                    key={item.id}
+                                                                    onClick={() => setSelectedFaq({ question: item.question, answer: item.answer })}
+                                                                    className="w-full text-left p-3 text-sm text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-700/50 rounded-lg flex items-center justify-between group transition-colors"
+                                                                >
+                                                                    <span>{item.question}</span>
+                                                                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500" />
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Column - Support & Quick Actions */}
+            <div className="flex flex-col mt-6 lg:mt-0">
+                <div className="p-[1px] rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500">
+                    <div className="bg-white dark:bg-gray-900 rounded-[15px] overflow-hidden">
+                        <div className="p-6 relative">
+                            <div className="absolute top-0 right-0 p-6 opacity-5 dark:opacity-10 pointer-events-none">
+                                <CircleHelp className="w-24 h-24 text-indigo-500" />
+                            </div>
+                            <div className="relative z-10 text-center sm:text-left">
+                                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 mx-auto sm:mx-0">
+                                    <Mail className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Still need help?</h3>
+                                <p className="text-slate-600 dark:text-gray-400 text-sm mb-6 leading-relaxed">
+                                    Our dedicated support team is available 24/7 to assist you with any inquiries regarding platform usage or technical issues.
+                                </p>
+                                <Link href="/settings/support" className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-gray-200 dark:text-slate-900 text-white font-semibold py-3 px-5 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-[0.98]">
+                                    <Mail className="w-4 h-4" />
+                                    Email Support
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* FAQ Answer Modal */}
+            <AnimatePresence>
+                {selectedFaq && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedFaq(null)}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-6 border-b border-slate-100 dark:border-gray-700">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-8">{selectedFaq.question}</h3>
+                            </div>
+                            <div className="p-6">
+                                <p className="text-slate-600 dark:text-gray-400 leading-relaxed">{selectedFaq.answer}</p>
+                            </div>
+                            <div className="p-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">
+                                <button
+                                    onClick={() => setSelectedFaq(null)}
+                                    className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-xl hover:bg-slate-800 dark:hover:bg-gray-200 transition-colors"
+                                >
+                                    Got it
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+
     if (isLoading && !userProfile && !storedUser) {
         return <SettingsSkeleton />;
     }
@@ -693,10 +936,11 @@ export default function SettingsPage() {
                     ]}
                     freeCredits={freeCredits}
                     balance={balance}
+                    disableWalletFetch={true}
                 />
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
-                    <div className="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 space-y-8 pb-20">
+                    <div className="container mx-auto max-w-7xl p-4 sm:p-6 space-y-4 pb-10">
 
                         {/* Page Title & Intro */}
                         <div>
@@ -751,6 +995,7 @@ export default function SettingsPage() {
                                     {activeTab === 'billing' && renderBillingTab()}
                                     {activeTab === 'notifications' && renderNotificationsTab()}
                                     {activeTab === 'preferences' && renderPreferencesTab()}
+                                    {activeTab === 'help' && renderHelpTab()}
                                 </motion.div>
                             </AnimatePresence>
                         </div>

@@ -149,6 +149,19 @@ export const authApi = {
         return null;
     },
 
+    // Update current user in localStorage (after profile edit)
+    updateCurrentUser: (updates: Partial<User>): void => {
+        if (typeof window !== 'undefined') {
+            const currentUser = localStorage.getItem('user');
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                const updatedUser = { ...user, ...updates };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                console.log('User updated in localStorage:', updatedUser);
+            }
+        }
+    },
+
     // Check if user is logged in
     isAuthenticated: (): boolean => {
         if (typeof window !== 'undefined') {

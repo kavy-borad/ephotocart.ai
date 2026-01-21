@@ -2,6 +2,7 @@
 
 import Link from "@/components/Link";
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import {
     Bell,
     ChevronRight,
@@ -30,12 +31,14 @@ interface HeaderProps {
     breadcrumbs: BreadcrumbItem[];
     freeCredits?: number;
     balance?: number;
+    disableWalletFetch?: boolean;
 }
 
 export default function Header({
     breadcrumbs,
     freeCredits = 0,
-    balance = 0
+    balance = 0,
+    disableWalletFetch = false
 }: HeaderProps) {
     const router = useRouter();
     const [userName, setUserName] = useState("User");
@@ -49,6 +52,9 @@ export default function Header({
     const [displayCredits, setDisplayCredits] = useState(freeCredits);
     const [displayBalance, setDisplayBalance] = useState(balance);
 
+    // Ref to prevent duplicate fetches in Strict Mode
+    const hasFetchedWallet = useRef<boolean>(false);
+
     // Sync with props when they change (e.g. parent dashboard fetches fresh data)
     useEffect(() => {
         if (typeof freeCredits !== 'undefined') setDisplayCredits(freeCredits);
@@ -57,6 +63,13 @@ export default function Header({
 
     // Listen for wallet-updated events and ALSO fetch on mount for dynamic credits
     useEffect(() => {
+        // Skip if disabled for this page
+        if (disableWalletFetch) return;
+
+        // Skip if already fetched (survives Strict Mode remount)
+        if (hasFetchedWallet.current) return;
+        hasFetchedWallet.current = true;
+
         // Fetch wallet data on mount to ensure dynamic credits display
         const fetchWalletData = async () => {
             try {
@@ -75,6 +88,7 @@ export default function Header({
 
         // Also listen for wallet-updated events for real-time updates
         const handleWalletUpdate = () => {
+            hasFetchedWallet.current = false; // Allow refetch on wallet update event
             fetchWalletData();
         };
 
@@ -82,8 +96,9 @@ export default function Header({
 
         return () => {
             window.removeEventListener('wallet-updated', handleWalletUpdate);
+            // DON'T reset ref here - it causes duplicate calls in Strict Mode
         };
-    }, []);
+    }, [disableWalletFetch]);
 
     // Navigation items for mobile menu
     const navItems = [

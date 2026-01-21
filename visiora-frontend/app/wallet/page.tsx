@@ -74,15 +74,14 @@ export default function WalletPage() {
 
     const [apiError, setApiError] = useState<string | null>(null);
 
-    // Fetch wallet data on mount - using sessionStorage to survive React Strict Mode remount
-    useEffect(() => {
-        const fetchKey = 'wallet_page_fetched';
+    // Track if fetch was initiated (not completed) to prevent duplicate calls
+    const fetchInitiated = useRef(false);
 
-        // Check if already fetched in this session (survives Strict Mode remount)
-        if (sessionStorage.getItem(fetchKey)) {
-            return;
-        }
-        sessionStorage.setItem(fetchKey, 'true');
+    // Fetch wallet data on mount
+    useEffect(() => {
+        // If fetch already initiated, skip
+        if (fetchInitiated.current) return;
+        fetchInitiated.current = true;
 
         // Load user from localStorage
         const storedUser = authApi.getCurrentUser();
@@ -94,11 +93,6 @@ export default function WalletPage() {
 
         fetchWalletData();
         fetchPackages();
-
-        // Cleanup: remove flag when component unmounts (for next navigation)
-        return () => {
-            sessionStorage.removeItem(fetchKey);
-        };
     }, []);
 
     // Fetch transactions when filter changes (but not on initial mount - that's handled above)
@@ -115,15 +109,14 @@ export default function WalletPage() {
         setIsLoading(true);
         setApiError(null);
         try {
-            const [walletRes, balanceRes, statsRes, transactionsRes] = await Promise.all([
-                walletApi.getWallet(),      // GET /api/wallet
-                walletApi.getBalance(),     // GET /api/wallet/balance
+            const [walletRes, statsRes, transactionsRes] = await Promise.all([
+                walletApi.getWallet(),      // GET /api/wallet - contains balance data
                 walletApi.getStats(),       // GET /api/wallet/stats
                 walletApi.getTransactions(1, 20),
             ]);
 
             // Check for rate limit errors in any response
-            const responses = [walletRes, balanceRes, statsRes, transactionsRes];
+            const responses = [walletRes, statsRes, transactionsRes];
             const rateLimitError = responses.find(r =>
                 r.error?.toLowerCase().includes('too many requests') ||
                 r.error?.toLowerCase().includes('rate limit')
@@ -134,11 +127,9 @@ export default function WalletPage() {
                 return;
             }
 
-            // Use wallet data, fallback to balance data
+            // Use wallet data for balance (getWallet already includes balance)
             if (walletRes.success && walletRes.data) {
                 setWalletBalance(walletRes.data);
-            } else if (balanceRes.success && balanceRes.data) {
-                setWalletBalance(balanceRes.data);
             }
 
             // Set wallet stats
@@ -451,6 +442,7 @@ export default function WalletPage() {
                     ]}
                     freeCredits={freeCredits}
                     balance={balance}
+                    disableWalletFetch={true}
                 />
 
                 {/* Main Content Area - Scrollable on mobile */}
@@ -503,18 +495,13 @@ export default function WalletPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
-                                        <button
-                                            onClick={handleAddMoney}
-                                            disabled={isAddingMoney}
-                                            className="flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-11 px-6 text-sm font-bold shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                                        <Link
+                                            href="/wallet/add-money"
+                                            className="flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-11 px-6 text-sm font-bold shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
                                         >
-                                            {isAddingMoney ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <Plus className="w-4 h-4" />
-                                            )}
-                                            {isAddingMoney ? 'Processing...' : 'Add Money'}
-                                        </button>
+                                            <Plus className="w-4 h-4" />
+                                            Add Money
+                                        </Link>
                                         <button className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white h-11 w-11 transition-all hover:border-slate-300">
                                             <MoreHorizontal className="w-5 h-5" />
                                         </button>
@@ -601,9 +588,9 @@ export default function WalletPage() {
                                     </div>
                                 ) : packages.length > 0 ? (
                                     packages.map((pkg) => (
-                                        <button
+                                        <Link
                                             key={pkg.id}
-                                            onClick={() => setSelectedPackage(pkg.id)}
+                                            href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}`}
                                             className={`relative bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 text-left transition-all hover:-translate-y-1 hover:shadow-lg group ${selectedPackage === pkg.id
                                                 ? 'border-teal-500 shadow-md ring-2 ring-teal-500/10'
                                                 : 'border-white dark:border-gray-800 shadow-sm hover:border-teal-100 dark:hover:border-teal-200'
@@ -634,7 +621,7 @@ export default function WalletPage() {
                                                     {pkg.bonusCredits} Bonus Credits
                                                 </div>
                                             )}
-                                        </button>
+                                        </Link>
                                     ))
                                 ) : (
                                     <div className="p-6 text-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">

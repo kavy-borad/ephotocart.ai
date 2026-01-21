@@ -2,6 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface TransitionContextType {
     isTransitioning: boolean;
@@ -790,140 +791,82 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
             );
         }
 
-        // 5. Settings Skeleton
-        if (path.includes('/settings')) {
+        // 5a. Email Support - Circular Loader
+        if (path.includes('/settings/support')) {
             return (
-                <div className="min-h-screen flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
-                    {/* Sidebar Skeleton */}
-                    <aside className="hidden lg:flex w-56 h-full flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 z-30 shrink-0 shadow-sm">
-                        {/* Logo Area */}
-                        <div className="h-16 flex items-center px-6 shrink-0 border-b border-transparent">
-                            <div className="flex items-center gap-2.5">
-                                <div className="h-8 w-8 bg-teal-100 dark:bg-teal-900/30 rounded-lg animate-pulse" />
-                                <div className="h-4 w-16 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            </div>
+                <div className="flex h-screen w-screen items-center justify-center bg-slate-100 dark:bg-gray-950">
+                    <Loader2 className="h-10 w-10 animate-spin text-teal-600 dark:text-teal-400" />
+                </div>
+            );
+        }
+
+        // 5. Settings Skeleton - Content only (wrapped in AppShellSkeleton)
+        if (path.includes('/settings') && !path.includes('/settings/support')) {
+            return (
+                <div className="flex flex-col h-full overflow-hidden">
+                    <div className="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 space-y-8 pb-20">
+
+                        {/* Page Title Skeleton */}
+                        <div>
+                            <div className="h-9 w-64 bg-slate-200 dark:bg-gray-700/80 rounded-lg animate-pulse mb-3" />
+                            <div className="h-5 w-96 max-w-full bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
                         </div>
 
-                        {/* Navigation */}
-                        <nav className="flex-1 py-4 px-3 space-y-1 overflow-hidden">
-                            {/* Dashboard */}
-                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                                <div className="size-5 rounded bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                <div className="h-4 w-24 rounded bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
-                            </div>
-                            {/* Generate */}
-                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                                <div className="size-5 rounded bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                <div className="h-4 w-28 rounded bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
-                            </div>
-                            {/* Gallery */}
-                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                                <div className="size-5 rounded bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                <div className="h-4 w-20 rounded bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
-                            </div>
-                            {/* Wallet */}
-                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                                <div className="size-5 rounded bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                <div className="h-4 w-16 rounded bg-slate-100 dark:bg-gray-700/50 animate-pulse" />
-                            </div>
-
-                            {/* Settings Separator */}
-                            <div className="mt-6 pt-4 border-t border-slate-200/50 dark:border-gray-700">
-                                {/* Settings (Active) */}
-                                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-teal-50/50 dark:bg-teal-900/20 border-l-4 border-teal-500 shadow-sm">
-                                    <div className="size-5 rounded bg-teal-200 dark:bg-teal-800 animate-pulse text-teal-600" />
-                                    <div className="h-4 w-20 rounded bg-teal-100/50 dark:bg-teal-900/40 animate-pulse font-medium" />
-                                </div>
-                            </div>
-                        </nav>
-
-                        {/* New Generation Button (Bottom) */}
-                        <div className="p-3 mt-auto">
-                            <div className="h-9 w-full bg-teal-500/80 dark:bg-teal-600/80 rounded-lg animate-pulse shadow-md" />
-                        </div>
-                    </aside>
-
-                    <main className="flex-1 flex flex-col min-w-0 min-h-screen lg:h-full lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-                        {/* Header Skeleton */}
-                        <div className="h-16 border-b border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur flex items-center justify-between px-4 sm:px-6 shrink-0">
-                            {/* Breadcrumbs */}
-                            <div className="flex items-center gap-2">
-                                <div className="h-4 w-12 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                <div className="h-4 w-4 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                <div className="h-4 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                                <div className="h-8 w-24 bg-teal-50 dark:bg-teal-900/20 rounded animate-pulse" />
-                            </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
-                            <div className="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 space-y-8 pb-20">
-
-                                {/* Page Title Skeleton */}
-                                <div>
-                                    <div className="h-9 w-64 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse mb-3" />
-                                    <div className="h-5 w-96 max-w-full bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                                </div>
-
-                                {/* Tabs Navigation Skeleton */}
-                                <div className="border-b border-slate-200 dark:border-gray-700">
-                                    <div className="flex items-center gap-1 pb-1 overflow-x-auto no-scrollbar">
-                                        {[
-                                            { w: 'w-12', active: true },
-                                            { w: 'w-16', active: false },
-                                            { w: 'w-28', active: false },
-                                            { w: 'w-24', active: false },
-                                            { w: 'w-24', active: false }
-                                        ].map((tab, i) => (
-                                            <div key={i} className="px-4 py-3 relative">
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="size-4 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                                    <div className={`h-4 ${tab.w} bg-slate-200 dark:bg-gray-700 rounded animate-pulse`} />
-                                                </div>
-                                                {tab.active && (
-                                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500/50 rounded-t-full" />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Profile Card Skeleton */}
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
-                                    {/* Avatar & Name */}
-                                    <div className="flex items-center gap-5 mb-8">
-                                        <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse shrink-0" />
-                                        <div className="space-y-2.5">
-                                            <div className="h-6 w-32 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                            <div className="h-4 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
+                        {/* Tabs Navigation Skeleton */}
+                        <div className="border-b border-slate-200 dark:border-gray-700">
+                            <div className="flex items-center gap-1 pb-1 overflow-x-auto no-scrollbar">
+                                {[
+                                    { w: 'w-16', active: true },
+                                    { w: 'w-20', active: false },
+                                    { w: 'w-28', active: false },
+                                    { w: 'w-24', active: false },
+                                    { w: 'w-24', active: false }
+                                ].map((tab, i) => (
+                                    <div key={i} className="px-4 py-3 relative">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="size-4 rounded bg-slate-200 dark:bg-gray-700 animate-pulse" />
+                                            <div className={`h-4 ${tab.w} bg-slate-200 dark:bg-gray-700 rounded animate-pulse`} />
                                         </div>
+                                        {tab.active && (
+                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500 rounded-t-full" />
+                                        )}
                                     </div>
-
-                                    {/* Input Grid */}
-                                    <div className="grid md:grid-cols-2 gap-6 mb-8">
-                                        {/* Email Field Helper */}
-                                        <div className="space-y-2.5">
-                                            <div className="h-3 w-24 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
-                                            <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse" />
-                                        </div>
-                                        {/* Phone Field Helper */}
-                                        <div className="space-y-2.5">
-                                            <div className="h-3 w-28 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
-                                            <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse" />
-                                        </div>
-                                    </div>
-
-                                    {/* Save Button */}
-                                    <div className="flex justify-end pt-2">
-                                        <div className="h-10 w-32 bg-slate-800 dark:bg-gray-600 rounded-lg animate-pulse" />
-                                    </div>
-                                </div>
-
+                                ))}
                             </div>
                         </div>
-                    </main>
+
+                        {/* Profile Card Skeleton */}
+                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
+                            {/* Avatar & Name */}
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse shrink-0" />
+                                <div className="space-y-2">
+                                    <div className="h-6 w-32 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    <div className="h-4 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
+                                </div>
+                            </div>
+
+                            {/* Input Grid */}
+                            <div className="grid md:grid-cols-2 gap-6 mb-8">
+                                {/* Email Field */}
+                                <div className="space-y-2">
+                                    <div className="h-3 w-24 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
+                                    <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse border border-slate-200 dark:border-gray-600" />
+                                </div>
+                                {/* Phone Field */}
+                                <div className="space-y-2">
+                                    <div className="h-3 w-28 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
+                                    <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse border border-slate-200 dark:border-gray-600" />
+                                </div>
+                            </div>
+
+                            {/* Save Button */}
+                            <div className="flex justify-end pt-2">
+                                <div className="h-10 w-32 bg-slate-800 dark:bg-gray-600 rounded-lg animate-pulse" />
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             );
         }
@@ -1924,6 +1867,15 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                 <div className="absolute inset-0 bg-slate-50 dark:bg-gray-900 overflow-hidden">
                     {(() => {
                         const path = nextPath || pathname;
+
+                        // Special case for Email Support - Simple Loader (Bypass all Layout Skeletons)
+                        if (path.includes('/settings/support')) {
+                            return (
+                                <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-gray-950">
+                                    <Loader2 className="h-10 w-10 animate-spin text-teal-600 dark:text-teal-400" />
+                                </div>
+                            );
+                        }
                         const isFullLayout = path === '/' ||
                             path.includes('view=landing') ||
                             path.includes('/features') ||
@@ -2003,8 +1955,8 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                                 return getSkeletonContent();
                             }
 
-                            // Generate pages, Gallery and Wallet have content-only skeletons, wrap them in AppShell
-                            if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate')) {
+                            // Generate pages, Gallery, Wallet, and Settings have content-only skeletons, wrap them in AppShell
+                            if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate') || path.startsWith('/settings')) {
                                 return (
                                     <AppShellSkeleton>
                                         {getSkeletonContent()}

@@ -165,8 +165,10 @@ export const walletApi = {
             const res = await api.get('/wallet/balance');
             return { success: true, data: res.data };
         } catch (err: any) {
-            console.warn('Failed to fetch balance explicitly, falling back to getWallet');
-            return walletApi.getWallet();
+            // Don't fallback to getWallet() to avoid duplicate calls
+            // Just return error - caller should use getWallet() directly if needed
+            console.warn('Failed to fetch balance from /wallet/balance');
+            return { success: false, error: err.response?.data?.message || 'Failed to fetch balance' };
         }
     },
 

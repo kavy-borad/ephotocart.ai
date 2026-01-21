@@ -85,6 +85,31 @@ export const settingsApi = {
         }
     },
 
+    // Edit profile (unified endpoint for name and password)
+    editProfile: async (data: {
+        full_name?: string;
+        old_password?: string;
+        new_password?: string;
+        confirm_new_password?: string;
+    }): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+        try {
+            console.log('🌐 Updating profile via /user/edit-profile...');
+            const res = await api.put('/user/edit-profile', data);
+
+            if (res.data?.success) {
+                return {
+                    success: true,
+                    data: { success: true, message: res.data.message || 'Profile updated successfully!' }
+                };
+            }
+
+            return { success: true, data: res.data };
+        } catch (err: any) {
+            console.error('editProfile error:', err);
+            return { success: false, error: err.response?.data?.message || 'Failed to update profile' };
+        }
+    },
+
     // Get notification settings
     getNotificationSettings: async (): Promise<ApiResponse<NotificationSettings>> => {
         try {
