@@ -33,8 +33,8 @@ export default function AppInitializer({ children }: { children: React.ReactNode
             if (isAuthenticated) {
                 // If user is authenticated and on landing page, redirect to dashboard
                 if (pathname === "/") {
-                    needsRedirect = true;
-                    router.replace("/dashboard");
+                    // needsRedirect = true;
+                    // router.replace("/dashboard");
                 }
             } else {
                 // If user is not authenticated and on protected route, redirect to login
