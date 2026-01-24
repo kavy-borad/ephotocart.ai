@@ -3,6 +3,7 @@
 import { useEffect, useState, createContext, useContext, useCallback, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { PricingSkeleton } from "@/components/skeletons/PricingSkeleton";
 
 interface TransitionContextType {
     isTransitioning: boolean;
@@ -356,74 +357,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
 
         // 4. Pricing Skeleton
         if (path.includes('/pricing')) {
-            return (
-                <div className="min-h-screen lg:h-screen w-screen lg:overflow-hidden overflow-x-hidden bg-gradient-to-br from-teal-50/50 via-slate-50 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col">
-                    {/* Public Navbar */}
-                    <div className="shrink-0 border-b border-slate-200/60 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 relative w-full">
-                        <div className="px-4 sm:px-6 md:px-10 py-3 max-w-[1440px] mx-auto flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="h-9 sm:h-10 w-9 sm:w-10 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-5 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            </div>
-                            <div className="hidden lg:flex gap-8">
-                                {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-4 w-20 bg-slate-200 dark:bg-gray-700/50 rounded animate-pulse" />)}
-                            </div>
-                            <div className="hidden lg:flex gap-3">
-                                <div className="size-9 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-9 w-20 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                                <div className="h-9 w-28 bg-teal-500/20 dark:bg-teal-900/20 rounded-lg animate-pulse" />
-                            </div>
-                            <div className="lg:hidden size-9 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                        </div>
-                    </div>
-
-                    <main className="flex-1 flex flex-col items-center justify-start lg:justify-center overflow-y-auto lg:overflow-hidden px-4 sm:px-6 py-6 lg:py-4">
-                        {/* Header */}
-                        <div className="shrink-0 text-center max-w-3xl mx-auto mb-4 lg:mb-4 w-full">
-                            <div className="inline-flex h-5 w-20 bg-white dark:bg-gray-800 border border-teal-100 dark:border-gray-700 rounded-full animate-pulse mb-2 shadow-sm mx-auto" />
-                            <div className="h-8 w-48 bg-slate-900 dark:bg-white rounded-lg animate-pulse mx-auto mb-1" />
-                            <div className="h-4 w-64 bg-slate-400 dark:bg-gray-500 rounded animate-pulse mx-auto" />
-                        </div>
-
-                        {/* Pricing Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl w-full mx-auto lg:flex-1 lg:min-h-0">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className={`relative flex flex-col p-4 bg-white dark:bg-gray-800 rounded-xl border animate-pulse gap-4 
-                                    ${i === 2 ? 'border-teal-300 dark:border-teal-600 shadow-lg sm:col-span-2 lg:col-span-1' : 'border-slate-200 dark:border-gray-700 shadow-sm'}`}>
-
-                                    {/* Popular Badge Placeholder */}
-                                    {i === 2 && (
-                                        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-5 w-16 bg-teal-500 rounded-full" />
-                                    )}
-
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className={`size-9 rounded-lg ${i === 2 ? 'bg-teal-100' : 'bg-slate-100'} dark:bg-gray-700`} />
-                                        <div className="flex flex-col gap-1">
-                                            <div className="h-5 w-20 bg-slate-800 dark:bg-white rounded" />
-                                            <div className="h-3 w-28 bg-slate-300 dark:bg-gray-500 rounded" />
-                                        </div>
-                                    </div>
-
-                                    {/* Price */}
-                                    <div className="h-8 w-24 bg-slate-900 dark:bg-white rounded border-b border-slate-100 dark:border-gray-700 pb-3 mb-3" />
-
-                                    {/* Feature List */}
-                                    <div className="space-y-2 flex-1">
-                                        {[1, 2, 3, 4].map(j => (
-                                            <div key={j} className="flex gap-2 items-center">
-                                                <div className="size-3 bg-teal-200 dark:bg-teal-800 rounded-full" />
-                                                <div className="h-3 w-full bg-slate-100 dark:bg-gray-700/40 rounded" />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className={`h-10 w-full rounded-lg ${i === 2 ? 'bg-teal-500' : 'bg-slate-100 dark:bg-gray-700'}`} />
-                                </div>
-                            ))}
-                        </div>
-                    </main>
-                </div>
-            );
+            return <PricingSkeleton />;
         }
 
         // 5. Results Skeleton
