@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/useRouter";
 import {
     LayoutDashboard,
     Sparkles,
@@ -26,7 +26,7 @@ import { useState, useEffect } from "react";
 
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
-import { navigationState } from "@/lib/navigationState";
+import { PageTransition } from "@/components/animations/PageTransition";
 
 export default function GenerateImagesPage() {
     const router = useRouter();
@@ -46,7 +46,7 @@ export default function GenerateImagesPage() {
     ];
 
     const steps = [
-        { id: 1, label: "Type", icon: Pencil, completed: false, current: true },
+        { id: 1, label: "Type", label: "Type", icon: Pencil, completed: false, current: true },
         { id: 2, label: "Upload", completed: false, current: false },
         { id: 3, label: "Details", completed: false, current: false },
     ];
@@ -71,72 +71,24 @@ export default function GenerateImagesPage() {
     const handleNextStep = async () => {
         setIsSubmitting(true);
 
-        // Use setTimeout to allow the UI to repaint with the loader BEFORE interfering with the main thread
-        // preventing the "stuck" feeling and ensuring the animation starts smoothly.
-        setTimeout(() => {
-            try {
-                localStorage.setItem('generateType', selectedType);
+        try {
+            localStorage.setItem('generateType', selectedType);
 
-                // Signal the next page to show the loader
-                navigationState.shouldShowLoader = true;
+            // Navigate to upload page for both types
+            router.push('/generate/upload');
 
-                // Navigate to upload page for both types
+            // We keep isSubmitting true to show processing state on the button
+            // until the page transition takes over
+        } catch (error) {
+            console.warn('Failed to save generation type:', error);
+            // Fallback navigation
+            if (selectedType === 'batch_image') {
+                router.push('/generate/ecommerce-options');
+            } else {
                 router.push('/generate/upload');
-
-                // NOTE: We do NOT set isSubmitting(false) here. 
-                // We want the loader to persist until the page unmounts/transitions to avoid flicker.
-            } catch (error) {
-                console.warn('Failed to save generation type:', error);
-
-                // Only reset loading if there's a genuine error preventing navigation
-                // But since we try to fallback-navigate, we might still want to keep it true.
-                // For safety vs stuck state:
-                // If router.push fails, it throws.
-
-                localStorage.setItem('generateType', selectedType);
-                if (selectedType === 'batch_image') {
-                    router.push('/generate/ecommerce-options');
-                } else {
-                    router.push('/generate/upload');
-                }
-                // Only turn off if we are absolutely sure navigation is aborted, but here we assume navigation continues.
             }
-        }, 50);
-    };
-
-    // User credits display values (fallback if API not available)
-
-
-    // Page transition loader
-    const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
-
-    useEffect(() => {
-        if (isPageLoading) {
-            const timer = setTimeout(() => {
-                setIsPageLoading(false);
-            }, 800);
-            navigationState.shouldShowLoader = false;
-            return () => clearTimeout(timer);
-        } else {
-            navigationState.shouldShowLoader = false;
         }
-    }, [isPageLoading]);
-
-    if (isPageLoading) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center bg-[#f8fafc] dark:bg-gray-900">
-                <motion.div
-                    className="w-12 h-12 rounded-full border-4 border-teal-500/30 border-t-teal-500 shadow-lg"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                />
-            </div>
-        );
-    }
+    };
 
     return (
         <div className="h-full flex flex-col overflow-x-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
@@ -156,7 +108,7 @@ export default function GenerateImagesPage() {
 
                     {/* Main Content - Scrollable */}
                     <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto bg-slate-50/50 dark:bg-gray-900/50 transition-colors duration-300">
-                        <div className="flex flex-col min-h-full">
+                        <PageTransition className="flex flex-col min-h-full">
                             {/* Page Header */}
                             <div className="mb-6 shrink-0">
                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">Generate Images</h1>
@@ -302,7 +254,7 @@ export default function GenerateImagesPage() {
                                     </span>
                                 </button>
                             </div>
-                        </div>
+                        </PageTransition>
                     </main>
                 </div>
             </div>

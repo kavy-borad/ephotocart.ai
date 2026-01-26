@@ -38,114 +38,11 @@ import { settingsApi, UserProfile } from "@/lib/settings";
 import { walletApi } from "@/lib/wallet";
 import { helpApi, HelpCategory } from "@/lib/help";
 import { Sidebar, Header } from "@/components/layout";
+import { PageTransition } from "@/components/animations/PageTransition";
 import { useTheme } from "@/lib/theme";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Skeleton Loader Component
-const SettingsSkeleton = () => (
-    <div className="min-h-screen flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
-        <Sidebar activeNav="settings" />
-
-        <main className="flex-1 flex flex-col min-w-0 min-h-screen lg:h-full lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-            {/* Header without props (self-fetching) */}
-            <Header
-                breadcrumbs={[
-                    { label: "Home", href: "/?view=landing" },
-                    { label: "Settings" }
-                ]}
-            />
-
-            <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
-                <div className="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 space-y-8 pb-20">
-
-                    {/* Page Title Skeleton */}
-                    <div>
-                        <div className="h-9 w-64 bg-slate-200 dark:bg-gray-700/80 rounded-lg animate-pulse mb-3" />
-                        <div className="h-5 w-96 max-w-full bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-
-                    {/* Tabs Navigation Skeleton */}
-                    <div className="border-b border-slate-200 dark:border-gray-700">
-                        <div className="flex items-center gap-1 pb-1 overflow-x-auto no-scrollbar">
-                            {/* Profile (Active Style) */}
-                            <div className="px-4 py-3 relative">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="size-4 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                    <div className="h-4 w-12 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500/50 rounded-t-full" />
-                            </div>
-
-                            {/* Security */}
-                            <div className="px-4 py-3">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="size-4 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                    <div className="h-4 w-16 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                </div>
-                            </div>
-
-                            {/* Usage & Billing */}
-                            <div className="px-4 py-3">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="size-4 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                    <div className="h-4 w-28 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                </div>
-                            </div>
-
-                            {/* Notifications */}
-                            <div className="px-4 py-3">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="size-4 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                    <div className="h-4 w-24 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                </div>
-                            </div>
-
-                            {/* Preferences */}
-                            <div className="px-4 py-3">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="size-4 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                    <div className="h-4 w-24 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Profile Card Skeleton */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
-                        {/* Avatar & Name */}
-                        <div className="flex items-center gap-5 mb-8">
-                            <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse shrink-0" />
-                            <div className="space-y-2.5">
-                                <div className="h-6 w-32 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                <div className="h-4 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                            </div>
-                        </div>
-
-                        {/* Input Grid */}
-                        <div className="grid md:grid-cols-2 gap-6 mb-8">
-                            {/* Email Field Helper */}
-                            <div className="space-y-2.5">
-                                <div className="h-3 w-24 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
-                                <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse" />
-                            </div>
-                            {/* Phone Field Helper */}
-                            <div className="space-y-2.5">
-                                <div className="h-3 w-28 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
-                                <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse" />
-                            </div>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="flex justify-end pt-2">
-                            <div className="h-10 w-32 bg-slate-800 dark:bg-gray-600 rounded-lg animate-pulse" />
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </main>
-    </div>
-);
+// Inline skeleton removed - handled by TransitionProvider and /components/skeletons/SettingsSkeleton.tsx
 
 export default function SettingsPage() {
     // Theme state
@@ -1366,10 +1263,6 @@ export default function SettingsPage() {
         </div>
     );
 
-    if (isLoading && !userProfile && !storedUser) {
-        return <SettingsSkeleton />;
-    }
-
     return (
         <div className="min-h-screen flex overflow-x-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
             <Sidebar activeNav="settings" />
@@ -1386,7 +1279,7 @@ export default function SettingsPage() {
                 />
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
-                    <div className="container mx-auto max-w-7xl p-4 sm:p-6 space-y-4 pb-10">
+                    <PageTransition className="container mx-auto max-w-7xl p-4 sm:p-6 space-y-4 pb-10">
 
                         {/* Page Title & Intro */}
                         <div>
@@ -1446,7 +1339,7 @@ export default function SettingsPage() {
                             </AnimatePresence>
                         </div>
 
-                    </div>
+                    </PageTransition>
                 </div>
             </main>
 

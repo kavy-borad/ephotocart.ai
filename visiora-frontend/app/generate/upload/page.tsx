@@ -1,7 +1,6 @@
 "use client";
-
 import Link from "@/components/Link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/components/useRouter";
 import {
     ArrowRight,
     ArrowLeft,
@@ -17,7 +16,6 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { generateApi } from "@/lib/generate";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
-import { navigationState } from "@/lib/navigationState";
 
 
 
@@ -155,9 +153,7 @@ export default function UploadPage() {
             // Check generate type and route accordingly
             const generateType = localStorage.getItem('generateType');
 
-            // Signal next page to show loader
-            navigationState.shouldShowLoader = true;
-
+            // Using enhanced router from @/components/useRouter will trigger global loader
             if (generateType === 'batch_image') {
                 // E-commerce bundle: go to options page
                 router.push('/generate/ecommerce-options');
@@ -171,48 +167,6 @@ export default function UploadPage() {
             setIsSubmitting(false);
         }
     };
-
-
-
-
-
-    // Page transition loader
-    const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
-
-    useEffect(() => {
-        // If loader is active, turn it off after delay
-        if (isPageLoading) {
-            const timer = setTimeout(() => {
-                setIsPageLoading(false);
-            }, 800);
-
-            // Reset state for future navigations
-            navigationState.shouldShowLoader = false;
-
-            return () => clearTimeout(timer);
-        } else {
-            // Ensure state is reset even if no loader
-            navigationState.shouldShowLoader = false;
-        }
-    }, [isPageLoading]);
-
-
-
-    if (isPageLoading) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center bg-[#f8fafc] dark:bg-gray-900">
-                <motion.div
-                    className="w-12 h-12 rounded-full border-4 border-teal-500/30 border-t-teal-500 shadow-lg"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                />
-            </div>
-        );
-    }
 
     return (
         <div className="h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200">
@@ -293,6 +247,25 @@ export default function UploadPage() {
                                         </h3>
                                         <span className="self-start sm:self-auto text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Supported: JPG, PNG, WEBP</span>
                                     </div>
+
+                                    {/* Error Message Alert */}
+                                    {error && (
+                                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-2">
+                                            <div className="shrink-0 w-8 h-8 bg-red-100 dark:bg-red-900/50 rounded-lg flex items-center justify-center">
+                                                <X className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-bold">Upload Failed</p>
+                                                <p className="text-sm font-medium opacity-90">{error}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => setError(null)}
+                                                className="p-1 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* Upload Cards Grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
@@ -402,7 +375,6 @@ export default function UploadPage() {
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={() => {
-                                    navigationState.shouldShowLoader = true;
                                     router.push("/generate");
                                 }}
                                 className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors flex items-center gap-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"

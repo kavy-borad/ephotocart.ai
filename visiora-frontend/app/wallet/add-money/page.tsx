@@ -259,7 +259,7 @@ export default function AddMoneyPage() {
                         <div className="flex items-center justify-between mb-6 flex-shrink-0">
                             <div className="flex items-center gap-4">
                                 <Link
-                                    href="/wallet"
+                                    href="/wallet?ref=add_money"
                                     className="p-2 -ml-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-500 dark:text-gray-400 transition-colors"
                                 >
                                     <ArrowLeft className="w-5 h-5" />

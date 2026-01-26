@@ -25,6 +25,8 @@ import { dashboardApi, DashboardStats, RecentImage, ChartDataPoint, UserProfile 
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
 
+import { PageTransition } from "@/components/animations/PageTransition";
+
 // Module-level flag to prevent duplicate API calls
 let dashboardInitialFetchDone = false;
 
@@ -367,7 +369,8 @@ export default function DashboardPage() {
 
                 {/* Content - Scrollable on mobile/tablet, fixed on desktop */}
                 <div className="flex-1 p-3 sm:p-4 overflow-y-auto lg:overflow-hidden">
-                    <div className="flex flex-col gap-3 sm:gap-4 lg:h-full">
+                    <PageTransition className="flex flex-col gap-3 sm:gap-4 lg:h-full">
+
                         {/* Page Header with Animation */}
 
 
@@ -615,9 +618,9 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </PageTransition>
                 </div>
             </main>
-        </div>
+        </div >
     );
 }

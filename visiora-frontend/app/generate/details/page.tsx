@@ -88,12 +88,18 @@ export default function DetailsPage() {
 
     // Custom Dropdown State
     const [activeDropdown, setActiveDropdown] = useState<'gender' | 'style' | 'category' | null>(null);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const filterDropdownRef = useRef<HTMLDivElement>(null);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            // Check Category Dropdown
+            if (activeDropdown === 'category' && categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+                setActiveDropdown(null);
+            }
+            // Check Filter Dropdowns (Gender/Style)
+            if ((activeDropdown === 'gender' || activeDropdown === 'style') && filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
                 setActiveDropdown(null);
             }
         };
@@ -101,7 +107,7 @@ export default function DetailsPage() {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [activeDropdown]);
 
     // Page transition loader
     const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
@@ -506,7 +512,7 @@ export default function DetailsPage() {
 
                                                 <div className="space-y-1.5">
                                                     <label className="text-xs font-semibold text-slate-500 dark:text-gray-400">Category</label>
-                                                    <div className="relative" ref={dropdownRef}>
+                                                    <div className="relative" ref={categoryDropdownRef}>
                                                         <button
                                                             onClick={() => setActiveDropdown(activeDropdown === 'category' ? null : 'category')}
                                                             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border text-sm transition-all
@@ -636,7 +642,7 @@ export default function DetailsPage() {
                                                 <span className="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">Optional</span>
                                             </div>
 
-                                            <div className="flex items-center gap-3" ref={dropdownRef}>
+                                            <div className="flex items-center gap-3" ref={filterDropdownRef}>
                                                 {/* Gender Filter */}
                                                 <div className="relative">
                                                     <button

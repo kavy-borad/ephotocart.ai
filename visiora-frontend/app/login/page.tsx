@@ -16,7 +16,17 @@ import React, { useState } from "react";
 import { authApi } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import Branding from "@/components/Branding";
-import MorphLoopVisuals from "@/components/MorphLoopVisuals";
+
+import dynamic from "next/dynamic";
+
+const MorphLoopVisuals = dynamic(() => import("@/components/MorphLoopVisuals"), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin"></div>
+        </div>
+    )
+});
 
 export default function LoginPage() {
     const router = useRouter();

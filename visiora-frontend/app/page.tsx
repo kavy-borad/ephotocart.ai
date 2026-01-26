@@ -254,15 +254,15 @@ export default function LandingPage() {
                                 initial={{ opacity: 0, scale: 0.96 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.5, delay: 1, ease: "easeOut" }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.02, transition: { duration: 0.3, ease: "easeOut" } }}
+                                whileTap={{ scale: 0.98 }}
                             >
                                 <Link
                                     href="/register"
-                                    className="relative px-8 py-4 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white font-bold rounded-full transition-all shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 flex items-center gap-2 text-base overflow-hidden group border border-teal-400/20"
+                                    className="relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-white font-bold rounded-full transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 flex items-center gap-2 text-base overflow-hidden group border border-emerald-400/20"
                                 >
                                     <span className="relative z-10">Get Started</span>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
                                 </Link>
                             </motion.div>
 
@@ -334,6 +334,7 @@ export default function LandingPage() {
                                     hidden: { opacity: 0, y: 20, scale: 0.95, x: 0 },
                                     visible: {
                                         opacity: 1,
+                                        y: 0,
                                         x: 0,
                                         scale: 1,
                                         transition: {
@@ -434,8 +435,8 @@ export default function LandingPage() {
                     </motion.div>
                 </div>
 
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
 

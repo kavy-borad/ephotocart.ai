@@ -29,6 +29,7 @@ import { useState, useEffect, useRef } from "react";
 import { walletApi, WalletBalance, Transaction, TransactionFilters, Package, WalletStats } from "@/lib/wallet";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
+import { PageTransition } from "@/components/animations/PageTransition";
 
 export default function WalletPage() {
     // User profile state
@@ -548,357 +549,359 @@ export default function WalletPage() {
 
                 {/* Main Content Area - Scrollable on mobile */}
                 <div className="flex-1 flex flex-col overflow-y-auto lg:overflow-hidden p-4 sm:p-6">
-                    {/* Page Header */}
-                    <div className="shrink-0 mb-3">
-                        <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h1>
-                        <p className="text-slate-500 dark:text-gray-400 text-xs mt-0.5">Welcome back. Here's a snapshot of your wallet activity.</p>
-                    </div>
-
-                    {/* Error Banner */}
-                    {apiError && (
-                        <div className="shrink-0 mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white text-xs font-bold">!</span>
-                                </div>
-                                <p className="text-amber-800 dark:text-amber-200 text-sm">{apiError}</p>
-                            </div>
-                            <button
-                                onClick={() => { setApiError(null); fetchWalletData(); fetchPackages(); }}
-                                className="px-3 py-1 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors"
-                            >
-                                Retry
-                            </button>
+                    <PageTransition className="flex flex-col min-h-full">
+                        {/* Page Header */}
+                        <div className="shrink-0 mb-3">
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h1>
+                            <p className="text-slate-500 dark:text-gray-400 text-xs mt-0.5">Welcome back. Here's a snapshot of your wallet activity.</p>
                         </div>
-                    )}
 
-                    {/* Content - Fixed Layout with flex sections */}
-                    {/* Main Split Layout */}
-                    <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden scroll-smooth">
+                        {/* Error Banner */}
+                        {apiError && (
+                            <div className="shrink-0 mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-xs font-bold">!</span>
+                                    </div>
+                                    <p className="text-amber-800 dark:text-amber-200 text-sm">{apiError}</p>
+                                </div>
+                                <button
+                                    onClick={() => { setApiError(null); fetchWalletData(); fetchPackages(); }}
+                                    className="px-3 py-1 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        )}
 
-                        {/* LEFT COLUMN - Balance & Transactions */}
-                        <div className="flex-1 flex flex-col gap-5 min-h-0 overflow-hidden">
+                        {/* Content - Fixed Layout with flex sections */}
+                        {/* Main Split Layout */}
+                        <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden scroll-smooth">
 
-                            {/* Balance Card */}
-                            <div className="shrink-0 rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden p-6 transition-all hover:shadow-md">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Current Balance</span>
-                                            <Info className="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-teal-500 transition-colors" />
+                            {/* LEFT COLUMN - Balance & Transactions */}
+                            <div className="flex-1 flex flex-col gap-5 min-h-0 overflow-hidden">
+
+                                {/* Balance Card */}
+                                <div className="shrink-0 rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden p-6 transition-all hover:shadow-md">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Current Balance</span>
+                                                <Info className="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-teal-500 transition-colors" />
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{formatCurrency(balance)}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-[10px] font-bold">{currency}</span>
+                                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 text-red-700'}`}>{isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{formatCurrency(balance)}</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-[10px] font-bold">{currency}</span>
-                                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 text-red-700'}`}>{isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                                        <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+                                            <Link
+                                                href="/wallet/add-money"
+                                                className="flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-11 px-6 text-sm font-bold shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Add Money
+                                            </Link>
+                                            <button className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white h-11 w-11 transition-all hover:border-slate-300">
+                                                <MoreHorizontal className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Transaction History Card */}
+                                <div className="flex-1 flex flex-col rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden min-h-[300px]">
+                                    {/* Header with Filters */}
+                                    <div className="px-6 py-4 border-b border-slate-100 dark:border-gray-700 shrink-0">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-500">
+                                                    <Receipt className="w-5 h-5" />
+                                                </div>
+                                                <h3 className="text-slate-900 dark:text-white text-base font-bold">Transaction History</h3>
+                                            </div>
+                                        </div>
+                                        {/* Filter Row */}
+                                        <div className="flex flex-wrap items-center gap-3" ref={dropdownRef}>
+                                            {/* Days Filter Dropdown */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setActiveDropdown(activeDropdown === 'days' ? null : 'days')}
+                                                    className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                    ${activeDropdown === 'days'
+                                                            ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                            : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                                >
+                                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                        <Calendar className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'days' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                                    </div>
+                                                    <span className="truncate max-w-[120px]">
+                                                        {daysOptions.find(o => o.value === selectedFilter)?.label}
+                                                    </span>
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'days' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                    </div>
+                                                </button>
+
+                                                {/* Dropdown Menu */}
+                                                {activeDropdown === 'days' && (
+                                                    <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                        <div className="p-1.5 flex flex-col gap-0.5">
+                                                            {daysOptions.map((option) => (
+                                                                <button
+                                                                    key={option.value}
+                                                                    onClick={() => {
+                                                                        setSelectedFilter(option.value as any);
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                    ${selectedFilter === option.value
+                                                                            ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                            : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                        }`}
+                                                                >
+                                                                    {option.label}
+                                                                    {selectedFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Type Filter Dropdown */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
+                                                    className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                    ${activeDropdown === 'type'
+                                                            ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                            : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                                >
+                                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                        <CreditCard className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'type' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                                    </div>
+                                                    <span className="truncate max-w-[140px]">
+                                                        {typeOptions.find(o => o.value === typeFilter)?.label}
+                                                    </span>
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'type' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                    </div>
+                                                </button>
+
+                                                {/* Dropdown Menu */}
+                                                {activeDropdown === 'type' && (
+                                                    <div className="absolute top-full left-0 mt-2 w-52 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                        <div className="p-1.5 flex flex-col gap-0.5">
+                                                            {typeOptions.map((option) => (
+                                                                <button
+                                                                    key={option.value}
+                                                                    onClick={() => {
+                                                                        setTypeFilter(option.value as any);
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                    ${typeFilter === option.value
+                                                                            ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                            : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                        }`}
+                                                                >
+                                                                    {option.label}
+                                                                    {typeFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Category Filter Dropdown */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setActiveDropdown(activeDropdown === 'category' ? null : 'category')}
+                                                    className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
+                                                    ${activeDropdown === 'category'
+                                                            ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                            : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                                >
+                                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                        <Filter className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'category' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                                    </div>
+                                                    <span className="truncate max-w-[140px]">
+                                                        {categoryOptions.find(o => o.value === categoryFilter)?.label}
+                                                    </span>
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'category' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                                    </div>
+                                                </button>
+
+                                                {/* Dropdown Menu */}
+                                                {activeDropdown === 'category' && (
+                                                    <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                        <div className="p-1.5 flex flex-col gap-0.5">
+                                                            {categoryOptions.map((option) => (
+                                                                <button
+                                                                    key={option.value}
+                                                                    onClick={() => {
+                                                                        setCategoryFilter(option.value as any);
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                                                    ${categoryFilter === option.value
+                                                                            ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                            : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                        }`}
+                                                                >
+                                                                    {option.label}
+                                                                    {categoryFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
-                                        <Link
-                                            href="/wallet/add-money"
-                                            className="flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-11 px-6 text-sm font-bold shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            Add Money
-                                        </Link>
-                                        <button className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white h-11 w-11 transition-all hover:border-slate-300">
-                                            <MoreHorizontal className="w-5 h-5" />
-                                        </button>
-                                    </div>
+
+                                    {/* List */}
+                                    {isLoading ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center p-6">
+                                            <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+                                        </div>
+                                    ) : transactions.length > 0 ? (
+                                        <div className="flex-1 overflow-y-auto">
+                                            {transactions.map((tx) => (
+                                                <div
+                                                    key={tx.id}
+                                                    onClick={() => handleViewTransaction(tx.id)}
+                                                    className="group cursor-pointer flex items-center justify-between px-6 py-4 border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-all last:border-0"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`shrink-0 size-10 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-500'
+                                                            }`}>
+                                                            {getTransactionIcon(tx.type)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{tx.description}</p>
+                                                            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className={`text-base font-bold ${tx.type === 'debit' ? 'text-slate-900 dark:text-white' : 'text-green-600'}`}>
+                                                            {tx.type === 'debit' ? '-' : '+'}{formatCurrency(tx.amount, tx.currency)}
+                                                        </p>
+                                                        <span className={`inline-block mt-0.5 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${tx.status === 'completed' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+                                                            }`}>
+                                                            {tx.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                                            <div className="size-20 bg-slate-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4">
+                                                <Receipt className="w-8 h-8 text-slate-300 dark:text-gray-600" />
+                                            </div>
+                                            <h4 className="text-slate-900 dark:text-white text-lg font-bold mb-1">No transactions yet</h4>
+                                            <p className="text-slate-500 dark:text-gray-400 text-sm max-w-xs mx-auto">
+                                                Your purchase history and credit usage will appear here.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Pagination Controls */}
+                                    {transactions.length > 0 && totalPages > 1 && (
+                                        <div className="px-6 py-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50/30 dark:bg-gray-800/30 flex items-center justify-between">
+                                            <p className="text-xs font-semibold text-slate-500 dark:text-gray-400">
+                                                Page <span className="text-slate-900 dark:text-white">{currentPage}</span> of <span className="text-slate-900 dark:text-white">{totalPages}</span>
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={currentPage === 1 || isLoading}
+                                                    className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={currentPage === totalPages || isLoading}
+                                                    className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Transaction History Card */}
-                            <div className="flex-1 flex flex-col rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden min-h-[300px]">
-                                {/* Header with Filters */}
-                                <div className="px-6 py-4 border-b border-slate-100 dark:border-gray-700 shrink-0">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-500">
-                                                <Receipt className="w-5 h-5" />
-                                            </div>
-                                            <h3 className="text-slate-900 dark:text-white text-base font-bold">Transaction History</h3>
-                                        </div>
-                                    </div>
-                                    {/* Filter Row */}
-                                    <div className="flex flex-wrap items-center gap-3" ref={dropdownRef}>
-                                        {/* Days Filter Dropdown */}
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setActiveDropdown(activeDropdown === 'days' ? null : 'days')}
-                                                className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
-                                                    ${activeDropdown === 'days'
-                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
-                                                        : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
-                                            >
-                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <Calendar className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'days' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
-                                                </div>
-                                                <span className="truncate max-w-[120px]">
-                                                    {daysOptions.find(o => o.value === selectedFilter)?.label}
-                                                </span>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'days' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
-                                                </div>
-                                            </button>
-
-                                            {/* Dropdown Menu */}
-                                            {activeDropdown === 'days' && (
-                                                <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                                                    <div className="p-1.5 flex flex-col gap-0.5">
-                                                        {daysOptions.map((option) => (
-                                                            <button
-                                                                key={option.value}
-                                                                onClick={() => {
-                                                                    setSelectedFilter(option.value as any);
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
-                                                                    ${selectedFilter === option.value
-                                                                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
-                                                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
-                                                                    }`}
-                                                            >
-                                                                {option.label}
-                                                                {selectedFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Type Filter Dropdown */}
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
-                                                className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
-                                                    ${activeDropdown === 'type'
-                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
-                                                        : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
-                                            >
-                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <CreditCard className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'type' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
-                                                </div>
-                                                <span className="truncate max-w-[140px]">
-                                                    {typeOptions.find(o => o.value === typeFilter)?.label}
-                                                </span>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'type' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
-                                                </div>
-                                            </button>
-
-                                            {/* Dropdown Menu */}
-                                            {activeDropdown === 'type' && (
-                                                <div className="absolute top-full left-0 mt-2 w-52 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                                                    <div className="p-1.5 flex flex-col gap-0.5">
-                                                        {typeOptions.map((option) => (
-                                                            <button
-                                                                key={option.value}
-                                                                onClick={() => {
-                                                                    setTypeFilter(option.value as any);
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
-                                                                    ${typeFilter === option.value
-                                                                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
-                                                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
-                                                                    }`}
-                                                            >
-                                                                {option.label}
-                                                                {typeFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Category Filter Dropdown */}
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setActiveDropdown(activeDropdown === 'category' ? null : 'category')}
-                                                className={`pl-9 pr-10 py-2.5 rounded-xl border text-xs font-semibold flex items-center shadow-sm transition-all
-                                                    ${activeDropdown === 'category'
-                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
-                                                        : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
-                                            >
-                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <Filter className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'category' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
-                                                </div>
-                                                <span className="truncate max-w-[140px]">
-                                                    {categoryOptions.find(o => o.value === categoryFilter)?.label}
-                                                </span>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'category' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
-                                                </div>
-                                            </button>
-
-                                            {/* Dropdown Menu */}
-                                            {activeDropdown === 'category' && (
-                                                <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                                                    <div className="p-1.5 flex flex-col gap-0.5">
-                                                        {categoryOptions.map((option) => (
-                                                            <button
-                                                                key={option.value}
-                                                                onClick={() => {
-                                                                    setCategoryFilter(option.value as any);
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
-                                                                    ${categoryFilter === option.value
-                                                                        ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
-                                                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
-                                                                    }`}
-                                                            >
-                                                                {option.label}
-                                                                {categoryFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                            {/* RIGHT COLUMN - Fixed Sidebar */}
+                            <div className="w-full lg:w-[320px] 2xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto pb-4 h-full">
+                                <div className="flex items-center gap-2 px-1">
+                                    <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                    <h3 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-wider">Buy Credits</h3>
                                 </div>
 
-                                {/* List */}
-                                {isLoading ? (
-                                    <div className="flex-1 flex flex-col items-center justify-center p-6">
-                                        <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                                    </div>
-                                ) : transactions.length > 0 ? (
-                                    <div className="flex-1 overflow-y-auto">
-                                        {transactions.map((tx) => (
-                                            <div
-                                                key={tx.id}
-                                                onClick={() => handleViewTransaction(tx.id)}
-                                                className="group cursor-pointer flex items-center justify-between px-6 py-4 border-b border-slate-50 dark:border-gray-700/50 hover:bg-slate-50 dark:hover:bg-gray-700/30 transition-all last:border-0"
+                                <div className="flex flex-col gap-3">
+                                    {isLoadingPackages ? (
+                                        <div className="p-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
+                                            <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+                                        </div>
+                                    ) : packages.length > 0 ? (
+                                        packages.map((pkg) => (
+                                            <Link
+                                                key={pkg.id}
+                                                href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}`}
+                                                className={`relative bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 text-left transition-all hover:-translate-y-1 hover:shadow-lg group ${selectedPackage === pkg.id
+                                                    ? 'border-teal-500 shadow-md ring-2 ring-teal-500/10'
+                                                    : 'border-white dark:border-gray-800 shadow-sm hover:border-teal-100 dark:hover:border-teal-200'
+                                                    }`}
                                             >
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`shrink-0 size-10 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-500'
-                                                        }`}>
-                                                        {getTransactionIcon(tx.type)}
+                                                {pkg.isPopular && (
+                                                    <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
+                                                        Popular
                                                     </div>
+                                                )}
+
+                                                <div className="flex justify-between items-start mb-3">
                                                     <div>
-                                                        <p className="text-sm font-bold text-slate-900 dark:text-white">{tx.description}</p>
-                                                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{pkg.totalCredits}</span>
+                                                            <span className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Credits</span>
+                                                        </div>
+                                                        <p className="text-sm font-medium text-slate-500 dark:text-gray-400">{pkg.name}</p>
                                                     </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className={`text-base font-bold ${tx.type === 'debit' ? 'text-slate-900 dark:text-white' : 'text-green-600'}`}>
-                                                        {tx.type === 'debit' ? '-' : '+'}{formatCurrency(tx.amount, tx.currency)}
-                                                    </p>
-                                                    <span className={`inline-block mt-0.5 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${tx.status === 'completed' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                                                        }`}>
-                                                        {tx.status}
+                                                    <span className="text-lg font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors">
+                                                        {formatCurrency(pkg.amount, pkg.currency)}
                                                     </span>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                                        <div className="size-20 bg-slate-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4">
-                                            <Receipt className="w-8 h-8 text-slate-300 dark:text-gray-600" />
-                                        </div>
-                                        <h4 className="text-slate-900 dark:text-white text-lg font-bold mb-1">No transactions yet</h4>
-                                        <p className="text-slate-500 dark:text-gray-400 text-sm max-w-xs mx-auto">
-                                            Your purchase history and credit usage will appear here.
-                                        </p>
-                                    </div>
-                                )}
 
-                                {/* Pagination Controls */}
-                                {transactions.length > 0 && totalPages > 1 && (
-                                    <div className="px-6 py-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50/30 dark:bg-gray-800/30 flex items-center justify-between">
-                                        <p className="text-xs font-semibold text-slate-500 dark:text-gray-400">
-                                            Page <span className="text-slate-900 dark:text-white">{currentPage}</span> of <span className="text-slate-900 dark:text-white">{totalPages}</span>
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                                disabled={currentPage === 1 || isLoading}
-                                                className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                                disabled={currentPage === totalPages || isLoading}
-                                                className="p-1.5 rounded-lg border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* RIGHT COLUMN - Fixed Sidebar */}
-                        <div className="w-full lg:w-[320px] 2xl:w-[360px] shrink-0 flex flex-col gap-4 overflow-y-auto pb-4 h-full">
-                            <div className="flex items-center gap-2 px-1">
-                                <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                                <h3 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-wider">Buy Credits</h3>
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                {isLoadingPackages ? (
-                                    <div className="p-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
-                                        <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
-                                    </div>
-                                ) : packages.length > 0 ? (
-                                    packages.map((pkg) => (
-                                        <Link
-                                            key={pkg.id}
-                                            href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}`}
-                                            className={`relative bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 text-left transition-all hover:-translate-y-1 hover:shadow-lg group ${selectedPackage === pkg.id
-                                                ? 'border-teal-500 shadow-md ring-2 ring-teal-500/10'
-                                                : 'border-white dark:border-gray-800 shadow-sm hover:border-teal-100 dark:hover:border-teal-200'
-                                                }`}
-                                        >
-                                            {pkg.isPopular && (
-                                                <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-teal-500 to-teal-400 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
-                                                    Popular
-                                                </div>
-                                            )}
-
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{pkg.totalCredits}</span>
-                                                        <span className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Credits</span>
+                                                {pkg.bonusCredits > 0 && (
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md inline-flex">
+                                                        <Plus className="w-3 h-3" />
+                                                        {pkg.bonusCredits} Bonus Credits
                                                     </div>
-                                                    <p className="text-sm font-medium text-slate-500 dark:text-gray-400">{pkg.name}</p>
-                                                </div>
-                                                <span className="text-lg font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors">
-                                                    {formatCurrency(pkg.amount, pkg.currency)}
-                                                </span>
-                                            </div>
-
-                                            {pkg.bonusCredits > 0 && (
-                                                <div className="flex items-center gap-1.5 text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md inline-flex">
-                                                    <Plus className="w-3 h-3" />
-                                                    {pkg.bonusCredits} Bonus Credits
-                                                </div>
-                                            )}
-                                        </Link>
-                                    ))
-                                ) : (
-                                    <div className="p-6 text-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
-                                        <p className="text-slate-500 text-sm">No packages available</p>
-                                    </div>
-                                )}
+                                                )}
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="p-6 text-center bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
+                                            <p className="text-slate-500 text-sm">No packages available</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </PageTransition>
                 </div>
 
                 {/* Transaction Details Modal */}

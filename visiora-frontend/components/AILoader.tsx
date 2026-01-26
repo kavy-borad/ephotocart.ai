@@ -31,7 +31,7 @@ export default function AILoader({
             <div className="flex flex-col items-center gap-6">
                 {/* Spinning Ring with Star */}
                 <div className="relative w-20 h-20">
-                    {/* Spinning Gradient Ring - Teal Theme */}
+                    {/* Spinning Gradient Ring - Neutral Theme */}
                     <svg
                         className="w-full h-full"
                         viewBox="0 0 100 100"
@@ -39,9 +39,9 @@ export default function AILoader({
                     >
                         <defs>
                             <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#14b8a6" />
-                                <stop offset="50%" stopColor="#0d9488" />
-                                <stop offset="100%" stopColor="#14b8a6" />
+                                <stop offset="0%" stopColor="#94a3b8" />
+                                <stop offset="50%" stopColor="#64748b" />
+                                <stop offset="100%" stopColor="#94a3b8" />
                             </linearGradient>
                         </defs>
                         {/* Background track */}
@@ -64,12 +64,12 @@ export default function AILoader({
                             strokeLinecap="round"
                             strokeDasharray="200 64"
                             style={{
-                                filter: "drop-shadow(0 0 8px rgba(20, 184, 166, 0.5))"
+                                filter: "drop-shadow(0 0 8px rgba(148, 163, 184, 0.5))"
                             }}
                         />
                     </svg>
 
-                    {/* Center 4-pointed Star - Teal Theme */}
+                    {/* Center 4-pointed Star - Neutral Theme */}
                     <div className="absolute inset-0 flex items-center justify-center">
                         <svg
                             width="28"
@@ -84,8 +84,8 @@ export default function AILoader({
                             />
                             <defs>
                                 <linearGradient id="starGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                                    <stop offset="0%" stopColor="#2dd4bf" />
-                                    <stop offset="100%" stopColor="#14b8a6" />
+                                    <stop offset="0%" stopColor="#cbd5e1" />
+                                    <stop offset="100%" stopColor="#94a3b8" />
                                 </linearGradient>
                             </defs>
                         </svg>
