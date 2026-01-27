@@ -41,6 +41,7 @@ export default function EmailSupportPage() {
     }, []);
 
     // Fetch support subjects (with duplicate prevention)
+    // Fetch support subjects (with duplicate prevention)
     useEffect(() => {
         if (hasFetchedSubjects.current) return;
         hasFetchedSubjects.current = true;
@@ -49,13 +50,27 @@ export default function EmailSupportPage() {
             setIsLoadingSubjects(true);
             try {
                 const response = await helpApi.getSubjects();
-                if (response.success && response.data) {
-                    // Sort by display_order
+
+                // Check if we have valid data
+                if (response.success && response.data && response.data.length > 0) {
                     const sorted = [...response.data].sort((a, b) => a.display_order - b.display_order);
                     setSubjects(sorted);
+                } else {
+                    // Force fallback if data is empty (even if success is true)
+                    throw new Error("No subjects found from API");
                 }
             } catch (error) {
-                console.error('Failed to fetch subjects:', error);
+                console.warn('Using fallback subjects due to API error/empty:', error);
+
+                // Fallback Data (Matches User's Request)
+                const fallbackSubjects: SupportSubject[] = [
+                    { id: "technical_issue", title: "Technical Issue", display_order: 1, created_at: "2026-01-21T10:08:28.000Z", updated_at: "2026-01-21T10:08:28.000Z" },
+                    { id: "billing_issue", title: "Billing Issue", display_order: 2, created_at: "2026-01-21T10:08:28.000Z", updated_at: "2026-01-21T10:08:28.000Z" },
+                    { id: "account_issue", title: "Account Issue", display_order: 3, created_at: "2026-01-21T10:08:28.000Z", updated_at: "2026-01-21T10:08:28.000Z" },
+                    { id: "feature_request", title: "Feature Request", display_order: 4, created_at: "2026-01-21T10:08:28.000Z", updated_at: "2026-01-21T10:08:28.000Z" },
+                    { id: "other", title: "Other", display_order: 5, created_at: "2026-01-21T10:08:28.000Z", updated_at: "2026-01-21T10:08:28.000Z" }
+                ];
+                setSubjects(fallbackSubjects);
             } finally {
                 setIsLoadingSubjects(false);
             }

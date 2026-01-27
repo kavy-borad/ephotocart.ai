@@ -11,6 +11,8 @@ import { GenerateSkeleton } from "@/components/skeletons/GenerateSkeleton";
 import { GallerySkeleton } from "@/components/skeletons/GallerySkeleton";
 import { WalletSkeleton } from "@/components/skeletons/WalletSkeleton";
 import { SettingsSkeleton } from "@/components/skeletons/SettingsSkeleton";
+import { FeaturesSkeleton } from "@/components/skeletons/FeaturesSkeleton";
+import { ResultsSkeleton } from "@/components/skeletons/ResultsSkeleton";
 
 interface TransitionContextType {
     isTransitioning: boolean;
@@ -104,6 +106,12 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                 : href;
 
             if (currentPath !== targetPath) {
+                // SPECIAL CASE: Disable full skeleton when navigating between /generate steps
+                // This allows for smooth "app-like" transitions without reloading the shell
+                if (currentPath.includes('/generate') && targetPath.includes('/generate')) {
+                    return;
+                }
+
                 setNextPath(targetPath);
                 setIsTransitioning(true);
             }
@@ -111,7 +119,14 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
 
         // Handle browser back/forward navigation
         const handlePopState = () => {
-            setNextPath(window.location.pathname + window.location.search);
+            const newPath = window.location.pathname + window.location.search;
+
+            // SPECIAL CASE: Disable full skeleton for /generate history navigation too
+            if (previousPathRef.current?.includes('/generate') && newPath.includes('/generate')) {
+                return;
+            }
+
+            setNextPath(newPath);
             setIsTransitioning(true);
         };
 
@@ -134,8 +149,13 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
 
         // 0. Disable Loader for Auth Pages
         // We want these pages to load instantly with their own internal animations
-        if (path.includes('/login') || path.includes('/register') || path.includes('/signup') || path.includes('/features')) {
+        if (path.includes('/login') || path.includes('/register') || path.includes('/signup')) {
             return null;
+        }
+
+        // 1a. Generate Images (Type Selection) Skeleton
+        if (path === '/generate') {
+            return <GenerateSkeleton />;
         }
 
         // 1. Dashboard Skeleton
@@ -146,6 +166,11 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
         // 1. Landing Page Skeleton
         if (path === '/' || path.includes('view=landing')) {
             return <LandingSkeleton />;
+        }
+
+        // 2. Features Skeleton
+        if (path.includes('/features')) {
+            return <FeaturesSkeleton />;
         }
 
 
@@ -1000,7 +1025,12 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                                     return getSkeletonContent();
                                 }
 
-                                // Generate pages, Gallery, Wallet, and Settings have content-only skeletons, wrap them in AppShell
+                                // Generate Main Page is self-contained
+                                if (path === '/generate') {
+                                    return getSkeletonContent();
+                                }
+
+                                // Generate sub-pages, Gallery, Wallet, and Settings have content-only skeletons, wrap them in AppShell
                                 if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate') || path.startsWith('/settings')) {
                                     return (
                                         <AppShellSkeleton>

@@ -60,7 +60,7 @@ export default function PricingPage() {
     ];
 
     return (
-        <div className="h-screen w-full bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-white overflow-hidden flex flex-col transition-colors duration-300">
+        <div className="min-h-screen w-full bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-white overflow-y-auto overflow-x-hidden flex flex-col transition-colors duration-300">
             <PublicNavbar activePage="pricing" />
 
             {/* Background Effects (Subtle Project Theme) */}
@@ -69,7 +69,7 @@ export default function PricingPage() {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full dark:bg-emerald-900/10" />
             </div>
 
-            <main className="relative z-10 container mx-auto px-4 flex-1 flex flex-col items-center pt-10 md:pt-16">
+            <main className="relative z-10 container mx-auto px-4 flex-1 flex flex-col items-center pt-10 md:pt-16 pb-12">
                 {/* Header - Compact */}
                 <div className="text-center mb-6 space-y-3 shrink-0">
                     <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
@@ -111,7 +111,7 @@ export default function PricingPage() {
 
                 {/* Cards Grid - Compact */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl w-full h-auto">
-                    {plans.map((plan) => {
+                    {plans.map((plan, index) => {
                         const isSelected = selectedPlan === plan.id;
                         const isHovered = hoveredPlan === plan.id;
                         // Animation only on Hover as requested
@@ -121,6 +121,9 @@ export default function PricingPage() {
                         return (
                             <motion.div
                                 key={plan.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
                                 onClick={() => setSelectedPlan(plan.id)}
                                 onMouseEnter={() => setHoveredPlan(plan.id)}
                                 onMouseLeave={() => setHoveredPlan(null)}

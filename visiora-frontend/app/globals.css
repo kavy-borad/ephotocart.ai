@@ -148,6 +148,12 @@
     animation: floatParticle 3s ease-in-out infinite;
 }
 
+/* Masked gradient for landing page visuals - fades edges */
+.masked-gradient {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
 :root {
     --background: #f3f4f6;
     --foreground: #171717;
@@ -439,4 +445,16 @@ nextjs-portal {
 
 .dark #nprogress .peg {
     box-shadow: 0 0 15px #2dd4bf, 0 0 8px #2dd4bf;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }

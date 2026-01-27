@@ -102,6 +102,7 @@ export default function Header({
 
     // Navigation items for mobile menu
     const navItems = [
+        { id: "home", label: "Home", icon: Home, href: "/?view=landing" },
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
         { id: "generate", label: "Generate Image", icon: Sparkles, href: "/generate" },
         { id: "gallery", label: "My Gallery", icon: Image, href: "/gallery" },

@@ -221,22 +221,54 @@ export default function GalleryPage() {
         }
 
         const filename = `${(alt || 'visiora_image').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${id}.jpg`;
-
         console.log('⬇️ Download requested:', { id, src, filename });
 
-        // Use local API proxy to bypass CORS
-        const proxyUrl = `/api/download?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(filename)}`;
+        // Handle Base64 images directly
+        if (src.startsWith('data:')) {
+            const link = document.createElement('a');
+            link.href = src;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            return;
+        }
 
-        // Create invisible link and trigger download
-        const link = document.createElement('a');
-        link.href = proxyUrl;
-        link.download = filename;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+            // Fetch blob from proxy to ensure cross-device consistency
+            // This forces the browser to load the data first, preventing mobile download failures
+            const proxyUrl = `/api/download?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(filename)}`;
+            const response = await fetch(proxyUrl);
 
-        console.log('✅ Download triggered via proxy');
+            if (!response.ok) throw new Error(`Download failed: ${response.statusText}`);
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            // Trigger safe download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            setTimeout(() => window.URL.revokeObjectURL(url), 100);
+
+            console.log('✅ Download successful via Blob');
+        } catch (error) {
+            console.error('❌ Download error:', error);
+            // Fallback to direct link if proxy fails (though unlikely to work if CORS is issue)
+            const link = document.createElement('a');
+            link.href = src;
+            link.target = '_blank';
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     const handleCopyPrompt = async (id: string, prompt: string) => {

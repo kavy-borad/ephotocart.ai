@@ -20,18 +20,18 @@ const col1 = [
         aspect: 'aspect-[2/3]'
     },
     {
-        id: 3,
-        raw: '/red-top-before-v2.jpg',
-        ai: '/red-top-after.jpg',
+        id: 6,
+        raw: '/poncho-raw.jpg',
+        ai: '/poncho-ai.jpg',
         aspect: 'aspect-[2/3]'
     }
 ];
 
 const col2 = [
     {
-        id: 6,
-        raw: '/poncho-raw.jpg',
-        ai: '/poncho-ai.jpg',
+        id: 3,
+        raw: '/red-top-before-v2.jpg',
+        ai: '/red-top-after.jpg',
         aspect: 'aspect-[2/3]'
     },
     {
@@ -50,42 +50,38 @@ const col2 = [
 
 export default function LandingVisuals() {
     return (
-        <div className="w-full h-[600px] relative p-4 pt-16 flex gap-5 overflow-hidden masked-gradient">
-            {/* Column 1 - Slow Move Up */}
+        <div className="w-full h-full relative p-4 flex justify-center gap-3 sm:gap-5 overflow-hidden masked-gradient">
+            {/* Column 1 - Continuous Scroll Up */}
             <motion.div
                 className="w-1/2 flex flex-col gap-5"
                 initial={{ y: 0 }}
-                animate={{ y: -20 }}
+                animate={{ y: "-50%" }}
                 transition={{
                     repeat: Infinity,
-                    repeatType: "reverse",
-                    duration: 8,
-                    ease: "easeInOut"
+                    duration: 20,
+                    ease: "linear"
                 }}
             >
-                {col1.map((item, idx) => (
-                    <GridItem key={item.id} item={item} index={idx} />
+                {[...col1, ...col1].map((item, idx) => (
+                    <GridItem key={`${item.id}-${idx}`} item={item} index={idx} />
                 ))}
             </motion.div>
 
-            {/* Column 2 - Offset Top + Slow Move Down */}
+            {/* Column 2 - Continuous Scroll Down (Offset) */}
             <motion.div
-                className="w-1/2 flex flex-col gap-5 pt-12"
-                initial={{ y: 0 }}
-                animate={{ y: 20 }}
+                className="w-1/2 flex flex-col gap-5 pt-4"
+                initial={{ y: "-50%" }}
+                animate={{ y: 0 }}
                 transition={{
                     repeat: Infinity,
-                    repeatType: "reverse",
-                    duration: 10,
-                    ease: "easeInOut"
+                    duration: 25,
+                    ease: "linear"
                 }}
             >
-                {col2.map((item, idx) => (
-                    <GridItem key={item.id} item={item} index={idx + 2} />
+                {[...col2, ...col2].map((item, idx) => (
+                    <GridItem key={`${item.id}-${idx}`} item={item} index={idx + 2} />
                 ))}
             </motion.div>
-
-            {/* Fade masks removed for better blending with parent container */}
         </div>
     );
 }
@@ -102,7 +98,7 @@ function GridItem({ item, index }: { item: any, index: number }) {
     }, [index]);
 
     return (
-        <div className={`relative w-full ${item.aspect} rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-white/40 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-black/40 group`}>
+        <div className={`relative w-full aspect-[2/3] min-h-[320px] rounded-2xl overflow-hidden bg-gray-200 dark:bg-slate-800 border border-white/40 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-black/40 group`}>
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat" />
 
@@ -121,6 +117,7 @@ function GridItem({ item, index }: { item: any, index: number }) {
                             src={showAi ? item.ai : item.raw}
                             alt={showAi ? "AI" : "Raw"}
                             fill
+                            sizes="(max-width: 768px) 100vw, 50vw"
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         {/* Subtle Overlay to unify contrast */}

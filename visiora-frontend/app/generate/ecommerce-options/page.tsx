@@ -13,7 +13,9 @@ import {
     Sparkles,
     Info,
     Check,
+    Loader2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { authApi } from "@/lib/auth";
 import { generateApi, UserCredits } from "@/lib/generate";
@@ -39,6 +41,7 @@ export default function EcommerceOptionsPage() {
     const [showTransparentDropdown, setShowTransparentDropdown] = useState(false);
     const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
     const [showImagesDropdown, setShowImagesDropdown] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
 
     const steps = [
         { id: 1, label: "Type", completed: true, current: false },
@@ -66,7 +69,14 @@ export default function EcommerceOptionsPage() {
         }
     };
 
+    // Prefetch next route for smoother transition
+    useEffect(() => {
+        router.prefetch('/generate/details');
+    }, [router]);
+
     const handleNextStep = () => {
+        setIsExiting(true); // Start exit animation
+
         // Save options to localStorage
         const ecommerceOptions = {
             productViews,
@@ -79,7 +89,11 @@ export default function EcommerceOptionsPage() {
             numberOfImages,
         };
         localStorage.setItem('ecommerceOptions', JSON.stringify(ecommerceOptions));
-        router.push('/generate/details');
+
+        // Small delay to allow exit animation to play
+        setTimeout(() => {
+            router.push('/generate/details');
+        }, 400);
     };
 
     const freeCredits = userCredits?.freeCredits ?? 1;
@@ -390,44 +404,28 @@ export default function EcommerceOptionsPage() {
                                                 </div>
                                             </div>
 
-                                            {/* Number of Images */}
-                                            <div>
-                                                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
-                                                    <Images className="w-3 h-3" />
-                                                    Number of Images
-                                                </label>
-                                                <div className="relative">
-                                                    <button
-                                                        onClick={() => setShowImagesDropdown(!showImagesDropdown)}
-                                                        className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-lg text-left hover:border-teal-400 transition-colors text-sm"
-                                                    >
-                                                        <span className="text-slate-900 dark:text-white font-medium">{numberOfImages} {numberOfImages === "1" ? "page" : "pages"}</span>
-                                                        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${showImagesDropdown ? 'rotate-180' : ''}`} />
-                                                    </button>
-                                                    {showImagesDropdown && (
-                                                        <div className="absolute w-full mt-1 bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl shadow-lg z-10 overflow-hidden">
-                                                            {["1", "4"].map((num) => (
-                                                                <button
-                                                                    key={num}
-                                                                    onClick={() => {
-                                                                        setNumberOfImages(num);
-                                                                        setShowImagesDropdown(false);
-                                                                    }}
-                                                                    className={`w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors ${numberOfImages === num ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
-                                                                >
-                                                                    <span className="font-medium text-slate-900 dark:text-white text-sm">{num} {num === "1" ? "page" : "pages"}</span>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </main>
+
+                    {/* Transition Loader Overlay */}
+                    {isExiting && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+                        >
+                            <div className="flex flex-col items-center gap-3">
+                                <Loader2 className="w-12 h-12 text-teal-500 animate-spin" />
+                                <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Loading...</p>
+                            </div>
+                        </motion.div>
+                    )}
 
                     {/* Navigation Buttons - Fixed Footer */}
                     <div className="shrink-0 px-3 py-2 bg-[#f8fafc] dark:bg-gray-900">
@@ -458,4 +456,3 @@ export default function EcommerceOptionsPage() {
         </div>
     );
 }
-    

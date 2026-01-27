@@ -160,14 +160,14 @@ export default function LandingPage() {
 
 
     return (
-        <div className="h-full w-screen overflow-x-hidden bg-gradient-to-br from-white via-emerald-50/50 to-teal-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 text-slate-900 dark:text-gray-100 antialiased flex flex-col transition-colors duration-300">
+        <div className="min-h-screen lg:h-screen w-screen overflow-x-hidden bg-gradient-to-br from-white via-emerald-50/50 to-teal-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 text-slate-900 dark:text-gray-100 antialiased flex flex-col transition-colors duration-300">
             {/* Navbar */}
             <PublicNavbar activePage="home" />
 
             {/* Main Content */}
             <main
                 onMouseMove={handleMouseMove}
-                className="flex-1 flex items-center justify-center relative px-4 sm:px-6 pt-28 pb-12 lg:pt-32 lg:pb-20 overflow-y-auto lg:overflow-hidden group"
+                className="flex-1 flex items-start justify-start lg:items-center lg:justify-center relative px-4 sm:px-6 pt-28 pb-12 lg:pt-32 lg:pb-20 overflow-y-auto lg:overflow-hidden group w-full"
             >
                 {/* Interactive Background: Mouse Spotlight */}
                 {/* Interactive Background: Tech Grid Reveal */}
@@ -177,9 +177,9 @@ export default function LandingPage() {
                         className="absolute inset-0 bg-[linear-gradient(to_right,rgba(128,128,128,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(128,128,128,0.08)_1px,transparent_1px)] bg-[size:32px_32px]"
                     />
 
-                    {/* Interactive Spotlight (Safe Implementation) */}
+                    {/* Interactive Spotlight (Safe Implementation) - Hidden on mobile to prevent crashes */}
                     <motion.div
-                        className="absolute w-[500px] h-[500px] bg-teal-400/20 dark:bg-teal-500/10 rounded-full blur-[100px]"
+                        className="absolute hidden sm:block w-[500px] h-[500px] bg-teal-400/20 dark:bg-teal-500/10 rounded-full blur-[100px]"
                         style={{
                             left: springX,
                             top: springY,
@@ -326,7 +326,7 @@ export default function LandingPage() {
                                     }
                                 }
                             }}
-                            className="flex flex-nowrap items-stretch justify-center lg:justify-start gap-3 mt-5 sm:mt-8 w-full mx-auto lg:mx-0"
+                            className="flex flex-wrap lg:flex-nowrap items-stretch justify-center lg:justify-start gap-3 mt-5 sm:mt-8 w-full mx-auto lg:mx-0"
                         >
                             {/* Stat 1 */}
                             <motion.div
@@ -420,7 +420,7 @@ export default function LandingPage() {
 
                     {/* Right Column - Comparison Slider & Stats */}
                     <motion.div
-                        className="relative hidden lg:block mt-12"
+                        className="relative block mt-12 w-full max-w-sm mx-auto lg:max-w-none lg:mx-0 flex justify-center"
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
@@ -429,7 +429,7 @@ export default function LandingPage() {
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-gradient-to-br from-teal-400/20 to-emerald-300/20 dark:from-teal-500/10 dark:to-emerald-500/10 blur-[90px] rounded-full -z-10 pointer-events-none" />
 
                         {/* Comparison Slider - Blended Background (No Border) */}
-                        <div className="relative z-10 rounded-3xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm p-4 sm:p-5 mb-8 transform hover:scale-[1.01] transition-transform duration-500 max-w-md mx-auto">
+                        <div className="relative z-10 rounded-3xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm p-4 sm:p-5 mb-8 transform hover:scale-[1.01] transition-transform duration-500 max-w-md lg:max-w-full mx-auto h-[600px] flex items-center">
                             <LandingVisuals />
                         </div>
                     </motion.div>

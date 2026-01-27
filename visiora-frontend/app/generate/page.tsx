@@ -46,7 +46,7 @@ export default function GenerateImagesPage() {
     ];
 
     const steps = [
-        { id: 1, label: "Type", label: "Type", icon: Pencil, completed: false, current: true },
+        { id: 1, label: "Type", icon: Pencil, completed: false, current: true },
         { id: 2, label: "Upload", completed: false, current: false },
         { id: 3, label: "Details", completed: false, current: false },
     ];
@@ -68,26 +68,33 @@ export default function GenerateImagesPage() {
         }
     }, [router]);
 
+    const [isExiting, setIsExiting] = useState(false);
+
+    // Prefetch next routes for smoother transition
+    useEffect(() => {
+        router.prefetch('/generate/upload');
+        router.prefetch('/generate/ecommerce-options');
+    }, [router]);
+
     const handleNextStep = async () => {
         setIsSubmitting(true);
+        setIsExiting(true); // Start exit animation
 
+        // Save state
         try {
             localStorage.setItem('generateType', selectedType);
+        } catch (e) {
+            console.error(e);
+        }
 
-            // Navigate to upload page for both types
-            router.push('/generate/upload');
-
-            // We keep isSubmitting true to show processing state on the button
-            // until the page transition takes over
-        } catch (error) {
-            console.warn('Failed to save generation type:', error);
-            // Fallback navigation
+        // Small delay to allow exit animation to play
+        setTimeout(() => {
             if (selectedType === 'batch_image') {
                 router.push('/generate/ecommerce-options');
             } else {
                 router.push('/generate/upload');
             }
-        }
+        }, 400); // 400ms matches typical transition duration
     };
 
     return (
@@ -108,7 +115,9 @@ export default function GenerateImagesPage() {
 
                     {/* Main Content - Scrollable */}
                     <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto bg-slate-50/50 dark:bg-gray-900/50 transition-colors duration-300">
-                        <PageTransition className="flex flex-col min-h-full">
+                        <PageTransition
+                            className={`flex flex-col min-h-full transition-all duration-500 ease-in-out ${isExiting ? 'opacity-0 -translate-x-4 scale-95' : 'opacity-100 translate-x-0 scale-100'}`}
+                        >
                             {/* Page Header */}
                             <div className="mb-6 shrink-0">
                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">Generate Images</h1>
@@ -255,6 +264,21 @@ export default function GenerateImagesPage() {
                                 </button>
                             </div>
                         </PageTransition>
+
+                        {/* Transition Loader Overlay */}
+                        {isExiting && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+                            >
+                                <div className="flex flex-col items-center gap-3">
+                                    <Loader2 className="w-12 h-12 text-teal-500 animate-spin" />
+                                    <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Loading...</p>
+                                </div>
+                            </motion.div>
+                        )}
                     </main>
                 </div>
             </div>

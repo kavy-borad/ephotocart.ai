@@ -109,20 +109,7 @@ export default function DetailsPage() {
         };
     }, [activeDropdown]);
 
-    // Page transition loader
-    const [isPageLoading, setIsPageLoading] = useState(navigationState.shouldShowLoader);
 
-    useEffect(() => {
-        if (isPageLoading) {
-            const timer = setTimeout(() => {
-                setIsPageLoading(false);
-            }, 800);
-            navigationState.shouldShowLoader = false;
-            return () => clearTimeout(timer);
-        } else {
-            navigationState.shouldShowLoader = false;
-        }
-    }, [isPageLoading]);
 
     // Load ecommerce bundle options from localStorage (for batch_image)
     const [savedBundleOptions, setSavedBundleOptions] = useState<any>(null);
@@ -371,26 +358,18 @@ export default function DetailsPage() {
     // Fallback categories if API fails
     const displayCategories: Category[] = categories.length > 0 ? categories : [
         { id: "clothes", name: "Clothes & Apparel", description: "T-shirts, shirts, dresses, pants, etc.", show_model: true, recommended_model: "portrait_master", icon: null },
+        { id: "footwear", name: "Footwear", description: "Shoes, sneakers, sandals, boots, etc.", show_model: false, recommended_model: "product_studio", icon: null },
+        { id: "beauty", name: "Beauty & Cosmetics", description: "Makeup, skincare, perfume, etc.", show_model: true, recommended_model: "beauty_portrait", icon: null },
+        { id: "accessories", name: "Accessories", description: "Bags, jewelry, watches, hats, etc.", show_model: true, recommended_model: "close_up", icon: null },
         { id: "furniture", name: "Furniture", description: "Chairs, tables, sofas, etc.", show_model: false, recommended_model: "interior_design", icon: null },
+        { id: "home_decor", name: "Home Decor", description: "Vases, lamps, wall art, rugs, etc.", show_model: false, recommended_model: "interior_design", icon: null },
         { id: "electronics", name: "Electronics", description: "Phones, laptops, gadgets, etc.", show_model: false, recommended_model: "product_studio", icon: null },
+        { id: "toys", name: "Toys & Games", description: "Action figures, dolls, puzzles, etc.", show_model: false, recommended_model: "product_studio", icon: null },
+        { id: "sports", name: "Sports & Outdoors", description: "Equipment, gear, athletic wear, etc.", show_model: true, recommended_model: "action_shot", icon: null },
         { id: "food", name: "Food & Beverage", description: "Food items, drinks, etc.", show_model: false, recommended_model: "food_photography", icon: null },
     ];
 
-    if (isPageLoading) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center bg-[#f8fafc] dark:bg-gray-900">
-                <motion.div
-                    className="w-12 h-12 rounded-full border-4 border-teal-500/30 border-t-teal-500 shadow-lg"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                />
-            </div>
-        );
-    }
+
 
     return (
         <>

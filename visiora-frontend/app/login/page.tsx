@@ -100,21 +100,28 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="h-screen w-screen overflow-hidden flex items-stretch bg-white dark:bg-slate-900">
+        <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row items-stretch bg-white dark:bg-slate-900">
 
             {/* 1. Left Side - Visuals (Consistent with Register Page) */}
-            <div className="hidden lg:block w-[55%] h-full p-4">
-                <div className="w-full h-full rounded-[2rem] overflow-hidden relative shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="block w-full lg:w-[55%] h-[35%] lg:h-full p-2 lg:p-4 shrink-0">
+                <div className="w-full h-full rounded-2xl lg:rounded-[2rem] overflow-hidden relative shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
                     <MorphLoopVisuals />
                 </div>
             </div>
 
             {/* 2. Right Side - Compact Form with Tabs */}
-            <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative">
+            <div className="flex-1 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-8 relative overflow-y-auto lg:overflow-visible">
 
-                {/* Branding Mobile Only */}
-                <div className="absolute top-6 left-6 lg:hidden">
+                {/* Mobile Header: Branding & Back Button (Static Flow) */}
+                <div className="w-full flex items-center justify-between mb-6 lg:hidden shrink-0">
                     <Branding />
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors p-2"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back</span>
+                    </Link>
                 </div>
 
                 {/* Desktop: Back to Home */}

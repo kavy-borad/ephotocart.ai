@@ -14,7 +14,10 @@ export function useRouter() {
 
     const push = useCallback((href: string, options?: Parameters<typeof router.push>[1]) => {
         // Only start transition if navigating to a different route
-        if (window.location.pathname + window.location.search !== href) {
+        const currentPath = window.location.pathname;
+        const isGenerateFlow = currentPath.includes('/generate') && href.includes('/generate');
+
+        if (currentPath + window.location.search !== href && !isGenerateFlow) {
             startTransition();
         }
         return router.push(href, options);
@@ -22,7 +25,10 @@ export function useRouter() {
 
     const replace = useCallback((href: string, options?: Parameters<typeof router.replace>[1]) => {
         // Only start transition if navigating to a different route
-        if (window.location.pathname + window.location.search !== href) {
+        const currentPath = window.location.pathname;
+        const isGenerateFlow = currentPath.includes('/generate') && href.includes('/generate');
+
+        if (currentPath + window.location.search !== href && !isGenerateFlow) {
             startTransition();
         }
         return router.replace(href, options);

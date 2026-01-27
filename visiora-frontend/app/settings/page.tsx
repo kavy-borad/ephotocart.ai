@@ -1225,41 +1225,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            {/* FAQ Answer Modal */}
-            <AnimatePresence>
-                {selectedFaq && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedFaq(null)}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden"
-                        >
-                            <div className="p-6 border-b border-slate-100 dark:border-gray-700">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-8">{selectedFaq.question}</h3>
-                            </div>
-                            <div className="p-6">
-                                <p className="text-slate-600 dark:text-gray-400 leading-relaxed">{selectedFaq.answer}</p>
-                            </div>
-                            <div className="p-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">
-                                <button
-                                    onClick={() => setSelectedFaq(null)}
-                                    className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-xl hover:bg-slate-800 dark:hover:bg-gray-200 transition-colors"
-                                >
-                                    Got it
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+
         </div>
     );
 
@@ -1291,7 +1257,7 @@ export default function SettingsPage() {
 
                         {/* Tabs Navigation */}
                         <div className="border-b border-slate-200 dark:border-gray-700">
-                            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+                            <div className="flex items-center gap-1 overflow-x-auto w-full no-scrollbar pb-1">
                                 {tabs.map((tab) => {
                                     const isActive = activeTab === tab.id;
                                     const Icon = tab.icon;
@@ -1300,7 +1266,7 @@ export default function SettingsPage() {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`
-                                                relative px-4 py-3 flex items-center gap-2.5 text-sm font-medium transition-all whitespace-nowrap outline-none
+                                                relative px-4 py-3 flex items-center gap-2.5 text-sm font-medium transition-all whitespace-nowrap outline-none shrink-0
                                                 ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300'}
                                             `}
                                         >
@@ -1343,8 +1309,44 @@ export default function SettingsPage() {
                 </div>
             </main>
 
-            {/* Forgot Password Modal */}
             {renderForgotPasswordModal()}
+
+            {/* FAQ Answer Modal */}
+            <AnimatePresence>
+                {selectedFaq && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedFaq(null)}
+                        className="fixed inset-0 bg-black/10 backdrop-blur-xl z-[9999] flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-6 border-b border-slate-100 dark:border-gray-700">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white pr-8">{selectedFaq.question}</h3>
+                            </div>
+                            <div className="p-6">
+                                <p className="text-slate-600 dark:text-gray-400 leading-relaxed">{selectedFaq.answer}</p>
+                            </div>
+                            <div className="p-4 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50">
+                                <button
+                                    onClick={() => setSelectedFaq(null)}
+                                    className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-xl hover:bg-slate-800 dark:hover:bg-gray-200 transition-colors"
+                                >
+                                    Got it
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

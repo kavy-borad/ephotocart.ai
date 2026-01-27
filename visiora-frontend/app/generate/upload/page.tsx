@@ -39,6 +39,7 @@ export default function UploadPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showUploadError, setShowUploadError] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
 
     // User profile state
     const [userName, setUserName] = useState("Jane");
@@ -54,6 +55,12 @@ export default function UploadPage() {
             setUserInitial(firstName.charAt(0).toUpperCase());
         }
     }, []);
+
+    // Prefetch next routes for smoother transition
+    useEffect(() => {
+        router.prefetch('/generate/details');
+        router.prefetch('/generate/ecommerce-options');
+    }, [router]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -123,6 +130,7 @@ export default function UploadPage() {
         }
 
         setIsSubmitting(true);
+        setIsExiting(true); // Start exit animation
         setError(null);
 
         try {
@@ -135,7 +143,6 @@ export default function UploadPage() {
                     console.log('File uploaded, file_id:', uploadResponse.data.file_id);
                 } else {
                     // Upload endpoint not available - use test file_id for now
-                    // TODO: Replace with actual upload when backend endpoint is ready
                     console.warn('Using test file_id (upload endpoint not available)');
                     localStorage.setItem('uploadedFileId', '12');  // Test file_id that backend accepts
                 }
@@ -153,18 +160,21 @@ export default function UploadPage() {
             // Check generate type and route accordingly
             const generateType = localStorage.getItem('generateType');
 
-            // Using enhanced router from @/components/useRouter will trigger global loader
-            if (generateType === 'batch_image') {
-                // E-commerce bundle: go to options page
-                router.push('/generate/ecommerce-options');
-            } else {
-                // Single image: go to details page
-                router.push('/generate/details');
-            }
+            // Small delay to allow exit animation to play
+            setTimeout(() => {
+                if (generateType === 'batch_image') {
+                    // E-commerce bundle: go to options page
+                    router.push('/generate/ecommerce-options');
+                } else {
+                    // Single image: go to details page
+                    router.push('/generate/details');
+                }
+            }, 400); // 400ms matches typical transition duration
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
+            setIsExiting(false); // Reset exit state on error
         } finally {
-            setIsSubmitting(false);
+            // Keep isSubmitting true until navigation completes
         }
     };
 
@@ -187,7 +197,12 @@ export default function UploadPage() {
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
                     {/* Content - Scrollable on mobile */}
-                    <div className="flex-1 p-4 sm:p-5 overflow-y-auto flex flex-col">
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: isExiting ? 0 : 1, x: isExiting ? -20 : 0, scale: isExiting ? 0.95 : 1 }}
+                        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                        className="flex-1 p-4 sm:p-5 overflow-y-auto flex flex-col"
+                    >
                         <div className="flex flex-col gap-2 min-h-full">
                             {/* Page Header */}
                             <div className="mb-2 shrink-0">
@@ -247,25 +262,6 @@ export default function UploadPage() {
                                         </h3>
                                         <span className="self-start sm:self-auto text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Supported: JPG, PNG, WEBP</span>
                                     </div>
-
-                                    {/* Error Message Alert */}
-                                    {error && (
-                                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-2">
-                                            <div className="shrink-0 w-8 h-8 bg-red-100 dark:bg-red-900/50 rounded-lg flex items-center justify-center">
-                                                <X className="w-5 h-5" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-sm font-bold">Upload Failed</p>
-                                                <p className="text-sm font-medium opacity-90">{error}</p>
-                                            </div>
-                                            <button
-                                                onClick={() => setError(null)}
-                                                className="p-1 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    )}
 
                                     {/* Upload Cards Grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
@@ -368,7 +364,22 @@ export default function UploadPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
+
+                    {/* Transition Loader Overlay */}
+                    {isExiting && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+                        >
+                            <div className="flex flex-col items-center gap-3">
+                                <Loader2 className="w-12 h-12 text-teal-500 animate-spin" />
+                                <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Loading...</p>
+                            </div>
+                        </motion.div>
+                    )}
 
                     {/* Navigation Buttons - Fixed Footer */}
                     <div className="shrink-0 px-5 py-2 bg-[#f8fafc] dark:bg-gray-900">

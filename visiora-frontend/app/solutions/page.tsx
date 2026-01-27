@@ -17,7 +17,7 @@ export default function SolutionsPage() {
         if (isPaused) return;
         const timer = setInterval(() => {
             setStep((prev) => (prev === 3 ? 1 : prev + 1));
-        }, 3000);
+        }, 5000);
         return () => clearInterval(timer);
     }, [isPaused]);
 
@@ -25,16 +25,11 @@ export default function SolutionsPage() {
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
     return (
-        <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="relative w-full min-h-screen pt-16 pb-12 px-4 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col"
-        >
+        <section className="relative w-full min-h-screen pt-16 pb-12 px-4 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-x-hidden">
             <PublicNavbar activePage="solutions" />
 
             {/* Background Effects (Matches Pricing) */}
-            <div className="fixed inset-0 pointer-events-none z-0">
+            <div className="fixed inset-0 pointer-events-none z-0 hidden md:block">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-500/10 blur-[120px] rounded-full dark:bg-teal-900/10" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full dark:bg-emerald-900/10" />
             </div>
@@ -43,18 +38,26 @@ export default function SolutionsPage() {
             <div className="max-w-6xl mx-auto relative z-10 flex-1 flex flex-col justify-center">
 
                 {/* Header (Static) */}
-                <div className="text-center mb-8">
-                    <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-center mb-8"
+                >
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
                         Only <span className="text-teal-500">three steps</span> to magic
                     </h2>
                     <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
                         Transform your raw product photos into professional model shoots instantly. No expensive studios required.
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Steps Slider */}
-                <div
-                    className="relative min-h-[500px] overflow-hidden"
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="relative min-h-[600px] md:min-h-[500px]"
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                 >
@@ -68,10 +71,10 @@ export default function SolutionsPage() {
                                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                                 exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                                className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20"
+                                className="flex flex-col md:flex-row items-center justify-between gap-10 md:gap-20"
                             >
                                 {/* Text Left */}
-                                <div className="w-full md:w-1/2 relative space-y-6">
+                                <div className="w-full md:w-1/2 relative space-y-6 flex flex-col items-center md:items-start text-center md:text-left">
                                     <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400 text-xs font-bold tracking-wider uppercase mb-2">
                                         Step 1
                                     </span>
@@ -93,12 +96,12 @@ export default function SolutionsPage() {
 
                                 {/* Visual Right - Split Card */}
                                 <div className="w-full md:w-1/2 relative">
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/20 to-purple-500/20 blur-3xl rounded-full opacity-60 scale-90" />
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/20 to-purple-500/20 blur-3xl rounded-full opacity-60 scale-90 hidden md:block" />
                                     <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl shadow-slate-200 dark:shadow-black/50 border border-white/40 dark:border-white/10 bg-slate-50 dark:bg-slate-900 mx-auto max-w-md transform transition-transform hover:scale-[1.02] duration-500">
                                         <div className="flex h-full w-full">
                                             {/* Single */}
                                             <div className="w-1/2 h-full relative border-r border-white/10 group cursor-pointer hover:w-[55%] transition-all duration-500">
-                                                <Image src="/shirt-set-ai.jpg" alt="Single" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                <Image src="/shirt-set-ai.jpg" alt="Single" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                                                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
                                                 <div className="absolute bottom-4 left-0 right-0 text-center">
                                                     <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-semibold">Single</span>
@@ -107,10 +110,10 @@ export default function SolutionsPage() {
                                             {/* Bundle */}
                                             <div className="w-1/2 h-full relative group cursor-pointer hover:w-[55%] transition-all duration-500">
                                                 <div className="grid grid-cols-2 grid-rows-2 h-full gap-1 p-2 bg-slate-900">
-                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Front" fill className="object-cover object-top" /></div>
-                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Side" fill className="object-cover object-top scale-x-[-1]" /></div>
-                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Back" fill className="object-cover object-center scale-150" /></div>
-                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Detail" fill className="object-cover object-[50%_30%] scale-125" /></div>
+                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Front" fill sizes="(max-width: 768px) 25vw, 15vw" className="object-cover object-top" /></div>
+                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Side" fill sizes="(max-width: 768px) 25vw, 15vw" className="object-cover object-top scale-x-[-1]" /></div>
+                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Back" fill sizes="(max-width: 768px) 25vw, 15vw" className="object-cover object-center scale-150" /></div>
+                                                    <div className="relative rounded-lg overflow-hidden"><Image src="/shirt-set-ai.jpg" alt="Detail" fill sizes="(max-width: 768px) 25vw, 15vw" className="object-cover object-[50%_30%] scale-125" /></div>
                                                 </div>
                                                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors pointer-events-none" />
                                                 <div className="absolute bottom-4 left-0 right-0 text-center z-10">
@@ -134,10 +137,10 @@ export default function SolutionsPage() {
                                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                                 exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                                className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20"
+                                className="flex flex-col md:flex-row items-center justify-between gap-10 md:gap-20"
                             >
                                 {/* Text Left */}
-                                <div className="w-full md:w-1/2 relative space-y-8">
+                                <div className="w-full md:w-1/2 relative space-y-8 flex flex-col items-center md:items-start text-center md:text-left">
                                     <div>
                                         <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold tracking-wider uppercase mb-4">
                                             Step 2
@@ -174,7 +177,7 @@ export default function SolutionsPage() {
                                 <div className="w-full md:w-1/2 relative">
                                     <div className="bg-white dark:bg-slate-900 rounded-3xl p-3 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-slate-800 max-w-md mx-auto relative overflow-hidden">
                                         <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100">
-                                            <Image src="/shirt-set-raw.jpg" alt="Uploaded File" fill className="object-cover" />
+                                            <Image src="/shirt-set-raw.jpg" alt="Uploaded File" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
                                             <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1.5 rounded-lg flex items-center gap-2">
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                                                 <span className="text-xs font-medium text-white">Upload Complete</span>
@@ -193,10 +196,10 @@ export default function SolutionsPage() {
                                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                                 exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                                className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20"
+                                className="flex flex-col md:flex-row items-center justify-between gap-10 md:gap-20"
                             >
                                 {/* Text Left */}
-                                <div className="w-full md:w-1/2 relative space-y-6">
+                                <div className="w-full md:w-1/2 relative space-y-6 flex flex-col items-center md:items-start text-center md:text-left">
                                     <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400 text-xs font-bold tracking-wider uppercase mb-2">
                                         Step 3
                                     </span>
@@ -219,17 +222,17 @@ export default function SolutionsPage() {
 
                                 {/* Visual Right */}
                                 <div className="w-full md:w-1/2 relative">
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/20 to-purple-500/20 blur-3xl rounded-full opacity-60 scale-90" />
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/20 to-purple-500/20 blur-3xl rounded-full opacity-60 scale-90 hidden md:block" />
                                     <div className="relative aspect-[2/2] rounded-3xl overflow-hidden shadow-2xl shadow-slate-200 dark:shadow-black/50 border border-white/40 dark:border-white/10 bg-slate-900 mx-auto max-w-md transform transition-transform hover:scale-[1.02] duration-500">
-                                        <Image src="/shirt-set-ai.jpg" alt="Final Result" fill className="object-cover" />
+                                        <Image src="/shirt-set-ai.jpg" alt="Final Result" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
                                     </div>
                                 </div>
                             </motion.div>
                         )}
 
                     </AnimatePresence>
-                </div>
+                </motion.div>
             </div>
-        </motion.section>
+        </section>
     );
 }
