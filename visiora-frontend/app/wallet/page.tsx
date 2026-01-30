@@ -651,12 +651,15 @@ export default function WalletPage() {
                                         <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                                             <Link
                                                 href="/wallet/add-money"
-                                                className="flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-11 px-6 text-sm font-bold shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                                                className="relative flex-1 md:flex-none cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-white h-10 px-6 text-sm font-bold shadow-lg shadow-emerald-400/25 hover:shadow-emerald-400/40 transition-all duration-300 active:scale-[0.98] overflow-hidden group border border-emerald-300/20"
                                             >
-                                                <Plus className="w-4 h-4" />
-                                                Add Money
+                                                <span className="relative z-10 flex items-center gap-2">
+                                                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                                                    Add Money
+                                                </span>
+                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
                                             </Link>
-                                            <button className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white h-11 w-11 transition-all hover:border-slate-300">
+                                            <button className="cursor-pointer inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-gray-700 bg-transparent hover:bg-slate-50 dark:hover:bg-gray-800 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 h-10 w-10 transition-all hover:border-slate-300 dark:hover:border-gray-600">
                                                 <MoreHorizontal className="w-5 h-5" />
                                             </button>
                                         </div>

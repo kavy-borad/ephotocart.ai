@@ -279,10 +279,13 @@ export default function AddMoneyPage() {
                                 </Link>
                                 <h1 className="text-xl font-bold text-slate-900 dark:text-white">Add Money Order</h1>
                             </div>
-                            <button className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                            <Link
+                                href="/settings?tab=help"
+                                className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                            >
                                 <HelpCircle className="w-4 h-4" />
                                 <span>Help & Support</span>
-                            </button>
+                            </Link>
                         </div>
 
                         {/* Main Card - Two Column Layout */}
@@ -338,17 +341,20 @@ export default function AddMoneyPage() {
                                     </div>
 
                                     {/* Conversion Rate / Package Credits Card */}
-                                    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/30 mb-6">
-                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-teal-50/50 to-emerald-50/50 dark:from-teal-900/10 dark:to-emerald-900/10 rounded-xl border border-teal-100 dark:border-teal-800/30 mb-6 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                            <Zap className="w-16 h-16 text-teal-500 transform rotate-12" />
+                                        </div>
+                                        <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-500/20 relative z-10">
                                             <Zap className="w-5 h-5" />
                                         </div>
-                                        <div className="flex-1">
+                                        <div className="flex-1 relative z-10">
                                             <p className="text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                                                 {isPackageSelected ? 'Package Credits' : 'Conversion Rate'}
                                             </p>
                                             {isPackageSelected && bonusCredits > 0 ? (
                                                 <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
-                                                    {(packageCredits || 0) - bonusCredits} <span className="text-slate-500">Credits</span> <span className="text-teal-500">+ {bonusCredits} Bonus</span>
+                                                    {(packageCredits || 0) - bonusCredits} <span className="text-slate-500">Credits</span> <span className="text-emerald-500 font-bold">+ {bonusCredits} Bonus</span>
                                                 </p>
                                             ) : (
                                                 <p className="text-sm font-semibold text-slate-700 dark:text-gray-200">
@@ -356,7 +362,7 @@ export default function AddMoneyPage() {
                                                 </p>
                                             )}
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-right relative z-10">
                                             <p className="text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider">You Will Get</p>
                                             <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">
                                                 {calculatedCredits} <span className="text-sm font-medium">Credits</span>
@@ -365,23 +371,23 @@ export default function AddMoneyPage() {
                                     </div>
 
                                     {/* Info Message */}
-                                    <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30 mt-auto">
-                                        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <div className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 mt-auto">
+                                        <div className="w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
                                             <span className="text-white text-xs font-bold">i</span>
                                         </div>
-                                        <p className="text-sm text-slate-600 dark:text-gray-300">
+                                        <p className="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
                                             Credits are added to your wallet instantly upon successful payment. Please ensure your internet connection is stable.
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* RIGHT COLUMN */}
-                                <div className="p-6 flex flex-col">
+                                <div className="p-6 flex flex-col bg-slate-50/30 dark:bg-gray-800/50">
 
                                     {/* Payment Gateway Selection */}
                                     <div className="mb-6">
                                         <div className="flex items-center gap-2 mb-4">
-                                            <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                                            <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
                                             <h3 className="text-base font-bold text-slate-900 dark:text-white">Select Payment Gateway</h3>
                                         </div>
 
@@ -390,39 +396,39 @@ export default function AddMoneyPage() {
                                             <motion.button
                                                 onClick={() => setPaymentMethod('razorpay')}
                                                 whileTap={{ scale: 0.98 }}
-                                                animate={paymentMethod === 'razorpay' ? { scale: 1.02 } : { scale: 1 }}
+                                                animate={paymentMethod === 'razorpay' ? { scale: 1.02, y: -2 } : { scale: 1, y: 0 }}
                                                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-colors duration-300 ${paymentMethod === 'razorpay'
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10'
-                                                    : 'border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800/50'
+                                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-300 ${paymentMethod === 'razorpay'
+                                                    ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-900/10 shadow-lg shadow-teal-500/10'
+                                                    : 'border-slate-200 dark:border-gray-700 hover:border-teal-200 dark:hover:border-teal-800 bg-white dark:bg-gray-800'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <motion.div
                                                         animate={paymentMethod === 'razorpay'
-                                                            ? { backgroundColor: '#3b82f6', scale: 1.05 }
+                                                            ? { backgroundColor: '#14b8a6', scale: 1.05 }
                                                             : { backgroundColor: '#f1f5f9', scale: 1 }
                                                         }
                                                         transition={{ duration: 0.2 }}
                                                         className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentMethod === 'razorpay'
-                                                            ? 'text-white'
-                                                            : 'text-slate-500 dark:text-gray-400'
+                                                            ? 'text-white shadow-md shadow-teal-500/30'
+                                                            : 'text-slate-500 dark:text-gray-400 dark:bg-gray-700'
                                                             }`}
                                                     >
                                                         <CreditCard className="w-5 h-5" />
                                                     </motion.div>
                                                     <div className="text-left">
                                                         <p className="font-semibold text-slate-900 dark:text-white">Razorpay</p>
-                                                        <p className="text-xs text-slate-500 dark:text-gray-400">Instant Credit • UPI/Cards/Netbanking</p>
+                                                        <p className="text-xs text-slate-500 dark:text-gray-400">Cards, UPI, Netbanking & More</p>
                                                     </div>
                                                 </div>
                                                 <motion.div
                                                     animate={paymentMethod === 'razorpay'
-                                                        ? { scale: 1, borderColor: '#3b82f6', backgroundColor: '#3b82f6' }
+                                                        ? { scale: 1, borderColor: '#14b8a6', backgroundColor: '#14b8a6' }
                                                         : { scale: 1, borderColor: '#cbd5e1', backgroundColor: 'transparent' }
                                                     }
                                                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                    className="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                                                    className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
                                                 >
                                                     {paymentMethod === 'razorpay' && (
                                                         <motion.div
@@ -430,7 +436,7 @@ export default function AddMoneyPage() {
                                                             animate={{ scale: 1, opacity: 1 }}
                                                             transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 }}
                                                         >
-                                                            <CheckCircle className="w-4 h-4 text-white" />
+                                                            <CheckCircle className="w-3.5 h-3.5 text-white" />
                                                         </motion.div>
                                                     )}
                                                 </motion.div>
@@ -440,39 +446,39 @@ export default function AddMoneyPage() {
                                             <motion.button
                                                 onClick={() => setPaymentMethod('bank_transfer')}
                                                 whileTap={{ scale: 0.98 }}
-                                                animate={paymentMethod === 'bank_transfer' ? { scale: 1.02 } : { scale: 1 }}
+                                                animate={paymentMethod === 'bank_transfer' ? { scale: 1.02, y: -2 } : { scale: 1, y: 0 }}
                                                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-colors duration-300 ${paymentMethod === 'bank_transfer'
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10'
-                                                    : 'border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800/50'
+                                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-300 ${paymentMethod === 'bank_transfer'
+                                                    ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-900/10 shadow-lg shadow-teal-500/10'
+                                                    : 'border-slate-200 dark:border-gray-700 hover:border-teal-200 dark:hover:border-teal-800 bg-white dark:bg-gray-800'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <motion.div
                                                         animate={paymentMethod === 'bank_transfer'
-                                                            ? { backgroundColor: '#3b82f6', scale: 1.05 }
+                                                            ? { backgroundColor: '#14b8a6', scale: 1.05 }
                                                             : { backgroundColor: '#f1f5f9', scale: 1 }
                                                         }
                                                         transition={{ duration: 0.2 }}
                                                         className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentMethod === 'bank_transfer'
-                                                            ? 'text-white'
-                                                            : 'text-slate-500 dark:text-gray-400'
+                                                            ? 'text-white shadow-md shadow-teal-500/30'
+                                                            : 'text-slate-500 dark:text-gray-400 dark:bg-gray-700'
                                                             }`}
                                                     >
                                                         <Building2 className="w-5 h-5" />
                                                     </motion.div>
                                                     <div className="text-left">
-                                                        <p className="font-semibold text-slate-900 dark:text-white">Bank Transfer / Others</p>
+                                                        <p className="font-semibold text-slate-900 dark:text-white">Bank Transfer</p>
                                                         <p className="text-xs text-slate-500 dark:text-gray-400">Manual Verification Required</p>
                                                     </div>
                                                 </div>
                                                 <motion.div
                                                     animate={paymentMethod === 'bank_transfer'
-                                                        ? { scale: 1, borderColor: '#3b82f6', backgroundColor: '#3b82f6' }
+                                                        ? { scale: 1, borderColor: '#14b8a6', backgroundColor: '#14b8a6' }
                                                         : { scale: 1, borderColor: '#cbd5e1', backgroundColor: 'transparent' }
                                                     }
                                                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                    className="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                                                    className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
                                                 >
                                                     {paymentMethod === 'bank_transfer' && (
                                                         <motion.div
@@ -480,7 +486,7 @@ export default function AddMoneyPage() {
                                                             animate={{ scale: 1, opacity: 1 }}
                                                             transition={{ type: "spring", stiffness: 500, damping: 25, delay: 0.1 }}
                                                         >
-                                                            <CheckCircle className="w-4 h-4 text-white" />
+                                                            <CheckCircle className="w-3.5 h-3.5 text-white" />
                                                         </motion.div>
                                                     )}
                                                 </motion.div>
@@ -490,7 +496,7 @@ export default function AddMoneyPage() {
 
                                     {/* Payment Notes */}
                                     <div className="mb-6">
-                                        <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-2 block">
                                             Payment Notes (Optional)
                                         </label>
                                         <textarea
@@ -498,7 +504,7 @@ export default function AddMoneyPage() {
                                             onChange={(e) => setNotes(e.target.value)}
                                             placeholder="Enter details about this transaction..."
                                             rows={3}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 text-slate-900 dark:text-white text-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-400 resize-none"
+                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800/80 text-slate-900 dark:text-white text-sm outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 placeholder:text-slate-400 resize-none shadow-sm"
                                         />
                                     </div>
 
@@ -519,7 +525,7 @@ export default function AddMoneyPage() {
                                         <button
                                             onClick={handleCreateOrder}
                                             disabled={isProcessing || !isValidAmount}
-                                            className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-base rounded-xl shadow-lg shadow-blue-500/25 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold text-base rounded-xl shadow-lg shadow-teal-500/25 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                                         >
                                             {isProcessing ? (
                                                 <>
@@ -533,14 +539,6 @@ export default function AddMoneyPage() {
                                                 </>
                                             )}
                                         </button>
-
-                                        {/* Secure payment text */}
-                                        <p className="text-center text-xs text-slate-400 dark:text-gray-500 mt-3 flex items-center justify-center gap-1">
-                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                                            </svg>
-                                            Secure Payment via SSL
-                                        </p>
                                     </div>
                                 </div>
                             </div>

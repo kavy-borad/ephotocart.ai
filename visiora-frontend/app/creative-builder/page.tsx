@@ -35,34 +35,45 @@ export default function CreativeBuilderPage() {
                         transition={{ duration: 0.4 }}
                         className="w-full max-w-2xl"
                     >
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 sm:p-16 border border-dashed border-slate-300 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center text-center transition-all hover:border-teal-500/50 dark:hover:border-teal-500/30 group">
+                        <div className="relative group cursor-pointer w-full">
 
-                            {/** Icon Circle **/}
-                            <div className="w-20 h-20 bg-slate-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <ImageIcon className="w-10 h-10 text-slate-400 dark:text-gray-500" />
+                            {/* Card Container */}
+                            <div className="relative bg-white dark:bg-gray-800 rounded-3xl p-12 sm:p-16 border-2 border-dashed border-slate-200 dark:border-gray-700 hover:border-teal-500/50 dark:hover:border-teal-500/50 hover:bg-slate-50/50 dark:hover:bg-gray-800/50 transition-all duration-300 flex flex-col items-center justify-center text-center group-hover:shadow-[0_0_40px_-10px_rgba(20,184,166,0.15)]">
+
+                                {/** Icon Visual **/}
+                                <div className="mb-8 relative transition-transform duration-300 group-hover:-translate-y-1">
+                                    <div className="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 mb-4 mx-auto shadow-sm group-hover:shadow-md transition-all">
+                                        <ImageIcon className="w-10 h-10" strokeWidth={1.5} />
+                                    </div>
+                                    <div className="absolute -bottom-2 -right-2 bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-sm border border-slate-100 dark:border-gray-700 text-teal-600 dark:text-teal-400">
+                                        <Upload className="w-4 h-4" />
+                                    </div>
+                                </div>
+
+                                {/** Typography **/}
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
+                                    Upload Creative Assets
+                                </h2>
+                                <p className="text-slate-500 dark:text-gray-400 mb-8 max-w-sm text-sm leading-relaxed">
+                                    Drag and drop high-quality images here, or <span className="text-teal-600 dark:text-teal-400 font-semibold underline decoration-2 decoration-teal-100 dark:decoration-teal-900 underline-offset-2 hover:decoration-teal-500 transition-all">browse</span> from your computer.
+                                </p>
+
+                                {/** Primary Action **/}
+                                <button className="px-8 py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-slate-900 rounded-xl font-semibold shadow-lg shadow-slate-900/10 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-3">
+                                    <Upload className="w-4 h-4" />
+                                    <span>Select Image</span>
+                                </button>
+
+                                {/** Tech Specs **/}
+                                <div className="mt-10 flex items-center justify-center gap-6 text-[10px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest opacity-80">
+                                    <span>PNG</span>
+                                    <span>JPG</span>
+                                    <span>WEBP</span>
+                                    <span className="text-slate-300 dark:text-gray-700">•</span>
+                                    <span>Max 10MB</span>
+                                </div>
+
                             </div>
-
-                            {/** Main Title **/}
-                            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                                Upload an image to start creating your ad
-                            </h2>
-
-                            {/** Subtitle **/}
-                            <p className="text-slate-500 dark:text-gray-400 mb-8 max-w-sm">
-                                Drag and drop your image here, or click to browse
-                            </p>
-
-                            {/** Upload Button **/}
-                            <button className="flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white rounded-xl font-semibold shadow-lg shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-                                <Upload className="w-5 h-5" />
-                                <span>Upload Image</span>
-                            </button>
-
-                            {/** Footer Text **/}
-                            <p className="mt-6 text-xs font-medium text-slate-400 dark:text-gray-500 uppercase tracking-wide">
-                                Supports PNG, JPG, WEBP up to 10MB
-                            </p>
-
                         </div>
                     </motion.div>
                 </div>

@@ -221,7 +221,17 @@ export const galleryApi = {
         try {
             console.log('🌐 Fetching gallery stats...');
 
-            const res = await api.get('/gallery/stats');
+            // Build query parameters
+            const params = new URLSearchParams();
+
+            // Add user_id for authentication fallback
+            const userId = getUserId();
+            if (userId) {
+                params.append('user_id', userId);
+            }
+
+            const queryString = params.toString() ? `?${params.toString()}` : '';
+            const res = await api.get(`/gallery/stats${queryString}`);
 
             console.log('✅ Gallery Stats Response:', res.data);
 

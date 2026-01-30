@@ -31,7 +31,7 @@ import {
     KeyRound,
     X
 } from "lucide-react";
-import { useRouter } from "@/components/useRouter";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authApi } from "@/lib/auth";
 import { useState, useEffect, useRef } from "react";
 import { settingsApi, UserProfile } from "@/lib/settings";
@@ -51,9 +51,18 @@ export default function SettingsPage() {
 
     // Router
     const router = useRouter();
+    const searchParams = useSearchParams();
 
-    // Tab State
+    // Tab State - Check URL param first
     const [activeTab, setActiveTab] = useState("profile");
+
+    // Update tab from URL on mount and change
+    useEffect(() => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam && ['profile', 'security', 'billing', 'notifications', 'preferences', 'help'].includes(tabParam)) {
+            setActiveTab(tabParam);
+        }
+    }, [searchParams]);
 
     // Data State
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -1101,11 +1110,12 @@ export default function SettingsPage() {
     };
 
     // Set first category open when data loads
-    useEffect(() => {
-        if (helpCategories.length > 0 && helpOpen === null) {
-            setHelpOpen(helpCategories[0].id);
-        }
-    }, [helpCategories]);
+    // Set first category open when data loads - REMOVED to prevent auto-dropdown
+    // useEffect(() => {
+    //     if (helpCategories.length > 0 && helpOpen === null) {
+    //         setHelpOpen(helpCategories[0].id);
+    //     }
+    // }, [helpCategories]);
 
     const renderHelpTab = () => (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
@@ -1201,14 +1211,14 @@ export default function SettingsPage() {
 
             {/* Right Column - Support & Quick Actions */}
             <div className="flex flex-col mt-6 lg:mt-0">
-                <div className="p-[1px] rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500">
+                <div className="p-[1px] rounded-2xl bg-gradient-to-br from-teal-400 via-teal-500 to-emerald-500">
                     <div className="bg-white dark:bg-gray-900 rounded-[15px] overflow-hidden">
                         <div className="p-6 relative">
                             <div className="absolute top-0 right-0 p-6 opacity-5 dark:opacity-10 pointer-events-none">
-                                <CircleHelp className="w-24 h-24 text-indigo-500" />
+                                <CircleHelp className="w-24 h-24 text-teal-500" />
                             </div>
                             <div className="relative z-10 text-center sm:text-left">
-                                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 mx-auto sm:mx-0">
+                                <div className="w-12 h-12 bg-teal-50 dark:bg-teal-900/20 rounded-xl flex items-center justify-center text-teal-600 dark:text-teal-400 mb-4 mx-auto sm:mx-0">
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Still need help?</h3>

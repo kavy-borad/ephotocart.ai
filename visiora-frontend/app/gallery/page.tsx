@@ -440,11 +440,9 @@ export default function GalleryPage() {
                                 <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-white">My Gallery</h1>
                                 <p className="text-slate-500 dark:text-gray-400 text-xs">
                                     Manage and organize your AI generated artwork.
-                                    {stats && (
-                                        <span className="ml-2 text-teal-600 dark:text-teal-400">
-                                            ({stats.totalImages || stats.total_images || 0} total • {stats.totalGenerated || stats.total_generated || 0} generated • {stats.totalUploaded || stats.total_uploaded || 0} uploaded)
-                                        </span>
-                                    )}
+                                    <span className="ml-2 text-teal-600 dark:text-teal-400">
+                                        ({(stats?.totalImages || stats?.total_images || 0)} total • {(stats?.totalGenerated || stats?.total_generated || 0)} generated • {(stats?.totalUploaded || stats?.total_uploaded || 0)} uploaded)
+                                    </span>
                                 </p>
                             </div>
 

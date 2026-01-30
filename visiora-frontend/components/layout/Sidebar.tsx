@@ -115,18 +115,24 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
             </nav>
 
             {/* New Generation Button */}
-            <div className="p-3">
+            <div className={`mt-auto transition-all duration-300 ${isOpen ? 'px-5 py-4' : 'p-4'}`}>
                 <Link
                     href="/generate"
-                    className={`w-full flex items-center justify-center gap-2 rounded-lg h-9 bg-teal-500 hover:bg-teal-600 text-white text-sm font-bold shadow-md shadow-teal-500/20 transition-all overflow-hidden ${isOpen ? 'px-4' : 'px-0 aspect-square'}`}
+                    className={`group relative w-full flex items-center justify-center rounded-xl h-10 text-white text-sm font-bold shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 overflow-hidden border-t border-white/20 ${isOpen ? 'gap-2 px-4 bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600' : 'gap-0 px-0 aspect-square bg-teal-500'}`}
                     title={!isOpen ? "New Generation" : undefined}
                 >
-                    <Zap className="w-4 h-4 shrink-0" />
+                    {/* Liquid Glass Shine */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none" />
+
+                    {/* Dynamic Reflection */}
+                    <div className="absolute -inset-full top-0 block h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shimmer" />
+
+                    <Zap className={`w-4 h-4 shrink-0 fill-current text-white/90 ${isOpen ? 'mr-0.5' : ''}`} />
                     <motion.span
                         initial={false}
                         animate={{ opacity: isOpen ? 1 : 0, width: isOpen ? "auto" : 0 }}
                         transition={{ duration: 0.2 }}
-                        className="whitespace-nowrap"
+                        className="whitespace-nowrap relative z-10"
                     >
                         {isOpen && "New Generation"}
                     </motion.span>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Send, Mail, ChevronDown, CheckCircle, Loader2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Send, Mail, ChevronDown, CheckCircle, Loader2, ShieldCheck, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar, Header } from '@/components/layout';
 import { walletApi } from '@/lib/wallet';
@@ -23,6 +23,23 @@ export default function EmailSupportPage() {
     const [subjects, setSubjects] = useState<SupportSubject[]>([]);
     const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
     const hasFetchedSubjects = useRef(false);
+
+    // Dropdown state
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // Fetch wallet balance for header
     useEffect(() => {
@@ -199,24 +216,55 @@ export default function EmailSupportPage() {
 
                                                     <div className="group">
                                                         <label className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-1.5 block group-focus-within:text-teal-600 dark:group-focus-within:text-teal-400 transition-colors">Topic</label>
-                                                        <div className="relative">
-                                                            <select
-                                                                value={subject}
-                                                                onChange={(e) => setSubject(e.target.value)}
-                                                                className="w-full px-4 py-2.5 pl-4 pr-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm font-medium focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all outline-none appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-gray-800"
-                                                                required
-                                                                disabled={isLoadingSubjects}
+                                                        <div className="relative" ref={dropdownRef}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => !isLoadingSubjects && setIsDropdownOpen(!isDropdownOpen)}
+                                                                className={`w-full px-4 py-2.5 rounded-xl border text-sm font-medium flex items-center justify-between transition-all outline-none
+                                                                    ${isDropdownOpen
+                                                                        ? 'bg-white dark:bg-gray-800 border-teal-500 ring-4 ring-teal-500/10 text-slate-900 dark:text-white'
+                                                                        : 'bg-slate-50 dark:bg-gray-900/50 border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-gray-800'
+                                                                    }
+                                                                `}
                                                             >
-                                                                <option value="" disabled>
-                                                                    {isLoadingSubjects ? 'Loading...' : 'Select a topic...'}
-                                                                </option>
-                                                                {subjects.map((subj) => (
-                                                                    <option key={subj.id} value={subj.id}>
-                                                                        {subj.title}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                                                <span className={`truncate ${!subject ? 'text-slate-500 dark:text-gray-400' : ''}`}>
+                                                                    {subject ? subjects.find(s => s.id === subject)?.title : (isLoadingSubjects ? 'Loading...' : 'Select a topic...')}
+                                                                </span>
+                                                                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-teal-500' : ''}`} />
+                                                            </button>
+
+                                                            <AnimatePresence>
+                                                                {isDropdownOpen && (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, y: 5, scale: 0.98 }}
+                                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                        exit={{ opacity: 0, y: 5, scale: 0.98 }}
+                                                                        transition={{ duration: 0.15 }}
+                                                                        className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-gray-800 border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden"
+                                                                    >
+                                                                        <div className="p-1.5 max-h-40 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+                                                                            {subjects.map((subj) => (
+                                                                                <button
+                                                                                    key={subj.id}
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        setSubject(subj.id);
+                                                                                        setIsDropdownOpen(false);
+                                                                                    }}
+                                                                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-between
+                                                                                        ${subject === subj.id
+                                                                                            ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                                            : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50'
+                                                                                        }`}
+                                                                                >
+                                                                                    {subj.title}
+                                                                                    {subject === subj.id && <Check className="w-4 h-4 text-teal-500" />}
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
                                                         </div>
                                                     </div>
 
