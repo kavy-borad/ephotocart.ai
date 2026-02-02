@@ -25,7 +25,7 @@ import { generateApi, GenerateFormData, Category, ModelPreset, BundleOptionsPayl
 import { authApi } from "@/lib/auth";
 import { walletApi } from "@/lib/wallet";
 import { Sidebar, Header } from "@/components/layout";
-import AILoader from "@/components/AILoader";
+import ImageGenerationLoader from "@/components/loaders/ImageGenerationLoader";
 import { navigationState } from "@/lib/navigationState";
 
 // Fallback model presets when API fails
@@ -393,15 +393,17 @@ export default function DetailsPage() {
                 }
                 // Store complete response for result page to display generated images
                 localStorage.setItem('generatedResult', JSON.stringify(response.data));
-                // Redirect to result page (user can then go to gallery from there)
+
+                // DON'T set isSubmitting to false - keep loader visible during navigation
+                // This prevents details page from flickering before result page loads
                 router.push('/generate/result');
             } else {
                 setError(response.error || 'Failed to generate images');
+                setIsSubmitting(false); // Only hide loader on error
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
-        } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false); // Only hide loader on error
         }
     };
 
@@ -423,8 +425,8 @@ export default function DetailsPage() {
 
     return (
         <>
-            {/* AI Loader - Shows when generating */}
-            <AILoader
+            {/* Image Generation Loader - Shows premium sparkle animation when generating */}
+            <ImageGenerationLoader
                 isLoading={isSubmitting}
                 text="Generating your images..."
             />

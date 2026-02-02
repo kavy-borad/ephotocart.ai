@@ -496,7 +496,7 @@ export default function WalletPage() {
     // Derived values with fallbacks
     const balance = walletBalance?.balance ?? 0;
     const currency = walletBalance?.currency ?? 'INR';
-    const freeCredits = walletBalance?.freeCredits ?? 1;
+    const freeCredits = walletBalance?.freeCredits ?? 0;
     const isActive = walletBalance?.isActive ?? true;
     const promotionalCredits = walletBalance?.promotionalCredits ?? 0;
 
@@ -603,7 +603,7 @@ export default function WalletPage() {
                     <PageTransition className="flex flex-col min-h-full">
                         {/* Page Header */}
                         <div className="shrink-0 mb-3">
-                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h1>
+                            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Wallet <span className="text-teal-500">Overview</span></h1>
                             <p className="text-slate-500 dark:text-gray-400 text-xs mt-0.5">Welcome back. Here's a snapshot of your wallet activity.</p>
                         </div>
 

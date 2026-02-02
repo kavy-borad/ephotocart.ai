@@ -116,7 +116,7 @@ export default function GenerateImagesPage() {
                         >
                             {/* Page Header */}
                             <div className="mb-6 shrink-0">
-                                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">Generate Images</h1>
+                                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1.5 tracking-tight">Generate <span className="text-teal-500">Images</span></h1>
                                 <p className="text-slate-500 dark:text-gray-400 text-sm md:text-base font-light">Upload an image and get professional variations in minutes.</p>
                             </div>
 

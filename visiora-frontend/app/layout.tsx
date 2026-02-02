@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import PageLoader from "@/components/PageLoader";
 import AppInitializer from "@/components/AppInitializer";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
+import { WalletProviderWrapper } from "@/components/WalletProviderWrapper";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -56,14 +57,16 @@ export default function RootLayout({
         </Suspense>
         <ThemeProvider>
           <AppInitializer>
-            <SidebarProvider>
-              <TransitionWrapper>
-                {/* Fixed App Wrapper */}
-                <div className="h-full w-full flex flex-col overflow-hidden">
-                  {children}
-                </div>
-              </TransitionWrapper>
-            </SidebarProvider>
+            <WalletProviderWrapper>
+              <SidebarProvider>
+                <TransitionWrapper>
+                  {/* Fixed App Wrapper */}
+                  <div className="h-full w-full flex flex-col overflow-hidden">
+                    {children}
+                  </div>
+                </TransitionWrapper>
+              </SidebarProvider>
+            </WalletProviderWrapper>
           </AppInitializer>
         </ThemeProvider>
       </body>

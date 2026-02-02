@@ -8,8 +8,8 @@ import {
     Wallet,
     Settings,
     Zap,
-    PanelLeftClose,
-    PanelLeftOpen,
+    Pin,
+    PinOff,
     Wand2,
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
@@ -60,10 +60,10 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
             {isOpen && (
                 <button
                     onClick={togglePin}
-                    className="absolute top-5 right-3 p-1 text-slate-400 hover:text-teal-500 transition-colors opacity-0 hover:opacity-100 lg:group-hover:opacity-100"
+                    className="absolute top-5 right-3 p-1 text-slate-400 hover:text-teal-500 transition-colors"
                     title={isPinned ? "Unpin Sidebar" : "Pin Sidebar"}
                 >
-                    {isPinned ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
+                    {isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                 </button>
             )}
 

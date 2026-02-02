@@ -437,7 +437,7 @@ export default function GalleryPage() {
                         {/* Page Heading & Controls */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 shrink-0">
                             <div>
-                                <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-white">My Gallery</h1>
+                                <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">My <span className="text-teal-500">Gallery</span></h1>
                                 <p className="text-slate-500 dark:text-gray-400 text-xs">
                                     Manage and organize your AI generated artwork.
                                     <span className="ml-2 text-teal-600 dark:text-teal-400">
@@ -508,7 +508,7 @@ export default function GalleryPage() {
 
                                 {/* Filters Row */}
                                 <div className="flex items-center gap-2" ref={dropdownRef}>
-                                    {/* Type Filter */}
+                                    {/* Type Filter - Hidden requested by user
                                     <div className="relative">
                                         <button
                                             onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
@@ -524,7 +524,6 @@ export default function GalleryPage() {
                                             </div>
                                         </button>
 
-                                        {/* Dropdown Menu */}
                                         {activeDropdown === 'type' && (
                                             <div className="absolute top-full left-0 mt-2 w-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                                                 <div className="p-1.5 flex flex-col gap-0.5">
@@ -548,6 +547,7 @@ export default function GalleryPage() {
                                             </div>
                                         )}
                                     </div>
+                                    */}
 
                                     {/* Sort Filter */}
                                     <div className="relative">

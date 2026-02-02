@@ -1255,11 +1255,11 @@ export default function SettingsPage() {
                 />
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
-                    <PageTransition className="container mx-auto max-w-7xl p-4 sm:p-6 space-y-4 pb-10">
+                    <PageTransition className="w-full max-w-7xl p-4 sm:p-6 space-y-4 pb-10">
 
                         {/* Page Title & Intro */}
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Account Settings</h1>
+                            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Account <span className="text-teal-500">Settings</span></h1>
                             <p className="text-slate-500 dark:text-gray-400 mt-1 max-w-2xl">
                                 Manage your profile details, security preferences, and billing information.
                             </p>

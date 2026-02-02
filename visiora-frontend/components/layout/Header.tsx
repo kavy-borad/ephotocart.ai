@@ -2,7 +2,6 @@
 
 import Link from "@/components/Link";
 import { useEffect, useState } from "react";
-import { useRef } from "react";
 import {
     Bell,
     ChevronRight,
@@ -19,7 +18,7 @@ import {
     Home,
 } from "lucide-react";
 import { authApi } from "@/lib/auth";
-import { walletApi } from "@/lib/wallet";
+import { useWallet } from "@/lib/WalletContext";
 import { useRouter } from "@/components/useRouter";
 
 export interface BreadcrumbItem {
@@ -36,8 +35,8 @@ interface HeaderProps {
 
 export default function Header({
     breadcrumbs,
-    freeCredits = 0,
-    balance = 0,
+    freeCredits: propCredits,
+    balance: propBalance,
     disableWalletFetch = false
 }: HeaderProps) {
     const router = useRouter();
@@ -48,57 +47,24 @@ export default function Header({
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-    // Dynamic wallet state - Initialize with props but then rely on internal fetching
-    const [displayCredits, setDisplayCredits] = useState(freeCredits);
-    const [displayBalance, setDisplayBalance] = useState(balance);
+    // Notification state
+    interface Notification {
+        id: string;
+        message: string;
+        time: string;
+    }
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
-    // Ref to prevent duplicate fetches in Strict Mode
-    const hasFetchedWallet = useRef<boolean>(false);
+    // Use global wallet context - fetched ONCE at root level
+    const { freeCredits: contextCredits, balance: contextBalance } = useWallet();
 
-    // Sync with props when they change (e.g. parent dashboard fetches fresh data)
-    useEffect(() => {
-        if (typeof freeCredits !== 'undefined') setDisplayCredits(freeCredits);
-        if (typeof balance !== 'undefined') setDisplayBalance(balance);
-    }, [freeCredits, balance]);
+    // DEBUG: Log wallet values
+    console.log('Header - Wallet Context:', { contextCredits, contextBalance, propCredits, propBalance });
 
-    // Listen for wallet-updated events and ALSO fetch on mount for dynamic credits
-    useEffect(() => {
-        // Skip if disabled for this page
-        if (disableWalletFetch) return;
-
-        // Skip if already fetched (survives Strict Mode remount)
-        if (hasFetchedWallet.current) return;
-        hasFetchedWallet.current = true;
-
-        // Fetch wallet data on mount to ensure dynamic credits display
-        const fetchWalletData = async () => {
-            try {
-                const response = await walletApi.getUserCredits();
-                if (response.success && response.data) {
-                    setDisplayCredits(response.data.freeCredits);
-                    setDisplayBalance(response.data.balance);
-                }
-            } catch (error) {
-                console.error('Failed to fetch wallet info for header:', error);
-            }
-        };
-
-        // Initial fetch
-        fetchWalletData();
-
-        // Also listen for wallet-updated events for real-time updates
-        const handleWalletUpdate = () => {
-            hasFetchedWallet.current = false; // Allow refetch on wallet update event
-            fetchWalletData();
-        };
-
-        window.addEventListener('wallet-updated', handleWalletUpdate);
-
-        return () => {
-            window.removeEventListener('wallet-updated', handleWalletUpdate);
-            // DON'T reset ref here - it causes duplicate calls in Strict Mode
-        };
-    }, [disableWalletFetch]);
+    // Use context values, fallback to props if provided (for backwards compatibility)
+    // Use context values, fallback to props if provided (for backwards compatibility)
+    const displayCredits = contextCredits ?? propCredits ?? 0;
+    const displayBalance = contextBalance ?? propBalance ?? 0;
 
     // Navigation items for mobile menu
     const navItems = [
@@ -109,14 +75,57 @@ export default function Header({
         { id: "wallet", label: "Wallet", icon: Wallet, href: "/wallet" },
     ];
 
-    // Load user from localStorage on mount
+    // Load notifications from localStorage
+    useEffect(() => {
+        const storedNotifications = localStorage.getItem('notifications');
+        if (storedNotifications) {
+            setNotifications(JSON.parse(storedNotifications));
+        }
+    }, []);
+
+    // Load user from localStorage on mount and check if new user
     useEffect(() => {
         const storedUser = authApi.getCurrentUser();
         if (storedUser && storedUser.fullName) {
             const firstName = storedUser.fullName.split(' ')[0];
             setUserName(firstName);
             setUserInitial(firstName.charAt(0).toUpperCase());
+
+            // Check if this is a new login
+            const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+            if (!hasSeenWelcome) {
+                // Add welcome notification
+                const welcomeNotification: Notification = {
+                    id: Date.now().toString(),
+                    message: `Welcome to Visiora, ${firstName}!`,
+                    time: 'Just now'
+                };
+                const newNotifications = [welcomeNotification];
+                setNotifications(newNotifications);
+                localStorage.setItem('notifications', JSON.stringify(newNotifications));
+                localStorage.setItem('hasSeenWelcome', 'true');
+            }
         }
+    }, []);
+
+    // Listen for image generation events
+    useEffect(() => {
+        const handleImageGenerated = () => {
+            const generationNotification: Notification = {
+                id: Date.now().toString(),
+                message: 'Your image generation is complete!',
+                time: 'Just now'
+            };
+            setNotifications(prev => {
+                const updated = [generationNotification, ...prev];
+                localStorage.setItem('notifications', JSON.stringify(updated));
+                return updated;
+            });
+        };
+
+        // Listen for custom event
+        window.addEventListener('imageGenerated', handleImageGenerated);
+        return () => window.removeEventListener('imageGenerated', handleImageGenerated);
     }, []);
 
     // Close dropdowns when clicking outside
@@ -278,14 +287,18 @@ export default function Header({
                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h4>
                             </div>
                             <div className="max-h-64 overflow-y-auto">
-                                <div className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer border-b border-slate-100 dark:border-gray-700">
-                                    <p className="text-sm text-slate-700 dark:text-gray-300">Your image generation is complete!</p>
-                                    <span className="text-xs text-slate-500 dark:text-gray-400">2 minutes ago</span>
-                                </div>
-                                <div className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
-                                    <p className="text-sm text-slate-700 dark:text-gray-300">Welcome to Visiora!</p>
-                                    <span className="text-xs text-slate-500 dark:text-gray-400">1 hour ago</span>
-                                </div>
+                                {notifications.length > 0 ? (
+                                    notifications.map((notification) => (
+                                        <div key={notification.id} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer border-b border-slate-100 dark:border-gray-700 last:border-b-0">
+                                            <p className="text-sm text-slate-700 dark:text-gray-300">{notification.message}</p>
+                                            <span className="text-xs text-slate-500 dark:text-gray-400">{notification.time}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-8 text-center">
+                                        <p className="text-sm text-slate-500 dark:text-gray-400">No notifications yet</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
