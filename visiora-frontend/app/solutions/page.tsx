@@ -25,7 +25,7 @@ export default function SolutionsPage() {
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
     return (
-        <section className="relative w-full min-h-screen pt-16 pb-12 px-4 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-x-hidden">
+        <section className="relative w-full min-h-screen pt-16 pb-12 px-4 bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-x-hidden">
             <PublicNavbar activePage="solutions" />
 
             {/* Background Effects (Matches Pricing) */}

@@ -94,13 +94,13 @@ export default function GenerateImagesPage() {
     };
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-gray-900 antialiased transition-colors duration-300">
+        <div className="h-screen flex flex-col overflow-hidden bg-slate-100 dark:bg-gray-900 antialiased transition-colors duration-300">
             <div className="flex flex-1 h-full overflow-hidden">
                 {/* Reusable Sidebar */}
                 <Sidebar activeNav="generate" />
 
                 {/* Main Content Area */}
-                <div className="flex flex-col flex-1 min-w-0 bg-slate-50 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
+                <div className="flex flex-col flex-1 min-w-0 bg-slate-100 dark:bg-gray-900 overflow-hidden transition-colors duration-300">
                     {/* Reusable Header with dynamic breadcrumbs */}
                     <Header
                         breadcrumbs={[
@@ -110,7 +110,7 @@ export default function GenerateImagesPage() {
                     />
 
                     {/* Main Content - Scrollable */}
-                    <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto bg-slate-50/50 dark:bg-gray-900/50 transition-colors duration-300">
+                    <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto bg-slate-100/50 dark:bg-gray-900/50 transition-colors duration-300">
                         <PageTransition
                             className={`flex flex-col min-h-full transition-all duration-500 ease-in-out ${isExiting ? 'opacity-0 -translate-x-4 scale-95' : 'opacity-100 translate-x-0 scale-100'}`}
                         >

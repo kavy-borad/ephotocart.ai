@@ -581,12 +581,12 @@ export default function WalletPage() {
     );
 
     return (
-        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-screen flex overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="wallet" />
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300">
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[

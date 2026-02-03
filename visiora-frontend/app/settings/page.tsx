@@ -1240,10 +1240,10 @@ export default function SettingsPage() {
     );
 
     return (
-        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
+        <div className="h-screen flex overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300 font-sans">
             <Sidebar activeNav="settings" />
 
-            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300">
                 <Header
                     breadcrumbs={[
                         { label: "Home", href: "/?view=landing" },

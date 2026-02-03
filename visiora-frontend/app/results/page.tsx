@@ -77,7 +77,7 @@ export default function ResultsPage() {
     const visibleItems = showcaseItems.slice(activeIndex * 3, (activeIndex * 3) + 3);
 
     return (
-        <div className="min-h-screen lg:h-screen w-full lg:overflow-hidden overflow-x-hidden bg-gradient-to-br from-teal-50/50 via-slate-50 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 text-slate-900 dark:text-gray-100 antialiased flex flex-col transition-colors duration-300">
+        <div className="min-h-screen lg:h-screen w-full lg:overflow-hidden overflow-x-hidden bg-slate-100 dark:bg-gray-800 text-slate-900 dark:text-gray-100 antialiased flex flex-col transition-colors duration-300">
             {/* Google Material Icons */}
             <link
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"

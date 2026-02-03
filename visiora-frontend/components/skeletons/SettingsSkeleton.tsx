@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 
 export function SettingsSkeleton() {
     return (
-        <div className="w-full min-h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 font-sans antialiased text-slate-500 dark:text-slate-400">
+        // z-50 + fixed inset-0 ensures this overlays the persistent layout (sidebar/header), showing only this skeleton
+        <div className="fixed inset-0 z-50 w-full h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 font-sans antialiased text-slate-500 dark:text-slate-400">
             {/* Sidebar Skeleton */}
-            <aside className="hidden lg:flex w-64 h-screen flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 shrink-0 z-20">
+            <aside className="hidden lg:flex w-64 h-full flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 shrink-0">
                 {/* Logo Area */}
                 <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-gray-700 shrink-0">
                     <div className="size-8 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
@@ -35,6 +36,11 @@ export function SettingsSkeleton() {
                         <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
                         <div className="h-4 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
                     </div>
+                    {/* Ads Creative Builder */}
+                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
+                        <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
+                        <div className="h-4 w-36 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
+                    </div>
                     {/* Spacer */}
                     <div className="h-8" />
                     {/* Settings (Active) */}
@@ -51,7 +57,7 @@ export function SettingsSkeleton() {
             </aside>
 
             {/* Main Layout Area */}
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[#f8fafc] dark:bg-gray-900 transition-colors duration-300">
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc] dark:bg-gray-900 transition-colors duration-300">
                 {/* Top Header */}
                 <header className="h-16 flex items-center justify-between px-6 border-b border-slate-200/60 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shrink-0 z-10">
                     {/* Breadcrumbs */}
@@ -87,17 +93,17 @@ export function SettingsSkeleton() {
                     >
                         {/* Title Section */}
                         <div className="mb-6">
-                            <div className="h-8 md:h-9 w-48 bg-slate-800 dark:bg-white rounded-lg animate-pulse mb-3" />
-                            <div className="h-4 w-96 bg-slate-400/60 dark:bg-gray-600 rounded animate-pulse" />
+                            <div className="h-8 md:h-9 w-48 bg-slate-300 dark:bg-gray-600 rounded-lg animate-pulse mb-3" />
+                            <div className="h-4 w-96 bg-slate-200 dark:bg-gray-700/50 rounded animate-pulse" />
                         </div>
 
                         {/* Tabs Bar */}
                         <div className="flex items-center gap-8 border-b border-slate-200 dark:border-gray-700 mb-8 overflow-x-auto">
                             {/* Profile (Active) */}
-                            <div className="pb-3 border-b-2 border-teal-500 px-1">
+                            <div className="pb-3 border-b-2 border-slate-400 dark:border-gray-500 px-1">
                                 <div className="flex items-center gap-2">
-                                    <div className="size-4 bg-teal-500/20 rounded animate-pulse" />
-                                    <div className="h-4 w-12 bg-teal-700 dark:bg-teal-400 rounded animate-pulse" />
+                                    <div className="size-4 bg-slate-300 dark:bg-gray-500 rounded animate-pulse" />
+                                    <div className="h-4 w-12 bg-slate-400 dark:bg-gray-400 rounded animate-pulse" />
                                 </div>
                             </div>
                             {/* Security */}
@@ -141,12 +147,12 @@ export function SettingsSkeleton() {
                         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 max-w-4xl shadow-sm">
                             {/* Avatar Row */}
                             <div className="flex items-center gap-5 mb-10">
-                                <div className="size-20 rounded-full bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center animate-pulse">
-                                    <div className="size-8 bg-teal-200 dark:bg-teal-800 rounded animate-pulse" />
+                                <div className="size-20 rounded-full bg-slate-100 dark:bg-gray-700/50 flex items-center justify-center animate-pulse">
+                                    <div className="size-8 bg-slate-300 dark:bg-gray-600 rounded animate-pulse" />
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="h-6 w-32 bg-slate-900 dark:bg-white rounded animate-pulse" />
-                                    <div className="h-4 w-16 bg-slate-400 dark:bg-gray-500 rounded animate-pulse" />
+                                    <div className="h-6 w-32 bg-slate-300 dark:bg-gray-600 rounded animate-pulse" />
+                                    <div className="h-4 w-16 bg-slate-200 dark:bg-gray-700/50 rounded animate-pulse" />
                                 </div>
                             </div>
 
@@ -173,7 +179,7 @@ export function SettingsSkeleton() {
 
                             {/* Save Button */}
                             <div className="flex justify-end pt-4">
-                                <div className="h-11 w-32 bg-slate-900 dark:bg-white rounded-lg animate-pulse" />
+                                <div className="h-11 w-32 bg-slate-300 dark:bg-gray-600 rounded-lg animate-pulse" />
                             </div>
                         </div>
                     </motion.div>

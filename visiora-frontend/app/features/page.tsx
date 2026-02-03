@@ -97,7 +97,7 @@ export default function FeaturesPage() {
                 }
             `}</style>
 
-            <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-teal-50/50 via-sky-50/30 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 text-slate-900 dark:text-gray-100 antialiased flex flex-col transition-colors duration-300">
+            <div className="min-h-screen w-screen overflow-x-hidden bg-slate-100 dark:bg-gray-900 text-slate-900 dark:text-gray-100 antialiased flex flex-col transition-colors duration-300">
                 {/* Reusable Public Navbar */}
                 <PublicNavbar activePage="features" />
 

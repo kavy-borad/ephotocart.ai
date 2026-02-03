@@ -60,7 +60,7 @@ export default function PricingPage() {
     ];
 
     return (
-        <div className="min-h-screen w-full bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-white overflow-y-auto overflow-x-hidden flex flex-col transition-colors duration-300">
+        <div className="min-h-screen w-full bg-slate-100 dark:bg-gray-950 text-slate-900 dark:text-white overflow-y-auto overflow-x-hidden flex flex-col transition-colors duration-300">
             <PublicNavbar activePage="pricing" />
 
             {/* Background Effects (Subtle Project Theme) */}

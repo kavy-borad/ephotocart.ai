@@ -296,7 +296,8 @@ export default function DashboardPage() {
             trend: stats.imageTrend >= 0 ? `+${stats.imageTrend}%` : `${stats.imageTrend}%`,
             trendUp: stats.imageTrend >= 0,
             progress: Math.min((stats.totalImages / 2000) * 100, 100),
-            color: "bg-teal-500"
+            color: "bg-teal-500",
+            icon: Image // Explicitly reusing Image icon or similar suitable one
         },
         {
             label: "Free Credits",
@@ -312,16 +313,18 @@ export default function DashboardPage() {
             trend: stats.spendingTrend >= 0 ? `+${stats.spendingTrend}%` : `${stats.spendingTrend}%`,
             trendUp: stats.spendingTrend < 0, // Down spending is good
             progress: Math.min((stats.totalSpent / 1000) * 100, 100),
-            color: "bg-indigo-500"
+            color: "bg-indigo-500",
+            icon: Wallet // Using Wallet as a proxy for "Spent"
         },
         {
             label: "Favorite Style",
             value: favStyle || "N/A",
             subText: favStyleUsage ? `Used ${favStyleUsage}% of time` : undefined,
-            icon: Sparkles
+            icon: Sparkles,
+            color: "bg-violet-500"
         },
     ] : [
-        { label: "Total Images", value: isLoading ? "..." : "0", trend: "+0%", trendUp: true, progress: 0, color: "bg-teal-500" },
+        { label: "Total Images", value: isLoading ? "..." : "0", trend: "+0%", trendUp: true, progress: 0, color: "bg-teal-500", icon: Image },
         {
             label: "Free Credits",
             value: userProfile?.freeCredits !== undefined ? userProfile.freeCredits.toString() : (isLoading ? "..." : "0"),
@@ -330,8 +333,8 @@ export default function DashboardPage() {
             progress: userProfile?.freeCredits ? Math.min((userProfile.freeCredits / 1) * 100, 100) : 0,
             color: "bg-blue-500"
         },
-        { label: "Total Spent", value: isLoading ? "$..." : "$0", trend: "+0%", trendUp: true, progress: 0, color: "bg-indigo-500" },
-        { label: "Favorite Style", value: isLoading ? "..." : "N/A", subText: isLoading ? "Loading..." : undefined, icon: Sparkles },
+        { label: "Total Spent", value: isLoading ? "$..." : "$0", trend: "+0%", trendUp: true, progress: 0, color: "bg-indigo-500", icon: Wallet },
+        { label: "Favorite Style", value: isLoading ? "..." : "N/A", subText: isLoading ? "Loading..." : undefined, icon: Sparkles, color: "bg-violet-500" },
     ];
 
     // Chart data from API or fallback
@@ -364,7 +367,7 @@ export default function DashboardPage() {
     const userFreeCredits = stats?.freeCredits ?? userProfile?.freeCredits ?? 0;
 
     return (
-        <div className="h-screen flex overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="h-screen flex overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300">
             {/* Reusable Sidebar */}
             <Sidebar activeNav="dashboard" />
 
@@ -390,27 +393,42 @@ export default function DashboardPage() {
                         {/* Stats Cards */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 shrink-0">
                             {statsCards.map((card, index) => (
-                                <div key={index} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col gap-2 hover:border-slate-300 dark:hover:border-gray-600 hover:shadow-sm transition-all">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs font-medium text-slate-500 dark:text-gray-400">{card.label}</span>
-                                        {card.trend && (
-                                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-0.5 ${card.trendUp ? "text-emerald-600 bg-emerald-50" : "text-rose-600 bg-rose-50"}`}>
-                                                {card.trendUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                                                {card.trend}
-                                            </span>
-                                        )}
-                                        {card.icon && <card.icon className="w-4 h-4 text-slate-400" />}
-                                    </div>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className={`text-xl font-bold text-slate-800 dark:text-white ${card.label === 'Favorite Style' ? 'capitalize' : ''}`}>{card.value}</span>
+                                <div
+                                    key={index}
+                                    className="relative bg-white dark:bg-gray-800 p-3 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-teal-500/50 dark:hover:border-teal-400/50"
+                                >
+                                    {/* Shine/Glare Effect */}
+                                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-slate-100/50 dark:via-white/10 to-transparent z-0 pointer-events-none skew-x-12" />
 
-                                    </div>
-                                    {card.subText && <span className="text-[10px] text-slate-500 dark:text-gray-400">{card.subText}</span>}
-                                    {card.progress && (
-                                        <div className="w-full bg-slate-100 dark:bg-gray-700 h-1 rounded-full overflow-hidden">
-                                            <div className={`${card.color} h-full rounded-full`} style={{ width: `${card.progress}%` }} />
+                                    {/* Content Wrapper */}
+                                    <div className="relative z-10 flex flex-col gap-2">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-[10px] font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{card.label}</span>
+                                                <div className="flex items-baseline gap-1 mt-0.5">
+                                                    <span className={`text-xl font-bold text-slate-800 dark:text-white ${card.label === 'Favorite Style' ? 'capitalize' : ''} leading-none`}>{card.value}</span>
+                                                </div>
+                                                {card.trend && (
+                                                    <span className={`text-[9px] font-bold mt-1 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5 w-fit ${card.trendUp ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400" : "text-rose-700 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400"}`}>
+                                                        {card.trendUp ? <TrendingUp className="w-2 h-2" /> : <TrendingDown className="w-2 h-2" />}
+                                                        {card.trend}
+                                                    </span>
+                                                )}
+                                                {card.subText && <span className="text-[9px] text-slate-400 mt-1">{card.subText}</span>}
+                                            </div>
+
+                                            {card.icon && (
+                                                <div className={`
+                                                    w-9 h-9 rounded-full flex items-center justify-center
+                                                    ${card.color ? card.color.replace('bg-', 'bg-').replace('500', '500/10') : 'bg-slate-100 dark:bg-gray-700'}
+                                                    group-hover:scale-110 transition-transform duration-300
+                                                    shadow-sm border border-slate-100 dark:border-gray-600
+                                                `}>
+                                                    <card.icon className={`w-4 h-4 ${card.color ? card.color.replace('bg-', 'text-') : 'text-slate-500 dark:text-gray-400'}`} />
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -444,61 +462,116 @@ export default function DashboardPage() {
                                                     <div key={i} className="border-t border-slate-100 dark:border-gray-700/50 w-full" />
                                                 ))}
                                             </div>
-                                            {/* SVG Area Chart - Fixed 100 max scale */}
-                                            {(() => {
-                                                const FIXED_MAX = 100; // Fixed scale max
 
-                                                const points = lineChartPoints.map((val, i) => {
-                                                    const x = (i / (lineChartPoints.length - 1)) * 100;
-                                                    const normalizedVal = Math.min((val / FIXED_MAX) * 100, 100); // Cap at 100%
-                                                    const y = 100 - normalizedVal;
-                                                    return `${x},${y}`;
-                                                });
-
-                                                const pathD = points.length > 0
-                                                    ? `M ${points[0]} ${points.slice(1).map(p => `L ${p}`).join(' ')}`
-                                                    : 'M 0,100 L 100,100';
-
-                                                const areaD = `${pathD} L 100,100 L 0,100 Z`;
-
-                                                return (
-                                                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                                        <defs>
-                                                            <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                                <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.3" />
-                                                                <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.02" />
-                                                            </linearGradient>
-                                                        </defs>
-                                                        <path d={areaD} fill="url(#areaGradient)" className="opacity-0 animate-fade-in-delay" style={{ transition: 'd 0.5s ease' }} />
-                                                        <path d={pathD} fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" className="animate-draw-line" style={{ transition: 'd 0.5s ease' }} />
-                                                    </svg>
-                                                );
-                                            })()}
-                                            {/* Data points with hover tooltip */}
+                                            {/* SVG Area Chart - Smooth Water-like Curve */}
                                             {(() => {
                                                 const FIXED_MAX = 100;
 
+                                                // 1. Prepare Points
+                                                const points = lineChartPoints.map((val, i) => {
+                                                    const x = (i / (lineChartPoints.length - 1)) * 100;
+                                                    const normalizedVal = Math.min((val / FIXED_MAX) * 100, 100);
+                                                    return { x, y: 100 - normalizedVal };
+                                                });
+
+                                                // 2. Cubic Bezier Smoothing Functions
+                                                // These calculate control points to create a smooth 'water-like' flow through the data points
+                                                const line = (pointA: any, pointB: any) => {
+                                                    const lengthX = pointB.x - pointA.x;
+                                                    const lengthY = pointB.y - pointA.y;
+                                                    return {
+                                                        length: Math.sqrt(Math.pow(lengthX, 2) + Math.pow(lengthY, 2)),
+                                                        angle: Math.atan2(lengthY, lengthX)
+                                                    };
+                                                };
+
+                                                const getControlPoint = (current: any, previous: any, next: any, reverse: boolean) => {
+                                                    const p = previous || current;
+                                                    const n = next || current;
+                                                    const smoothing = 0.2; // Adjust for more/less "flow"
+                                                    const o = line(p, n);
+                                                    const angle = o.angle + (reverse ? Math.PI : 0);
+                                                    const length = o.length * smoothing;
+                                                    const x = current.x + Math.cos(angle) * length;
+                                                    const y = current.y + Math.sin(angle) * length;
+                                                    return { x, y };
+                                                };
+
+                                                const bezierCommand = (point: any, i: number, a: any[]) => {
+                                                    const cps = getControlPoint(a[i - 1], a[i - 2], point, false);
+                                                    const cpe = getControlPoint(point, a[i - 1], a[i + 1], true);
+                                                    return `C ${cps.x},${cps.y} ${cpe.x},${cpe.y} ${point.x},${point.y}`;
+                                                };
+
+                                                const dPath = points.length > 0
+                                                    ? `M ${points[0].x},${points[0].y} ` +
+                                                    points.slice(1).map((p, i) => bezierCommand(p, i + 1, points)).join(" ")
+                                                    : 'M 0,100 L 100,100';
+
+                                                const areaD = `${dPath} L 100,100 L 0,100 Z`;
+
                                                 return (
-                                                    <div className="absolute inset-0">
+                                                    <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                                        <defs>
+                                                            <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.4" />
+                                                                <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        {/* Area Fill */}
+                                                        <path d={areaD} fill="url(#waterGradient)" className="opacity-0 animate-fade-in-delay" style={{ transition: 'd 0.5s ease' }} />
+                                                        {/* Line Stroke */}
+                                                        <path
+                                                            d={dPath}
+                                                            fill="none"
+                                                            stroke="#14b8a6"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            vectorEffect="non-scaling-stroke"
+                                                            className="animate-draw-line"
+                                                            style={{ transition: 'd 0.5s ease' }}
+                                                        />
+                                                    </svg>
+                                                );
+                                            })()}
+
+                                            {/* Data points (Invisible hit targets for tooltips) */}
+                                            {(() => {
+                                                const FIXED_MAX = 100;
+                                                return (
+                                                    <div className="absolute inset-0 z-10">
                                                         {lineChartPoints.map((p, i) => {
                                                             const normalizedPercent = Math.min((p / FIXED_MAX) * 100, 100);
                                                             const xPercent = lineChartPoints.length > 1 ? (i / (lineChartPoints.length - 1)) * 100 : 50;
-                                                            // Get date for tooltip
-                                                            const dayLabel = lineChartDays[i] || '';
+                                                            // Approximate Y for tooltip positioning
+                                                            const yPercent = 100 - normalizedPercent;
                                                             return (
                                                                 <div
                                                                     key={i}
-                                                                    className="absolute group"
+                                                                    className="absolute group w-4 h-full -top-0 cursor-pointer"
                                                                     style={{
                                                                         left: `${xPercent}%`,
-                                                                        top: `${100 - normalizedPercent}%`,
-                                                                        transform: 'translate(-50%, -50%)'
+                                                                        transform: 'translateX(-50%)' // Center the hit area
                                                                     }}
                                                                 >
-                                                                    <div className="w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-pointer transition-all group-hover:scale-150 group-hover:shadow-md" />
-                                                                    <div className="absolute left-1/2 -translate-x-1/2 -top-9 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 bg-slate-800 text-white text-[9px] font-medium px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                                                                        <div className="font-semibold mb-0.5">{dayLabel}</div>
-                                                                        <div>Images: {p}</div>
+                                                                    {/* Tooltip Dot (visible on hover) */}
+                                                                    <div
+                                                                        className="absolute w-3 h-3 rounded-full bg-teal-500 border-[3px] border-white shadow-md opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100 duration-200"
+                                                                        style={{
+                                                                            top: `${Math.min(Math.max(yPercent, 0), 100)}%`,
+                                                                            left: '50%',
+                                                                            marginLeft: '-6px',
+                                                                            marginTop: '-6px'
+                                                                        }}
+                                                                    />
+
+                                                                    {/* Tooltip Label */}
+                                                                    <div className="absolute left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 bg-slate-800 text-white text-[10px] font-medium px-2 py-1 rounded shadow-lg whitespace-nowrap"
+                                                                        style={{ top: `${Math.min(yPercent - 15, 80)}%` }}
+                                                                    >
+                                                                        <div className="font-semibold">{lineChartDays[i]}</div>
+                                                                        <div className="text-teal-200">Images: {p}</div>
                                                                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                                     </div>
                                                                 </div>
@@ -507,9 +580,8 @@ export default function DashboardPage() {
                                                     </div>
                                                 );
                                             })()}
-
                                         </div>
-                                        {/* X-axis labels - Day + Date format */}
+                                        {/* X-axis labels */}
                                         <div className="flex justify-between text-[9px] text-slate-400 pt-1 shrink-0">
                                             {lineChartDays.map((day, i) => (
                                                 <span key={i} className="text-center">{day}</span>
@@ -613,7 +685,7 @@ export default function DashboardPage() {
                                     View All <ArrowRight className="w-3 h-3" />
                                 </Link>
                             </div>
-                            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 2xl:grid-cols-10 gap-2 sm:gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 2xl:grid-cols-9 gap-2 sm:gap-4">
                                 {displayImages.map((img, i) => (
                                     <div
                                         key={i}

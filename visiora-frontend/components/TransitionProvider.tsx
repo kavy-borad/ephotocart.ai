@@ -106,9 +106,10 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                 : href;
 
             if (currentPath !== targetPath) {
-                // SPECIAL CASE: Disable full skeleton when navigating between /generate steps
+                // SPECIAL CASE: Disable full skeleton when navigating between /generate or /creative-builder steps
                 // This allows for smooth "app-like" transitions without reloading the shell
-                if (currentPath.includes('/generate') && targetPath.includes('/generate')) {
+                if ((currentPath.includes('/generate') && targetPath.includes('/generate')) ||
+                    (currentPath.includes('/creative-builder') && targetPath.includes('/creative-builder'))) {
                     return;
                 }
 
@@ -121,8 +122,9 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
         const handlePopState = () => {
             const newPath = window.location.pathname + window.location.search;
 
-            // SPECIAL CASE: Disable full skeleton for /generate history navigation too
-            if (previousPathRef.current?.includes('/generate') && newPath.includes('/generate')) {
+            // SPECIAL CASE: Disable full skeleton for /generate and /creative-builder history navigation too
+            if ((previousPathRef.current?.includes('/generate') && newPath.includes('/generate')) ||
+                (previousPathRef.current?.includes('/creative-builder') && newPath.includes('/creative-builder'))) {
                 return;
             }
 
@@ -147,9 +149,9 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     const getSkeletonContent = () => {
         const path = nextPath || pathname; // Fallback to current path if nextPath not set
 
-        // 0. Disable Loader for Auth Pages
+        // 0. Disable Loader for Auth Pages and Creative Builder
         // We want these pages to load instantly with their own internal animations
-        if (path.includes('/login') || path.includes('/register') || path.includes('/signup')) {
+        if (path.includes('/login') || path.includes('/register') || path.includes('/signup') || path.includes('/creative-builder')) {
             return null;
         }
 
@@ -437,75 +439,9 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
             );
         }
 
-        // 5. Settings Skeleton - Content only (wrapped in AppShellSkeleton)
+        // 5. Settings Skeleton
         if (path.includes('/settings') && !path.includes('/settings/support')) {
-            return (
-                <div className="flex flex-col h-full overflow-hidden">
-                    <div className="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 space-y-8 pb-20">
-
-                        {/* Page Title Skeleton */}
-                        <div>
-                            <div className="h-9 w-64 bg-slate-200 dark:bg-gray-700/80 rounded-lg animate-pulse mb-3" />
-                            <div className="h-5 w-96 max-w-full bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                        </div>
-
-                        {/* Tabs Navigation Skeleton */}
-                        <div className="border-b border-slate-200 dark:border-gray-700">
-                            <div className="flex items-center gap-1 pb-1 overflow-x-auto no-scrollbar">
-                                {[
-                                    { w: 'w-16', active: true },
-                                    { w: 'w-20', active: false },
-                                    { w: 'w-28', active: false },
-                                    { w: 'w-24', active: false },
-                                    { w: 'w-24', active: false }
-                                ].map((tab, i) => (
-                                    <div key={i} className="px-4 py-3 relative">
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="size-4 rounded bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                                            <div className={`h-4 ${tab.w} bg-slate-200 dark:bg-gray-700 rounded animate-pulse`} />
-                                        </div>
-                                        {tab.active && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-800 dark:bg-white rounded-t-full" />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Profile Card Skeleton */}
-                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
-                            {/* Avatar & Name */}
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-gray-700 animate-pulse shrink-0" />
-                                <div className="space-y-2">
-                                    <div className="h-6 w-32 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                                    <div className="h-4 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                                </div>
-                            </div>
-
-                            {/* Input Grid */}
-                            <div className="grid md:grid-cols-2 gap-6 mb-8">
-                                {/* Email Field */}
-                                <div className="space-y-2">
-                                    <div className="h-3 w-24 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
-                                    <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse border border-slate-200 dark:border-gray-600" />
-                                </div>
-                                {/* Phone Field */}
-                                <div className="space-y-2">
-                                    <div className="h-3 w-28 bg-slate-200 dark:bg-gray-700/80 rounded animate-pulse" />
-                                    <div className="h-11 w-full bg-slate-100 dark:bg-gray-700/30 rounded-lg animate-pulse border border-slate-200 dark:border-gray-600" />
-                                </div>
-                            </div>
-
-                            {/* Save Button */}
-                            <div className="flex justify-end pt-2">
-                                <div className="h-10 w-32 bg-slate-800 dark:bg-gray-600 rounded-lg animate-pulse" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            );
+            return <SettingsSkeleton />;
         }
 
 
