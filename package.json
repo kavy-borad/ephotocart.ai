@@ -1,4 +1,6 @@
 {
+  "name": "ephotocart",
+  "version": "1.0.0",
   "dependencies": {
     "axios": "^1.13.2"
   }

@@ -1,0 +1,295 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "@/components/useRouter";
+import {
+    Loader2,
+    AlertCircle,
+    CheckCircle,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    ArrowLeft,
+} from "lucide-react";
+import React, { useState } from "react";
+import { authApi } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
+import Branding from "@/components/Branding";
+
+import dynamic from "next/dynamic";
+
+const MorphLoopVisuals = dynamic(() => import("@/components/MorphLoopVisuals"), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin"></div>
+        </div>
+    )
+});
+
+export default function LoginPage() {
+    const router = useRouter();
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
+
+    // Redirect to dashboard if already logged in
+    React.useEffect(() => {
+        if (authApi.isAuthenticated()) {
+            router.replace("/dashboard");
+        }
+    }, [router]);
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        rememberMe: false,
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [id]: type === "checkbox" ? checked : value,
+        }));
+        if (error) setError("");
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log("=== LOGIN CLICKED ===");
+        setError("");
+        setSuccess("");
+
+        if (!formData.email.trim()) {
+            setError("Please enter your email");
+            return;
+        }
+        if (!formData.password) {
+            setError("Please enter your password");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const response = await authApi.login({
+                email: formData.email,
+                password: formData.password,
+                rememberMe: formData.rememberMe,
+            });
+
+            console.log("=== LOGIN PAGE RESPONSE ===", response);
+
+            if (response.success) {
+                // 200 OK — Login successful, tokens already saved in auth.ts
+                setSuccess(response.message || "Login successful!");
+                setTimeout(() => {
+                    router.push("/dashboard");
+                }, 800);
+            } else {
+                // Handle EMAIL_NOT_VERIFIED — redirect to register for verification
+                if (response.errorCode === "EMAIL_NOT_VERIFIED" && response.action) {
+                    setError(response.error + " " + (response.action.message || ""));
+                } else {
+                    // Show exact backend error message dynamically
+                    setError(response.error || "");
+                }
+            }
+        } catch (err: any) {
+            console.log("=== LOGIN CATCH ERROR ===", err);
+            setError(err?.message || "Network error. Please check your connection.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row items-stretch bg-white dark:bg-slate-900">
+
+            {/* 1. Left Side - Visuals (Consistent with Register Page) */}
+            <div className="block w-full lg:w-[55%] h-[35%] lg:h-full shrink-0">
+                <div className="w-full h-full overflow-hidden relative">
+                    <MorphLoopVisuals />
+                </div>
+            </div>
+
+            {/* 2. Right Side - Compact Form with Tabs */}
+            <div className="flex-1 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-8 relative overflow-y-auto lg:overflow-visible">
+
+                {/* Mobile Header: Branding & Back Button (Static Flow) */}
+                <div className="w-full flex items-center justify-between mb-6 lg:hidden shrink-0">
+                    <Branding />
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors p-2"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back</span>
+                    </Link>
+                </div>
+
+                {/* Desktop: Back to Home */}
+                <Link
+                    href="/"
+                    className="absolute top-6 left-6 hidden lg:flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors group"
+                >
+                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
+                        <ArrowLeft className="w-4 h-4" />
+                    </div>
+                    <span>Back to Home</span>
+                </Link>
+
+                <div className="w-full max-w-[380px] flex flex-col gap-5">
+
+                    {/* Header */}
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Welcome back</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Enter your credentials to access your account.</p>
+                    </div>
+
+                    {/* Tab Switcher (Sign In | Sign Up) */}
+                    <div className="bg-slate-100 dark:bg-slate-800/80 p-1 rounded-full grid grid-cols-2 mb-2">
+                        <div className="mx-10 flex items-center justify-center h-9 text-sm font-bold bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-md rounded-full cursor-default select-none">
+                            Sign In
+                        </div>
+                        <Link href="/register" className="mx-10 flex items-center justify-center h-9 text-sm font-medium text-slate-500 dark:text-slate-400 rounded-full hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+                            Sign Up
+                        </Link>
+                    </div>
+
+                    {/* Error/Success Messages */}
+                    {(error || success) && (
+                        <div className="w-full animate-in fade-in slide-in-from-top-2">
+                            {error && (
+                                <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium ${isDarkMode ? "bg-red-900/20 border border-red-800/50 text-red-400" : "bg-red-50 border border-red-100 text-red-600"}`}>
+                                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                                    <span>{error}</span>
+                                </div>
+                            )}
+                            {success && (
+                                <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium ${isDarkMode ? "bg-green-900/20 border border-green-800/50 text-green-400" : "bg-green-50 border border-green-100 text-green-600"}`}>
+                                    <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                                    <span>{success}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Form - Compact Spacing */}
+                    <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
+
+                        {/* Email */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    id="email"
+                                    type="email"
+                                    placeholder="Email or Phone Number"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="space-y-1">
+                            <div className="relative group">
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Remember Me & Forgot Password */}
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                    id="rememberMe"
+                                    type="checkbox"
+                                    checked={formData.rememberMe}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-3.5 h-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                />
+                                <span className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors select-none">
+                                    Remember me
+                                </span>
+                            </label>
+                            <Link href="/forgot-password" className="text-xs font-semibold text-slate-900 dark:text-white hover:underline">
+                                Forgot password?
+                            </Link>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full h-11 mt-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl border border-transparent transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.98] text-sm"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>Signing In...</span>
+                                </>
+                            ) : (
+                                "Sign In"
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="relative py-2">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-slate-200 dark:border-slate-800"></span>
+                        </div>
+                        <div className="relative flex justify-center text-xs text-slate-400">
+                            <span className="px-2 bg-white dark:bg-slate-900">or continue with</span>
+                        </div>
+                    </div>
+
+                    {/* Google Button */}
+                    <button
+                        type="button"
+                        className="relative w-full h-11 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+                        onClick={() => { }}
+                    >
+                        <div className="absolute left-4 inset-y-0 flex items-center">
+                            <svg className="w-5 h-5" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                            </svg>
+                        </div>
+                        <span>Continue with Google</span>
+                    </button>
+
+                    <div className="w-full text-center text-[10px] text-slate-400">
+                        © 2026 ephotocart. All rights reserved.
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
