@@ -10,10 +10,10 @@ export default function CreativeBuilderPage() {
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-500/25">
                     <Sparkles className="w-10 h-10 text-white" />
                 </div>
-                
+
                 <div className="space-y-3">
                     <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-teal-800 to-slate-900 dark:from-white dark:via-teal-300 dark:to-white">
-                        Creative Builder
+                        Ads Creative
                     </h1>
                     <p className="text-xl text-slate-600 dark:text-slate-300">
                         Coming Soon
@@ -24,9 +24,9 @@ export default function CreativeBuilderPage() {
                     <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                         We're working on an amazing ad creative builder tool. Create stunning ads with AI-powered templates, smart editing, and instant optimization.
                     </p>
-                    
+
                     <div className="pt-4">
-                        <Link 
+                        <Link
                             href="/dashboard"
                             className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg"
                         >

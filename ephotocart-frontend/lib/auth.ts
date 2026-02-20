@@ -6,6 +6,8 @@ export interface RegisterData {
     email: string;
     password: string;
     confirmPassword: string;
+    phoneNumber: string;
+    countryCode: string;
 }
 
 export interface LoginData {
@@ -37,6 +39,8 @@ export const authApi = {
                 email: userData.email,
                 password: "***",
                 confirmPassword: "***",
+                phoneNumber: userData.phoneNumber,
+                countryCode: userData.countryCode,
             }));
 
             const response = await api.post("/auth/register", {
@@ -44,6 +48,8 @@ export const authApi = {
                 email: userData.email,
                 password: userData.password,
                 confirmPassword: userData.confirmPassword,
+                phoneNumber: userData.phoneNumber,
+                countryCode: userData.countryCode,
             });
 
             console.log("=== REGISTER RESPONSE (SUCCESS) ===");
@@ -324,6 +330,48 @@ export const authApi = {
             return !!localStorage.getItem('token');
         }
         return false;
+    },
+
+    // POST /api/auth/forgot-password
+    forgotPassword: async (email: string) => {
+        try {
+            console.log("=== FORGOT PASSWORD REQUEST ===");
+            console.log("Payload:", JSON.stringify({ email }));
+
+            const response = await api.post("/auth/forgot-password", { email });
+
+            console.log("=== FORGOT PASSWORD RESPONSE (SUCCESS) ===");
+            console.log("Status:", response.status);
+            console.log("Data:", JSON.stringify(response.data, null, 2));
+
+            return {
+                success: true,
+                message: response.data?.message || "Password reset link sent! Please check your email.",
+            };
+        } catch (err: any) {
+            console.log("=== FORGOT PASSWORD ERROR ===");
+            console.log("Status:", err.response?.status);
+            console.log("Error Data:", JSON.stringify(err.response?.data, null, 2));
+
+            const errorData = err.response?.data;
+            let errorMessage = "Something went wrong. Please try again.";
+
+            if (errorData) {
+                if (errorData.details && Array.isArray(errorData.details) && errorData.details.length > 0) {
+                    errorMessage = errorData.details.map((d: any) => d.message).join(". ");
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (errorData.error) {
+                    errorMessage = errorData.error;
+                }
+            }
+
+            return {
+                success: false,
+                error: errorMessage,
+                errorCode: errorData?.error || "",
+            };
+        }
     },
 };
 

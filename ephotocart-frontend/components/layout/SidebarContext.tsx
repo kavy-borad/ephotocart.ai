@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 interface SidebarContextType {
     isOpen: boolean;
@@ -11,7 +11,7 @@ interface SidebarContextType {
     handleMouseLeave: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+export const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
     // Default to pinned (expanded) on mount
@@ -27,7 +27,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
     const handleMouseEnter = () => {
         // Only enable hover expand on desktop
-        if (window.innerWidth >= 1024) {
+        if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
             setIsHovered(true);
         }
     };

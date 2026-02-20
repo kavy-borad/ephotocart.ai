@@ -2,51 +2,13 @@
 
 import { motion } from "framer-motion";
 
+import SidebarSkeleton from "./SidebarSkeleton";
+
 export function GenerateSkeleton() {
     return (
         <div className="w-full h-full flex overflow-hidden bg-gray-50 dark:bg-gray-900 font-sans antialiased text-gray-500 dark:text-gray-400">
             {/* Sidebar Skeleton */}
-            <aside className="hidden lg:flex w-56 h-full flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shrink-0 z-20">
-                {/* Logo Area */}
-                <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 shrink-0">
-                    <div className="size-8 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                    <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse ml-3" />
-                </div>
-
-                {/* Nav Links */}
-                <div className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
-                    {/* Dashboard */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-24 bg-gray-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Generate Image (Active) */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                        <div className="size-5 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-600 rounded animate-pulse" />
-                    </div>
-                    {/* My Gallery */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-24 bg-gray-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Wallet */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-20 bg-gray-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Settings */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-20 bg-gray-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                </div>
-
-                {/* Bottom CTA Button */}
-                <div className="p-4 mt-auto border-t border-gray-100 dark:border-gray-700">
-                    <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                </div>
-            </aside>
+            <SidebarSkeleton activeNav="generate" />
 
             {/* Main Layout Area */}
             <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-300">

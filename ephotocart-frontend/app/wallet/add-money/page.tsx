@@ -39,11 +39,15 @@ export default function AddMoneyPage() {
     const [freeCredits, setFreeCredits] = useState(0);
     const currency = 'INR';
 
-    // Read amount, credits, and bonus from URL params on mount
+    // Track packageId from URL params
+    const [packageId, setPackageId] = useState<string | null>(null);
+
+    // Read amount, credits, bonus, and packageId from URL params on mount
     useEffect(() => {
         const urlAmount = searchParams.get('amount');
         const urlCredits = searchParams.get('credits');
         const urlBonus = searchParams.get('bonus');
+        const urlPackageId = searchParams.get('packageId');
         if (urlAmount && !isNaN(Number(urlAmount))) {
             setAmount(urlAmount);
             setIsPackageSelected(true); // Mark as package selection - amount is locked
@@ -53,6 +57,9 @@ export default function AddMoneyPage() {
             if (urlBonus && !isNaN(Number(urlBonus))) {
                 setBonusCredits(Number(urlBonus)); // Bonus credits from package
             }
+        }
+        if (urlPackageId) {
+            setPackageId(urlPackageId);
         }
     }, [searchParams]);
 
@@ -129,12 +136,8 @@ export default function AddMoneyPage() {
         setError(null);
 
         try {
-            // Create order via API
-            // Only razorpay is supported as payment method for the API
-            const response = await walletApi.addMoney(numAmount, 'razorpay', {
-                notes: notes || undefined,
-                credits: calculatedCredits,
-            });
+            // Create order via API (POST /payment/create-order)
+            const response = await walletApi.createPaymentOrder(numAmount, packageId || undefined);
 
             // Handle network/wrapper level errors
             if (!response.success) {
@@ -144,7 +147,6 @@ export default function AddMoneyPage() {
             }
 
             // Handle backend logic errors (success: false in body)
-            // walletApi.addMoney returns { success: true, data: response.data } where response.data is the body
             const responseBody = response.data;
 
             if (!responseBody || !responseBody.success || !responseBody.data) {
@@ -154,10 +156,20 @@ export default function AddMoneyPage() {
             }
 
             const orderData = responseBody.data;
-            // Map the order ID carefully. 
-            // Ideally, Razorpay expects an order ID starting with 'order_'.
-            // We'll use razorpayOrderId if available, otherwise fallback to orderId or id.
-            const razorpayOrderId = orderData.razorpayOrderId || orderData.orderId || orderData.id;
+            const razorpayOrderId = orderData.orderId;
+            const razorpayKeyId = orderData.razorpayKeyId;
+
+            if (!razorpayOrderId) {
+                setError('No order ID received from server');
+                setIsProcessing(false);
+                return;
+            }
+
+            if (!razorpayKeyId) {
+                setError('Razorpay configuration missing from server');
+                setIsProcessing(false);
+                return;
+            }
 
             if (paymentMethod === 'razorpay') {
                 // Load Razorpay script if needed
@@ -172,25 +184,52 @@ export default function AddMoneyPage() {
                     });
                 }
 
-                // Get user details
+                // Get user details from localStorage
                 const user = authApi.getCurrentUser();
+
+                // Build phone number for Razorpay prefill from create-order response
+                const prefillPhone = orderData.phoneNumber || '';
+                const prefillCountryCode = orderData.countryCode || '';
+                // Razorpay expects contact in format: countryCode + number (e.g., "+919876543210")
+                // or just the number if countryCode is already included
+                const prefillContact = prefillPhone
+                    ? (prefillCountryCode && !prefillPhone.startsWith('+')
+                        ? `${prefillCountryCode}${prefillPhone}`
+                        : prefillPhone)
+                    : '';
+
+                console.log('=== RAZORPAY PREFILL DATA ===');
+                console.log('Name:', user?.fullName || '');
+                console.log('Email:', user?.email || '');
+                console.log('Phone from backend:', orderData.phoneNumber || 'Not provided');
+                console.log('Country code from backend:', orderData.countryCode || 'Not provided');
+                console.log('Final contact for prefill:', prefillContact || 'Empty (user will enter manually)');
 
                 // Open Razorpay checkout
                 const razorpayOptions = {
-                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
-                    amount: orderData.amount ? orderData.amount * 100 : numAmount * 100, // Amount is in paise
-                    currency: orderData.currency || currency,
+                    key: razorpayKeyId, // Use key from backend response
+                    amount: orderData.amount * 100, // Amount in paise
+                    currency: orderData.currency || 'INR',
                     name: 'ephotocart',
                     description: `${calculatedCredits} Credits`,
-                    order_id: razorpayOrderId, // Pass the ID received from backend
+                    order_id: razorpayOrderId, // Razorpay order ID from backend
                     handler: async function (razorpayResponse: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
                         try {
+                            console.log('=== RAZORPAY PAYMENT SUCCESS ===');
+                            console.log('razorpay_order_id:', razorpayResponse.razorpay_order_id);
+                            console.log('razorpay_payment_id:', razorpayResponse.razorpay_payment_id);
+                            console.log('Sending verify request with amount:', orderData.amount);
+
                             const verifyResult = await walletApi.verifyPayment({
-                                orderId: razorpayResponse.razorpay_order_id,
-                                paymentId: razorpayResponse.razorpay_payment_id,
-                                signature: razorpayResponse.razorpay_signature,
-                                method: 'razorpay',
+                                razorpayOrderId: razorpayResponse.razorpay_order_id,
+                                razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+                                razorpaySignature: razorpayResponse.razorpay_signature,
+                                amount: orderData.amount,
                             });
+
+                            console.log('=== VERIFY RESULT ===');
+                            console.log('Success:', verifyResult.success);
+                            console.log('Data:', JSON.stringify(verifyResult.data, null, 2));
 
                             if (verifyResult.success) {
                                 // Sync wallet updated event
@@ -198,7 +237,7 @@ export default function AddMoneyPage() {
                                 // Redirect to wallet with success
                                 router.push('/wallet?payment=success');
                             } else {
-                                setError('Payment verification failed. Please contact support.');
+                                setError('Payment verification failed: ' + (verifyResult.error || 'Please contact support.'));
                             }
                         } catch (verifyError) {
                             console.error('Payment verification error:', verifyError);
@@ -209,7 +248,7 @@ export default function AddMoneyPage() {
                     prefill: {
                         name: user?.fullName || '',
                         email: user?.email || '',
-                        contact: '',
+                        contact: prefillContact,
                     },
                     theme: {
                         color: '#14b8a6',
@@ -442,7 +481,7 @@ export default function AddMoneyPage() {
                                                 </motion.div>
                                             </motion.button>
 
-                                            {/* Bank Transfer Option */}
+                                            {/* Bank Transfer Option
                                             <motion.button
                                                 onClick={() => setPaymentMethod('bank_transfer')}
                                                 whileTap={{ scale: 0.98 }}
@@ -491,6 +530,7 @@ export default function AddMoneyPage() {
                                                     )}
                                                 </motion.div>
                                             </motion.button>
+                                            */}
                                         </div>
                                     </div>
 

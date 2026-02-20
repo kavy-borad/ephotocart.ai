@@ -68,21 +68,34 @@ export interface PaymentMethod {
 
 export interface AddMoneyRequest {
     amount: number;
-    gateway: 'razorpay' | 'stripe' | 'paypal';
-    notes?: Record<string, any>;
+    packageId?: string;
 }
 
 export interface AddMoneyResponse {
     success?: boolean;
     message?: string;
-    data?: any;
-    // Razorpay order fields (different backends may return different field names)
-    razorpayOrderId?: string;
-    orderId?: string;
-    order_id?: string;
-    id?: string;
-    amount?: number;
-    currency?: string;
+    data?: {
+        orderId: string;           // Razorpay order ID (e.g., order_K8aK9...)
+        amount: number;
+        currency: string;
+        userId: string;
+        razorpayKeyId: string;     // Razorpay key from backend
+        internalOrderId: string;   // Internal reference
+        phoneNumber?: string;      // For Razorpay prefill
+        countryCode?: string;      // For Razorpay prefill
+    };
+}
+
+// Payment Status Types
+export interface PaymentStatusResponse {
+    id: string;                    // Internal payment order ID (e.g., po_abc123)
+    userId: string;
+    amount: number;
+    currency: string;
+    status: 'created' | 'pending' | 'paid' | 'failed' | 'expired';
+    gatewayPaymentId?: string;     // Razorpay payment ID (e.g., pay_K8aK9...)
+    createdAt: string;
+    paidAt?: string;
 }
 
 // Wallet Package Types
@@ -330,25 +343,39 @@ export const walletApi = {
         }
     },
 
-    // Add money to wallet
-    addMoney: async (amount: number, gateway: 'razorpay' | 'stripe' | 'paypal' = 'razorpay', notes: Record<string, any> = {}): Promise<ApiResponse<AddMoneyResponse>> => {
+    // Create payment order via Razorpay (POST /payment/create-order)
+    createPaymentOrder: async (amount: number, packageId?: string): Promise<ApiResponse<AddMoneyResponse>> => {
         try {
-            console.log('=== ADD MONEY REQUEST ===');
+            console.log('=== CREATE PAYMENT ORDER REQUEST ===');
+            console.log('Endpoint: POST /payment/create-order');
             console.log('Amount:', amount);
-            console.log('Gateway:', gateway);
+            console.log('Package ID:', packageId || 'None (custom amount)');
 
-            const res = await api.post('/wallet/add-money', {
-                amount,
-                gateway,
-                notes
-            });
-            console.log('=== ADD MONEY SUCCESS ===');
-            console.log('Response:', res.data);
+            const requestBody: AddMoneyRequest = { amount };
+            if (packageId) {
+                requestBody.packageId = packageId;
+            }
+
+            console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+
+            const res = await api.post('/payment/create-order', requestBody);
+
+            console.log('=== CREATE PAYMENT ORDER SUCCESS ===');
+            console.log('Status:', res.status);
+            console.log('Full Response:', JSON.stringify(res.data, null, 2));
+
+            // Log phone data specifically for debugging
+            const orderData = res.data?.data || res.data;
+            console.log('Order ID:', orderData?.orderId);
+            console.log('Razorpay Key ID:', orderData?.razorpayKeyId ? 'Present ✅' : 'Missing ❌');
+            console.log('Phone Number:', orderData?.phoneNumber || 'Not provided');
+            console.log('Country Code:', orderData?.countryCode || 'Not provided');
 
             return { success: true, data: res.data };
         } catch (err: any) {
-            console.log('=== ADD MONEY ERROR ===');
+            console.log('=== CREATE PAYMENT ORDER ERROR ===');
             console.log('Status:', err.response?.status);
+            console.log('Error Response:', JSON.stringify(err.response?.data, null, 2));
             console.log('Error Message:', err.message);
 
             // Extract error message from various possible response formats
@@ -357,7 +384,7 @@ export const walletApi = {
                 || err.response?.data?.errors?.[0]?.message
                 || `HTTP ${err.response?.status}: ${err.response?.statusText}`
                 || err.message
-                || 'Failed to add money';
+                || 'Failed to create payment order';
 
             return { success: false, error: errorMsg };
         }
@@ -418,27 +445,84 @@ export const walletApi = {
         }
     },
 
-    // Verify Razorpay payment
+    // Get payment status (GET /payment/status/{orderId})
+    getPaymentStatus: async (orderId: string): Promise<ApiResponse<PaymentStatusResponse>> => {
+        try {
+            console.log('=== GET PAYMENT STATUS REQUEST ===');
+            console.log('Endpoint: GET /payment/status/' + orderId);
+            console.log('Order ID:', orderId);
+            console.log('Timestamp:', new Date().toISOString());
+
+            const res = await api.get(`/payment/status/${orderId}`);
+
+            console.log('=== GET PAYMENT STATUS SUCCESS ===');
+            console.log('HTTP Status:', res.status);
+            console.log('Full Response:', JSON.stringify(res.data, null, 2));
+
+            // Parse response - handle nested { success, data } structure
+            const responseData = res.data?.data || res.data;
+            console.log('Payment ID:', responseData?.id);
+            console.log('Payment Status:', responseData?.status);
+            console.log('Amount:', responseData?.amount, responseData?.currency);
+            console.log('Gateway Payment ID:', responseData?.gatewayPaymentId || 'N/A');
+            console.log('Created At:', responseData?.createdAt);
+            console.log('Paid At:', responseData?.paidAt || 'Not yet paid');
+
+            return { success: true, data: responseData };
+        } catch (err: any) {
+            console.log('=== GET PAYMENT STATUS ERROR ===');
+            console.log('Order ID:', orderId);
+            console.log('HTTP Status:', err.response?.status);
+            console.log('Error Response:', JSON.stringify(err.response?.data, null, 2));
+            console.log('Error Message:', err.message);
+
+            const errorMsg = err.response?.data?.message
+                || err.response?.data?.error
+                || `HTTP ${err.response?.status}: ${err.response?.statusText}`
+                || err.message
+                || 'Failed to get payment status';
+
+            return { success: false, error: errorMsg };
+        }
+    },
+
+    // Verify Razorpay payment (POST /payment/verify)
     verifyPayment: async (paymentData: {
-        orderId: string;
-        paymentId: string;
-        signature: string;
-        method: string;
-    }): Promise<ApiResponse<{ success: boolean; message: string; transactionId?: string }>> => {
+        razorpayOrderId: string;
+        razorpayPaymentId: string;
+        razorpaySignature: string;
+        amount: number;
+    }): Promise<ApiResponse<{
+        success: boolean;
+        message: string;
+        data?: {
+            transactionId: string;
+            paymentId: string;
+            orderId: string;
+            amount: number;
+            balanceAfter: number;
+            currency: string;
+            timestamp: string;
+        };
+    }>> => {
         try {
             console.log('=== VERIFY PAYMENT REQUEST ===');
-            console.log('Order ID:', paymentData.orderId);
-            console.log('Payment ID:', paymentData.paymentId);
+            console.log('Razorpay Order ID:', paymentData.razorpayOrderId);
+            console.log('Razorpay Payment ID:', paymentData.razorpayPaymentId);
+            console.log('Amount:', paymentData.amount);
+            console.log('Full Request Body:', JSON.stringify(paymentData, null, 2));
 
-            const res = await api.post('/wallet/verify-payment', paymentData);
+            const res = await api.post('/payment/verify', paymentData);
 
             console.log('=== VERIFY PAYMENT SUCCESS ===');
-            console.log('Response:', res.data);
+            console.log('Response Status:', res.status);
+            console.log('Response Data:', JSON.stringify(res.data, null, 2));
             return { success: true, data: res.data };
         } catch (err: any) {
             console.log('=== VERIFY PAYMENT ERROR ===');
             console.log('Status:', err.response?.status);
-            console.log('Response Data:', JSON.stringify(err.response?.data, null, 2));
+            console.log('Error Response:', JSON.stringify(err.response?.data, null, 2));
+            console.log('Error Message:', err.message);
 
             const errorMsg = err.response?.data?.message
                 || err.response?.data?.error

@@ -5,11 +5,18 @@ export interface UserProfile {
     id: string;
     email: string;
     phone?: string;
+    phone_number?: string;
+    country_code?: string;
     name?: string;
+    full_name?: string;
     avatar?: string;
+    avatar_url?: string;
     role: 'user' | 'admin';
+    credits?: number;
+    is_verified?: boolean;
     createdAt: string;
     updatedAt: string;
+    last_login?: string;
 }
 
 export interface UserCredits {
@@ -54,13 +61,25 @@ export interface ApiResponse<T = any> {
 
 // Settings API functions
 export const settingsApi = {
-    // Get user profile
+    // Get user profile — GET /api/auth/me (until /user/profile is deployed on backend)
     getProfile: async (): Promise<ApiResponse<UserProfile>> => {
         try {
-            // Updated to use /auth/me as /user/profile does not exist
+            console.log("=== SETTINGS: GET PROFILE REQUEST ===");
+            console.log("Endpoint: GET /auth/me");
+
             const res = await api.get('/auth/me');
-            return { success: true, data: res.data };
+
+            console.log("=== SETTINGS: GET PROFILE RESPONSE (SUCCESS) ===");
+            console.log("Status:", res.status);
+            console.log("Data:", JSON.stringify(res.data, null, 2));
+
+            const profileData = res.data?.data || res.data;
+            return { success: true, data: profileData };
         } catch (err: any) {
+            console.log("=== SETTINGS: GET PROFILE ERROR ===");
+            console.log("Status:", err.response?.status);
+            console.log("Error Data:", JSON.stringify(err.response?.data, null, 2));
+
             return { success: false, error: err.response?.data?.message || 'Failed to load profile' };
         }
     },
@@ -85,28 +104,58 @@ export const settingsApi = {
         }
     },
 
-    // Edit profile (unified endpoint for name and password)
+    // Edit profile — PUT /api/user/edit-profile
     editProfile: async (data: {
         full_name?: string;
+        phone_number?: string;
+        country_code?: string;
         old_password?: string;
         new_password?: string;
         confirm_new_password?: string;
-    }): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+    }): Promise<ApiResponse<{ success: boolean; message: string; data?: any }>> => {
         try {
-            console.log('🌐 Updating profile via /user/edit-profile...');
+            console.log("=== EDIT PROFILE REQUEST ===");
+            console.log("Endpoint: PUT /user/edit-profile");
+            console.log("Payload:", JSON.stringify({
+                ...data,
+                old_password: data.old_password ? "***" : undefined,
+                new_password: data.new_password ? "***" : undefined,
+                confirm_new_password: data.confirm_new_password ? "***" : undefined,
+            }));
+
             const res = await api.put('/user/edit-profile', data);
 
-            if (res.data?.success) {
-                return {
+            console.log("=== EDIT PROFILE RESPONSE (SUCCESS) ===");
+            console.log("Status:", res.status);
+            console.log("Data:", JSON.stringify(res.data, null, 2));
+
+            const responseData = res.data?.data || res.data;
+
+            return {
+                success: true,
+                data: {
                     success: true,
-                    data: { success: true, message: res.data.message || 'Profile updated successfully!' }
-                };
+                    message: res.data?.message || "Profile updated successfully",
+                    data: responseData,
+                }
+            };
+        } catch (err: any) {
+            console.log("=== EDIT PROFILE ERROR ===");
+            console.log("Status:", err.response?.status);
+            console.log("Error Data:", JSON.stringify(err.response?.data, null, 2));
+
+            const errorData = err.response?.data;
+            let errorMessage = "";
+
+            if (errorData) {
+                if (errorData.message && typeof errorData.message === 'string') {
+                    errorMessage = errorData.message;
+                } else if (errorData.error && typeof errorData.error === 'string') {
+                    errorMessage = errorData.error;
+                }
             }
 
-            return { success: true, data: res.data };
-        } catch (err: any) {
-            console.error('editProfile error:', err);
-            return { success: false, error: err.response?.data?.message || 'Failed to update profile' };
+            return { success: false, error: errorMessage || 'Failed to update profile' };
         }
     },
 

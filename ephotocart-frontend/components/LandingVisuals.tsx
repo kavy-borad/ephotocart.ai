@@ -32,6 +32,13 @@ const col1 = [
         raw: '/poncho-raw.jpg',
         ai: '/poncho-ai.jpg',
         aspect: 'aspect-[2/3]'
+    },
+
+    {
+        id: 6,
+        raw: '/dd.jpg',
+        ai: '/hero-furniture.jpg',
+        aspect: 'aspect-[0.5/1]'
     }
 ];
 
@@ -181,6 +188,10 @@ function MarqueeColumn({ items, duration, reverse = false, onItemClick }: { item
 
 // Optimized GridItem using CSS animations
 function GridItem({ item, onClick }: { item: any, onClick: () => void }) {
+    // Each card gets a unique phase offset so they cycle independently
+    const DURATION = 4; // matches aiFadeIn animation duration in seconds (LandingVisuals uses 4s)
+    const TOTAL = 10;   // approximate total unique pairs
+    const delay = `${-((item.id % TOTAL) / TOTAL) * DURATION}s`;
     return (
         <div
             onClick={onClick}
@@ -202,7 +213,7 @@ function GridItem({ item, onClick }: { item: any, onClick: () => void }) {
                 />
 
                 {/* AI Image (Overlay) */}
-                <div className="absolute inset-0 w-full h-full animate-ai-cycle">
+                <div className="absolute inset-0 w-full h-full animate-ai-cycle" style={{ animationDelay: delay }}>
                     <Image
                         src={item.ai}
                         alt="AI Generated"
@@ -220,7 +231,7 @@ function GridItem({ item, onClick }: { item: any, onClick: () => void }) {
             {/* Animated Badge - Ultra Compact & Premium */}
             <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
                 {/* ORIGINAL Badge */}
-                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-raw-cycle flex items-center justify-end">
+                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-raw-cycle flex items-center justify-end" style={{ animationDelay: delay }}>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 shadow-lg">
                         <div className="w-1 h-1 rounded-full bg-white/80 shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
                         <span className="text-[9px] font-semibold tracking-wide text-white/90 uppercase">
@@ -230,7 +241,7 @@ function GridItem({ item, onClick }: { item: any, onClick: () => void }) {
                 </div>
 
                 {/* AI GENERATED Badge */}
-                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-ai-cycle flex items-center justify-end">
+                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-ai-cycle flex items-center justify-end" style={{ animationDelay: delay }}>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-black/80 to-slate-900/80 backdrop-blur-xl rounded-full border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
                         <Sparkles className="w-2.5 h-2.5 text-emerald-400 fill-emerald-400/20" />
                         <span className="text-[9px] font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-emerald-200 uppercase">

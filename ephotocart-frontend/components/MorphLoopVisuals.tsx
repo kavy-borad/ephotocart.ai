@@ -54,6 +54,12 @@ const pairs = [
         raw: '/user-plaid-raw.jpg',
         ai: '/plaid-after.jpg',
         title: 'Apparel Showcase'
+    },
+    {
+        id: 10,
+        raw: '/dd.jpg',
+        ai: '/hero-furniture.jpg',
+        title: 'Interior Design'
     }
 ];
 
@@ -133,6 +139,10 @@ function MarqueeColumn({ items, duration, reverse = false }: { items: typeof pai
 }
 
 function MarqueeItem({ item, index }: { item: any, index: number }) {
+    // Each card gets a unique phase offset so they cycle independently
+    const DURATION = 3; // matches aiFadeIn animation duration in seconds
+    const TOTAL = 10;   // approximate total unique pairs
+    const delay = `${-((item.id % TOTAL) / TOTAL) * DURATION}s`;
     return (
         <div className="w-48 sm:w-60 aspect-[3/4] shrink-0 relative rounded-xl overflow-hidden shadow-lg bg-white dark:bg-slate-800 group transform-gpu">
             {/* Raw Image (Base) */}
@@ -148,7 +158,7 @@ function MarqueeItem({ item, index }: { item: any, index: number }) {
             </div>
 
             {/* AI Image (Overlay) */}
-            <div className="absolute inset-0 w-full h-full animate-ai-cycle">
+            <div className="absolute inset-0 w-full h-full animate-ai-cycle" style={{ animationDelay: delay }}>
                 <Image
                     src={item.ai}
                     alt="AI Generated"
@@ -165,14 +175,14 @@ function MarqueeItem({ item, index }: { item: any, index: number }) {
             {/* Label - Compact & Safe from clipping */}
             <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none">
                 {/* ORIGINAL Badge */}
-                <div className="absolute transition-opacity duration-300 animate-raw-cycle">
+                <div className="absolute transition-opacity duration-300 animate-raw-cycle" style={{ animationDelay: delay }}>
                     <span className="text-[9px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-black/60 text-white border border-white/20 whitespace-nowrap">
                         ORIGINAL
                     </span>
                 </div>
 
                 {/* AI GENERATED Badge */}
-                <div className="absolute transition-opacity duration-300 animate-ai-cycle">
+                <div className="absolute transition-opacity duration-300 animate-ai-cycle" style={{ animationDelay: delay }}>
                     <span className="text-[9px] items-center gap-1 font-extrabold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-emerald-600/90 text-white border border-emerald-400/30 flex shadow-emerald-900/20 whitespace-nowrap">
                         <Sparkles className="w-2.5 h-2.5 text-emerald-100 shrink-0" />
                         AI GENERATED

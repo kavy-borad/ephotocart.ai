@@ -309,7 +309,7 @@ export default function DashboardPage() {
         },
         {
             label: "Total Spent",
-            value: `$${stats.totalSpent}`,
+            value: `₹${stats.totalSpent}`,
             trend: stats.spendingTrend >= 0 ? `+${stats.spendingTrend}%` : `${stats.spendingTrend}%`,
             trendUp: stats.spendingTrend < 0, // Down spending is good
             progress: Math.min((stats.totalSpent / 1000) * 100, 100),
@@ -333,7 +333,7 @@ export default function DashboardPage() {
             progress: userProfile?.freeCredits ? Math.min((userProfile.freeCredits / 1) * 100, 100) : 0,
             color: "bg-blue-500"
         },
-        { label: "Total Spent", value: isLoading ? "$..." : "$0", trend: "+0%", trendUp: true, progress: 0, color: "bg-indigo-500", icon: Wallet },
+        { label: "Total Spent", value: isLoading ? "₹..." : "₹0", trend: "+0%", trendUp: true, progress: 0, color: "bg-indigo-500", icon: Wallet },
         { label: "Favorite Style", value: isLoading ? "..." : "N/A", subText: isLoading ? "Loading..." : undefined, icon: Sparkles, color: "bg-violet-500" },
     ];
 
@@ -609,12 +609,12 @@ export default function DashboardPage() {
                                 <div className="flex-1 relative min-h-0">
                                     {/* Y-axis labels - Fixed scale: $0, $20, $40, $60, $80, $100 */}
                                     <div className="absolute left-0 top-0 bottom-4 w-8 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
-                                        <span>$100</span>
-                                        <span>$80</span>
-                                        <span>$60</span>
-                                        <span>$40</span>
-                                        <span>$20</span>
-                                        <span>$0</span>
+                                        <span>₹100</span>
+                                        <span>₹80</span>
+                                        <span>₹60</span>
+                                        <span>₹40</span>
+                                        <span>₹20</span>
+                                        <span>₹0</span>
                                     </div>
                                     {/* Chart area */}
                                     <div className="ml-9 h-full flex flex-col">
@@ -658,7 +658,7 @@ export default function DashboardPage() {
                                                             {/* Hover tooltip */}
                                                             <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-slate-800 text-white text-[10px] font-medium px-2 py-1.5 rounded shadow-lg whitespace-nowrap">
                                                                 <div className="font-semibold">{dayLabel}</div>
-                                                                <div>Total: ${height}</div>
+                                                                <div>Total: ₹{height}</div>
                                                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                             </div>
                                                         </div>

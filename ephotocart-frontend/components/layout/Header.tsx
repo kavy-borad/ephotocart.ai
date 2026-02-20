@@ -268,7 +268,7 @@ export default function Header({
                         <span className="text-xs font-bold text-slate-700 dark:text-gray-300">{displayCredits} FREE</span>
                     </div>
                     <div className="w-px h-3 bg-slate-200 dark:bg-gray-600"></div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">${displayBalance.toFixed(2)}</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">₹{displayBalance.toFixed(2)}</span>
                 </Link>
 
                 {/* Notifications */}

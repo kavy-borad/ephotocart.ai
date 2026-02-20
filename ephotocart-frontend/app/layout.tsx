@@ -8,6 +8,7 @@ import PageLoader from "@/components/PageLoader";
 import AppInitializer from "@/components/AppInitializer";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import { WalletProviderWrapper } from "@/components/WalletProviderWrapper";
+import logo from "@/public/Untitled design (5).png";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   title: "ephotocart - Smart Photo Solutions",
   description: "Upload an image and get professional variations powered by AI",
   icons: {
-    icon: '/logo-new.svg', // Fix favicon error by using existing logo
+    icon: logo.src,
   },
 };
 

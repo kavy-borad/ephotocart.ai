@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 
 import { usePathname } from "next/navigation";
 
+import SidebarSkeleton from "./SidebarSkeleton";
+
 export function DashboardSkeleton() {
     const pathname = usePathname();
 
@@ -20,44 +22,7 @@ export function DashboardSkeleton() {
             className="h-screen flex overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300"
         >
             {/* Sidebar Skeleton */}
-            <aside className="w-64 2xl:w-[280px] h-full hidden lg:flex flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 shrink-0 shadow-sm">
-                {/* Logo Area */}
-                <div className="h-16 flex items-center px-6 shrink-0 border-b border-slate-200 dark:border-gray-700">
-                    <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-lg bg-slate-200 dark:bg-gray-700 animate-pulse" />
-                        <div className="h-4 w-20 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                    </div>
-                </div>
-
-                {/* Nav Items */}
-                <div className="flex-1 py-4 px-3 space-y-1">
-                    {/* Active Item */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-100 dark:bg-gray-700/50">
-                        <div className="size-5 bg-slate-200 dark:bg-gray-600 rounded animate-pulse" />
-                        <div className="h-3.5 w-20 bg-slate-200 dark:bg-gray-600 rounded animate-pulse" />
-                    </div>
-
-                    {/* Other Nav Items */}
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                            <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            <div className="h-3.5 w-24 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                        </div>
-                    ))}
-
-                    <div className="mt-6 pt-4 border-t border-slate-200/50 dark:border-gray-700">
-                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                            <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                            <div className="h-3.5 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Button */}
-                <div className="p-3">
-                    <div className="w-full h-11 bg-slate-200 dark:bg-gray-700 rounded-xl animate-pulse" />
-                </div>
-            </aside>
+            <SidebarSkeleton activeNav="dashboard" />
 
             {/* Main Content Wrapper */}
             <main className="flex-1 flex flex-col min-w-0 h-full overflow-x-hidden lg:overflow-hidden bg-slate-50 dark:bg-gray-900 transition-colors duration-300">

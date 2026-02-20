@@ -223,18 +223,18 @@ export default function SettingsPage() {
         setForgotPasswordMessage(null);
 
         try {
-            // TODO: Call actual API endpoint
-            // const response = await authApi.sendPasswordResetOtp(forgotEmail);
-            console.log('[Forgot Password] Sending OTP to:', forgotEmail);
+            console.log('[Settings Forgot Password] Sending reset link to:', forgotEmail);
+            const response = await authApi.forgotPassword(forgotEmail);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            setForgotPasswordStep('otp');
-            setForgotPasswordMessage({ type: 'success', text: 'OTP sent to your email!' });
-            setTimeout(() => setForgotPasswordMessage(null), 3000);
-        } catch (error) {
-            setForgotPasswordMessage({ type: 'error', text: 'Failed to send OTP. Please try again.' });
+            if (response.success) {
+                setForgotPasswordStep('otp');
+                setForgotPasswordMessage({ type: 'success', text: response.message || 'OTP sent to your email!' });
+                setTimeout(() => setForgotPasswordMessage(null), 4000);
+            } else {
+                setForgotPasswordMessage({ type: 'error', text: response.error || 'Failed to send OTP. Please try again.' });
+            }
+        } catch (error: any) {
+            setForgotPasswordMessage({ type: 'error', text: error?.message || 'Failed to send OTP. Please try again.' });
         } finally {
             setIsSendingOtp(false);
         }
@@ -274,18 +274,19 @@ export default function SettingsPage() {
         setForgotPasswordMessage(null);
 
         try {
-            // TODO: Call actual API endpoint
-            // const response = await authApi.verifyPasswordResetOtp(forgotEmail, otp);
-            console.log('[Forgot Password] Verifying OTP:', otp);
+            console.log('[Settings Forgot Password] Verifying OTP:', otp, 'for:', forgotEmail);
+            const response = await authApi.verifyEmail(forgotEmail, otp);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            setForgotPasswordStep('reset');
-            setForgotPasswordMessage({ type: 'success', text: 'OTP verified successfully!' });
-            setTimeout(() => setForgotPasswordMessage(null), 3000);
-        } catch (error) {
-            setForgotPasswordMessage({ type: 'error', text: 'Invalid OTP. Please try again.' });
+            if (response.success) {
+                setForgotPasswordStep('reset');
+                setForgotPasswordMessage({ type: 'success', text: 'OTP verified successfully!' });
+                setTimeout(() => setForgotPasswordMessage(null), 3000);
+            } else {
+                setForgotPasswordMessage({ type: 'error', text: response.error || 'Invalid OTP. Please try again.' });
+                setOtpCode(['', '', '', '', '', '']);
+            }
+        } catch (error: any) {
+            setForgotPasswordMessage({ type: 'error', text: error?.message || 'Invalid OTP. Please try again.' });
         } finally {
             setIsVerifyingOtp(false);
         }
@@ -900,7 +901,7 @@ export default function SettingsPage() {
                     <div className="relative z-10 flex flex-col items-start justify-between h-full">
                         <div>
                             <p className="text-slate-300 text-sm font-medium mb-1">Total Balance</p>
-                            <h3 className="text-3xl font-bold tracking-tight">${balance.toFixed(2)}</h3>
+                            <h3 className="text-3xl font-bold tracking-tight">₹{balance.toFixed(2)}</h3>
                         </div>
                         <div className="mt-6 w-full">
                             <Link href="/wallet" className="flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all text-white text-sm font-semibold py-2 rounded-lg border border-white/10">

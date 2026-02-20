@@ -380,13 +380,10 @@ export default function WalletPage() {
 
         setIsAddingMoney(true);
         try {
-            // Step 1: Call add-money API to create Razorpay order
-            const response = await walletApi.addMoney(amount, 'razorpay', {
-                packageId: selectedPackage || undefined,
-                credits: selectedPkg?.totalCredits || 0,
-            });
+            // Step 1: Call create-order API (POST /payment/create-order)
+            const response = await walletApi.createPaymentOrder(amount, selectedPackage || undefined);
 
-            console.log('=== ADD MONEY API RESPONSE ===');
+            console.log('=== CREATE PAYMENT ORDER RESPONSE ===');
             console.log('Response:', response);
 
             if (!response.success || !response.data) {
@@ -396,12 +393,29 @@ export default function WalletPage() {
             }
 
             // Step 2: Extract order details from response
-            const orderData = response.data;
-            const razorpayOrderId = orderData.razorpayOrderId || orderData.orderId || orderData.order_id || orderData.id;
+            // Backend returns: { success, message, data: { orderId, amount, currency, userId, razorpayKeyId, internalOrderId } }
+            const responseBody = response.data;
+
+            if (!responseBody?.success || !responseBody?.data) {
+                alert('Error: ' + (responseBody?.message || 'Failed to create payment order'));
+                setIsAddingMoney(false);
+                return;
+            }
+
+            const orderData = responseBody.data;
+            const razorpayOrderId = orderData.orderId;
+            const razorpayKeyId = orderData.razorpayKeyId;
 
             if (!razorpayOrderId) {
                 console.error('No order ID in response:', orderData);
                 alert('Error: No order ID received from server');
+                setIsAddingMoney(false);
+                return;
+            }
+
+            if (!razorpayKeyId) {
+                console.error('No Razorpay key in response:', orderData);
+                alert('Error: Razorpay configuration missing from server');
                 setIsAddingMoney(false);
                 return;
             }
@@ -423,9 +437,9 @@ export default function WalletPage() {
 
             // Step 5: Open Razorpay checkout
             const razorpayOptions = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY', // Replace with your Razorpay key
-                amount: amount * 100, // Razorpay expects amount in paise
-                currency: currency || 'INR',
+                key: razorpayKeyId, // Use key from backend response
+                amount: orderData.amount * 100, // Razorpay expects amount in paise
+                currency: orderData.currency || 'INR',
                 name: 'ephotocart',
                 description: selectedPkg ? `${selectedPkg.totalCredits} Credits - ${selectedPkg.name}` : 'Add Money to Wallet',
                 order_id: razorpayOrderId,
@@ -433,17 +447,33 @@ export default function WalletPage() {
                     console.log('=== RAZORPAY SUCCESS ===');
                     console.log('Response:', razorpayResponse);
 
-                    // Step 6: Verify payment with backend
+                    // Step 6: Verify payment with backend (POST /payment/verify)
                     try {
+                        console.log('=== SENDING VERIFY REQUEST ===');
+                        console.log('razorpay_order_id:', razorpayResponse.razorpay_order_id);
+                        console.log('razorpay_payment_id:', razorpayResponse.razorpay_payment_id);
+                        console.log('amount:', orderData.amount);
+
                         const verifyResult = await walletApi.verifyPayment({
-                            orderId: razorpayResponse.razorpay_order_id,
-                            paymentId: razorpayResponse.razorpay_payment_id,
-                            signature: razorpayResponse.razorpay_signature,
-                            method: 'razorpay',
+                            razorpayOrderId: razorpayResponse.razorpay_order_id,
+                            razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+                            razorpaySignature: razorpayResponse.razorpay_signature,
+                            amount: orderData.amount,
                         });
 
+                        console.log('=== VERIFY RESULT ===');
+                        console.log('Success:', verifyResult.success);
+                        console.log('Data:', JSON.stringify(verifyResult.data, null, 2));
+
                         if (verifyResult.success) {
-                            alert('✅ Payment successful! ' + (verifyResult.data?.message || 'Credits added to your wallet.'));
+                            const verifyData = verifyResult.data;
+                            const newBalance = verifyData?.data?.balanceAfter;
+                            const txnId = verifyData?.data?.transactionId;
+
+                            alert('✅ Payment successful! ' + (verifyData?.message || 'Credits added to your wallet.') +
+                                (newBalance ? ` New Balance: ₹${newBalance}` : '') +
+                                (txnId ? ` | Txn: ${txnId}` : ''));
+
                             // Refresh wallet data
                             fetchWalletData();
                             // Sync Header
@@ -539,7 +569,7 @@ export default function WalletPage() {
                 packages.map((pkg) => (
                     <Link
                         key={pkg.id}
-                        href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}`}
+                        href={`/wallet/add-money?amount=${pkg.amount}&credits=${pkg.totalCredits}&bonus=${pkg.bonusCredits || 0}&packageId=${pkg.id}`}
                         className={`relative bg-white dark:bg-gray-800 rounded-2xl p-5 border-2 text-left transition-all hover:-translate-y-1 hover:shadow-lg group ${selectedPackage === pkg.id
                             ? 'border-teal-500 shadow-md ring-2 ring-teal-500/10'
                             : 'border-white dark:border-gray-800 shadow-sm hover:border-teal-100 dark:hover:border-teal-200'

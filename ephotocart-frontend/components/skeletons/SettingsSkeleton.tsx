@@ -2,59 +2,14 @@
 
 import { motion } from "framer-motion";
 
+import SidebarSkeleton from "./SidebarSkeleton";
+
 export function SettingsSkeleton() {
     return (
         // z-50 + fixed inset-0 ensures this overlays the persistent layout (sidebar/header), showing only this skeleton
         <div className="fixed inset-0 z-50 w-full h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 font-sans antialiased text-slate-500 dark:text-slate-400">
             {/* Sidebar Skeleton */}
-            <aside className="hidden lg:flex w-64 h-full flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 shrink-0">
-                {/* Logo Area */}
-                <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-gray-700 shrink-0">
-                    <div className="size-8 bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                    <div className="h-4 w-24 bg-slate-200 dark:bg-gray-700 rounded animate-pulse ml-3" />
-                </div>
-
-                {/* Nav Links */}
-                <div className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
-                    {/* Dashboard */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-24 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Generate Image */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-32 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* My Gallery */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-24 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Wallet */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-20 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Ads Creative Builder */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-                        <div className="size-5 bg-slate-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-4 w-36 bg-slate-100 dark:bg-gray-700/50 rounded animate-pulse" />
-                    </div>
-                    {/* Spacer */}
-                    <div className="h-8" />
-                    {/* Settings (Active) */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-100 dark:bg-gray-700/50">
-                        <div className="size-5 bg-slate-300 dark:bg-gray-600 rounded animate-pulse" />
-                        <div className="h-4 w-20 bg-slate-200 dark:bg-gray-600 rounded animate-pulse" />
-                    </div>
-                </div>
-
-                {/* Bottom CTA / Profile */}
-                <div className="p-4 mt-auto border-t border-slate-100 dark:border-gray-700">
-                    <div className="h-10 w-full bg-slate-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                </div>
-            </aside>
+            <SidebarSkeleton activeNav="settings" />
 
             {/* Main Layout Area */}
             <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc] dark:bg-gray-900 transition-colors duration-300">

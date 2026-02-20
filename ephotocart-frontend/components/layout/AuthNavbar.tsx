@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Sparkles, Sun, Moon } from "lucide-react";
 import { useThemeLogo } from "@/hooks/useThemeLogo";
-import logo from "@/public/Gemini_Generated_Image_8r5e1l8r5e1l8r5e_1.png";
+import logo from "@/public/Untitled design (2).png";
 
 interface AuthNavbarProps {
     isDarkMode?: boolean;
