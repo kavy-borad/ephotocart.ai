@@ -426,7 +426,7 @@ export default function GalleryPage() {
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "My Gallery" }
                     ]}
                 />

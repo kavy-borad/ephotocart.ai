@@ -13,6 +13,7 @@ import { WalletSkeleton } from "@/components/skeletons/WalletSkeleton";
 import { SettingsSkeleton } from "@/components/skeletons/SettingsSkeleton";
 import { FeaturesSkeleton } from "@/components/skeletons/FeaturesSkeleton";
 import { ResultsSkeleton } from "@/components/skeletons/ResultsSkeleton";
+import { CreativeBuilderSkeleton } from "@/components/skeletons/CreativeBuilderSkeleton";
 
 interface TransitionContextType {
     isTransitioning: boolean;
@@ -149,9 +150,9 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     const getSkeletonContent = () => {
         const path = nextPath || pathname; // Fallback to current path if nextPath not set
 
-        // 0. Disable Loader for Auth Pages and Creative Builder
+        // 0. Disable Loader for Auth Pages
         // We want these pages to load instantly with their own internal animations
-        if (path.includes('/login') || path.includes('/register') || path.includes('/signup') || path.includes('/creative-builder')) {
+        if (path.includes('/login') || path.includes('/register') || path.includes('/signup')) {
             return null;
         }
 
@@ -893,7 +894,8 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                                 path.startsWith('/generate') ||
                                 path.startsWith('/gallery') ||
                                 path.startsWith('/wallet') ||
-                                path.startsWith('/settings');
+                                path.startsWith('/settings') ||
+                                path.startsWith('/creative-builder');
 
                             if (isFullLayout) {
                                 // Helper for App Shell Skeleton (Sidebar + Header) - EXACT match to Gallery/Wallet structure
@@ -966,15 +968,6 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                                     return getSkeletonContent();
                                 }
 
-                                // Generate sub-pages, Gallery, Wallet, and Settings have content-only skeletons, wrap them in AppShell
-                                if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate') || path.startsWith('/settings')) {
-                                    return (
-                                        <AppShellSkeleton>
-                                            {getSkeletonContent()}
-                                        </AppShellSkeleton>
-                                    );
-                                }
-
                                 // 5. Gallery Skeleton
                                 if (path === '/gallery' || path === '/gallery/') {
                                     return <GallerySkeleton />;
@@ -988,6 +981,20 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                                 // 7. Settings Skeleton
                                 if (path === '/settings' || path === '/settings/') {
                                     return <SettingsSkeleton />;
+                                }
+
+                                // 8. Creative Builder Skeleton
+                                if (path === '/creative-builder' || path === '/creative-builder/') {
+                                    return <CreativeBuilderSkeleton />;
+                                }
+
+                                // Generate sub-pages, Gallery, Wallet, Settings and Creative Builder have content-only skeletons, wrap them in AppShell
+                                if (path.startsWith('/gallery') || path.startsWith('/wallet') || path.startsWith('/generate') || path.startsWith('/settings') || path.startsWith('/creative-builder')) {
+                                    return (
+                                        <AppShellSkeleton>
+                                            {getSkeletonContent()}
+                                        </AppShellSkeleton>
+                                    );
                                 }
 
                                 // For public pages, return simple wrapper

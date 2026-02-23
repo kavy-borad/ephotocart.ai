@@ -6,12 +6,12 @@ import SidebarSkeleton from "./SidebarSkeleton";
 
 export function WalletSkeleton() {
     return (
-        <div className="w-full min-h-screen flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 font-sans antialiased text-slate-500 dark:text-slate-400">
+        <div className="w-full h-full flex overflow-hidden bg-[#f8fafc] dark:bg-gray-900 font-sans antialiased text-slate-500 dark:text-slate-400">
             {/* Sidebar Skeleton */}
             <SidebarSkeleton activeNav="wallet" />
 
             {/* Main Layout Area */}
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[#f8fafc] dark:bg-gray-900 transition-colors duration-300">
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc] dark:bg-gray-900 transition-colors duration-300">
                 {/* Top Header */}
                 <header className="h-16 flex items-center justify-between px-6 border-b border-slate-200/60 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shrink-0 z-10">
                     {/* Breadcrumbs */}
@@ -142,11 +142,11 @@ export function WalletSkeleton() {
                                         </div>
 
                                         {pkg.bonus && (
-                                            <div className="h-5 w-28 bg-emerald-50 dark:bg-emerald-900/20 rounded-full animate-pulse mt-2" />
+                                            <div className="h-5 w-28 bg-slate-200 dark:bg-gray-700 rounded-full animate-pulse mt-2" />
                                         )}
 
                                         {pkg.popular && (
-                                            <div className="absolute -top-3 right-4 h-6 w-20 bg-teal-500 rounded-full animate-pulse" />
+                                            <div className="absolute -top-3 right-4 h-6 w-20 bg-slate-300 dark:bg-gray-600 rounded-full animate-pulse" />
                                         )}
                                     </div>
                                 ))}

@@ -26,6 +26,7 @@ import {
     Calendar,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { walletApi, WalletBalance, Transaction, TransactionFilters, Package, WalletStats } from "@/lib/wallet";
 import { authApi } from "@/lib/auth";
 import { Sidebar, Header } from "@/components/layout";
@@ -128,9 +129,22 @@ export default function WalletPage() {
     };
 
     const [apiError, setApiError] = useState<string | null>(null);
+    const searchParams = useSearchParams();
 
     // Track if fetch was initiated (not completed) to prevent duplicate calls
     const fetchInitiated = useRef(false);
+
+    // Handle payment=success redirect - refresh wallet data dynamically
+    useEffect(() => {
+        const paymentStatus = searchParams.get('payment');
+        if (paymentStatus === 'success') {
+            console.log('✅ WalletPage: Payment success detected, triggering refresh...');
+            // Dispatch wallet-updated event to refresh Header credits globally
+            window.dispatchEvent(new Event('wallet-updated'));
+            // Clean up URL without reload
+            window.history.replaceState({}, '', '/wallet');
+        }
+    }, [searchParams]);
 
     // Fetch wallet data on mount
     useEffect(() => {
@@ -527,6 +541,8 @@ export default function WalletPage() {
     const balance = walletBalance?.balance ?? 0;
     const currency = walletBalance?.currency ?? 'INR';
     const freeCredits = walletBalance?.freeCredits ?? 0;
+    const purchasedCredits = walletBalance?.purchasedCredits ?? 0;
+    const totalCredits = freeCredits + purchasedCredits;
     const isActive = walletBalance?.isActive ?? true;
     const promotionalCredits = walletBalance?.promotionalCredits ?? 0;
 
@@ -620,7 +636,7 @@ export default function WalletPage() {
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "Wallet" }
                     ]}
                     freeCredits={freeCredits}
@@ -629,7 +645,7 @@ export default function WalletPage() {
                 />
 
                 {/* Main Content Area - Scrollable on mobile */}
-                <div className="flex-1 flex flex-col overflow-y-auto p-4 sm:p-6">
+                <div className="flex-1 flex flex-col overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 pt-2 sm:pt-3">
                     <PageTransition className="flex flex-col min-h-full">
                         {/* Page Header */}
                         <div className="shrink-0 mb-3">
@@ -667,13 +683,13 @@ export default function WalletPage() {
                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                         <div className="space-y-1 w-full sm:w-auto">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Current Balance</span>
+                                                <span className="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Credits</span>
                                                 <Info className="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-teal-500 transition-colors" />
                                             </div>
                                             <div className="flex items-center gap-3 flex-wrap">
-                                                <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{formatCurrency(balance)}</span>
+                                                <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{totalCredits}</span>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-[10px] font-bold">{currency}</span>
+                                                    <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-[10px] font-bold">CREDITS</span>
                                                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 text-red-700'}`}>{isActive ? 'ACTIVE' : 'INACTIVE'}</span>
                                                 </div>
                                             </div>
@@ -685,13 +701,13 @@ export default function WalletPage() {
                                             >
                                                 <span className="relative z-10 flex items-center gap-2">
                                                     <Plus className="w-4 h-4 stroke-[2.5]" />
-                                                    Add Money
+                                                    Add Credits
                                                 </span>
                                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
                                             </Link>
-                                            <button className="cursor-pointer inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-gray-700 bg-transparent hover:bg-slate-50 dark:hover:bg-gray-800 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 h-10 w-10 transition-all hover:border-slate-300 dark:hover:border-gray-600">
+                                            {/* <button className="cursor-pointer inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-gray-700 bg-transparent hover:bg-slate-50 dark:hover:bg-gray-800 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 h-10 w-10 transition-all hover:border-slate-300 dark:hover:border-gray-600">
                                                 <MoreHorizontal className="w-5 h-5" />
-                                            </button>
+                                            </button> */}
                                         </div>
                                     </div>
                                 </div>

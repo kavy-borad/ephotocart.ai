@@ -56,14 +56,14 @@ export default function Header({
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
     // Use global wallet context - fetched ONCE at root level
-    const { freeCredits: contextCredits, balance: contextBalance } = useWallet();
+    const { freeCredits: contextCredits, balance: contextBalance, totalCredits: contextTotalCredits } = useWallet();
 
     // DEBUG: Log wallet values
-    console.log('Header - Wallet Context:', { contextCredits, contextBalance, propCredits, propBalance });
+    console.log('Header - Wallet Context:', { contextCredits, contextBalance, contextTotalCredits, propCredits, propBalance });
 
     // Use context values, fallback to props if provided (for backwards compatibility)
-    // Use context values, fallback to props if provided (for backwards compatibility)
-    const displayCredits = contextCredits ?? propCredits ?? 0;
+    const displayCredits = contextTotalCredits ?? propCredits ?? 0;
+    const displayFreeCredits = contextCredits ?? 0;
     const displayBalance = contextBalance ?? propBalance ?? 0;
 
     // Navigation items for mobile menu
@@ -265,10 +265,10 @@ export default function Header({
                 >
                     <div className="flex items-center gap-1">
                         <Zap className="w-3.5 h-3.5 text-teal-500 fill-teal-500" />
-                        <span className="text-xs font-bold text-slate-700 dark:text-gray-300">{displayCredits} FREE</span>
+                        <span className="text-xs font-bold text-slate-700 dark:text-gray-300">{displayCredits} Credits</span>
                     </div>
-                    <div className="w-px h-3 bg-slate-200 dark:bg-gray-600"></div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">₹{displayBalance.toFixed(2)}</span>
+                    {/* <div className="w-px h-3 bg-slate-200 dark:bg-gray-600"></div>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">₹{displayBalance.toFixed(2)}</span> */}
                 </Link>
 
                 {/* Notifications */}

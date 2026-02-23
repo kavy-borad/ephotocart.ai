@@ -5,6 +5,8 @@ export interface WalletBalance {
     balance: number;
     currency: string;
     freeCredits: number;
+    purchasedCredits: number;  // Maps to backend's paidCredits
+    totalCredits: number;      // Total credits from backend (freeCredits + paidCredits)
     maxFreeCredits: number;
     promotionalCredits: number;
     isActive: boolean;
@@ -158,15 +160,33 @@ export const walletApi = {
                 const w = res.data.data.wallet;
                 const s = res.data.data.statistics;
 
+                // DEBUG: Log raw wallet response to see all available fields
+                console.log('💰 RAW WALLET RESPONSE:', JSON.stringify(w, null, 2));
+
+                // Parse purchased credits - backend sends as paidCredits
+                const purchasedCredits = Number(w.paidCredits ?? w.paid_credits ?? w.purchasedCredits ?? w.purchased_credits ?? 0);
+                const freeCredits = Number(w.freeCredits ?? w.free_credits ?? 0);
+                // Use backend's totalCredits directly, or calculate as fallback
+                const totalCredits = Number(w.totalCredits ?? w.total_credits ?? (purchasedCredits + freeCredits));
+
                 const walletData: WalletBalance = {
                     balance: Number(w.balance || 0),
                     currency: w.currency || 'INR',
-                    freeCredits: Number(w.freeCredits || 0),
+                    freeCredits: freeCredits,
+                    purchasedCredits: purchasedCredits,
+                    totalCredits: totalCredits,
                     maxFreeCredits: Number(w.maxFreeCredits ?? w.max_free_credits ?? 1),
-                    promotionalCredits: 0,
+                    promotionalCredits: Number(w.promotionalCredits ?? w.promotional_credits ?? 0),
                     isActive: w.status === 'active',
                     stats: s
                 };
+
+                console.log('💰 PARSED WALLET DATA:', {
+                    freeCredits: walletData.freeCredits,
+                    purchasedCredits: walletData.purchasedCredits,
+                    totalCredits: walletData.totalCredits,
+                    balance: walletData.balance
+                });
 
                 return { success: true, data: walletData };
             }
@@ -193,14 +213,27 @@ export const walletApi = {
     },
 
     // Get user credits specifically - for navbar/header display
-    getUserCredits: async (): Promise<ApiResponse<{ freeCredits: number; balance: number; maxFreeCredits: number }>> => {
+    getUserCredits: async (): Promise<ApiResponse<{ freeCredits: number; purchasedCredits: number; totalCredits: number; creditsUsed: number; balance: number; maxFreeCredits: number }>> => {
         try {
             const walletRes = await walletApi.getWallet();
             if (walletRes.success && walletRes.data) {
+                // Get creditsUsed from statistics.totalDebits
+                const creditsUsed = walletRes.data.stats?.totalDebits ?? 0;
+                
+                console.log('💳 getUserCredits - Returning:', {
+                    freeCredits: walletRes.data.freeCredits,
+                    purchasedCredits: walletRes.data.purchasedCredits,
+                    totalCredits: walletRes.data.totalCredits,
+                    creditsUsed: creditsUsed,
+                    balance: walletRes.data.balance
+                });
                 return {
                     success: true,
                     data: {
                         freeCredits: walletRes.data.freeCredits ?? 0,
+                        purchasedCredits: walletRes.data.purchasedCredits ?? 0,
+                        totalCredits: walletRes.data.totalCredits ?? 0,
+                        creditsUsed: creditsUsed,
                         balance: walletRes.data.balance ?? 0,
                         maxFreeCredits: walletRes.data.maxFreeCredits ?? 1
                     }

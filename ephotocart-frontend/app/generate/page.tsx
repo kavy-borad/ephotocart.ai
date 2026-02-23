@@ -104,13 +104,13 @@ export default function GenerateImagesPage() {
                     {/* Reusable Header with dynamic breadcrumbs */}
                     <Header
                         breadcrumbs={[
-                            { label: "Home", href: "/?view=landing" },
+                            { label: "Home", href: "/dashboard" },
                             { label: "Generate Images" }
                         ]}
                     />
 
                     {/* Main Content - Scrollable */}
-                    <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto bg-slate-100/50 dark:bg-gray-900/50 transition-colors duration-300">
+                    <main className="flex-1 px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 pt-2 sm:pt-3 md:pt-4 overflow-y-auto bg-slate-100/50 dark:bg-gray-900/50 transition-colors duration-300">
                         <PageTransition
                             className={`flex flex-col min-h-full transition-all duration-500 ease-in-out ${isExiting ? 'opacity-0 -translate-x-4 scale-95' : 'opacity-100 translate-x-0 scale-100'}`}
                         >

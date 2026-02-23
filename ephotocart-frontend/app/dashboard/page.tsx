@@ -20,9 +20,12 @@ import {
     Eye,
     ArrowRight,
     Loader2,
+    Calendar,
+    Check,
 } from "lucide-react";
 import { dashboardApi, DashboardStats, RecentImage, ChartDataPoint, UserProfile } from "@/lib/dashboard";
 import { authApi } from "@/lib/auth";
+import { useWallet } from "@/lib/WalletContext";
 import { Sidebar, Header } from "@/components/layout";
 
 import { PageTransition } from "@/components/animations/PageTransition";
@@ -33,6 +36,9 @@ let dashboardInitialFetchDone = false;
 export default function DashboardPage() {
     const router = useRouter();
     const [activeNav, setActiveNav] = useState("dashboard");
+
+    // Get wallet data from global context - dynamically updated
+    const { totalCredits: walletTotalCredits, creditsUsed: walletCreditsUsed, isLoading: walletLoading } = useWallet();
 
     // Loading and error states (blocking - show loading state until data loads)
     const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +52,24 @@ export default function DashboardPage() {
     const [spendingChartData, setSpendingChartData] = useState<ChartDataPoint[]>([]);
     const [styleAnalytics, setStyleAnalytics] = useState<any>(null); // State for style analytics
     const [typeAnalytics, setTypeAnalytics] = useState<any>(null); // State for type analytics
+
+    // Dropdown state for Daily Image Generation filter
+    const [activeDropdown, setActiveDropdown] = useState<'days' | null>(null);
+    const [selectedDaysFilter, setSelectedDaysFilter] = useState('7');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -289,6 +313,19 @@ export default function DashboardPage() {
     }
 
     // Build stats cards from API data or fallback
+    // Use walletTotalCredits and walletCreditsUsed from WalletContext for accurate display
+    const displayTotalCredits = walletTotalCredits > 0 ? walletTotalCredits : (stats?.totalCredits ?? 0);
+    const displayCreditsUsed = walletCreditsUsed > 0 ? walletCreditsUsed : (stats?.totalSpent ?? 0);
+    
+    // DEBUG: Log wallet context values
+    console.log('📊 Dashboard - Wallet Context Values:', { 
+        walletTotalCredits, 
+        walletCreditsUsed, 
+        walletLoading,
+        displayTotalCredits,
+        displayCreditsUsed 
+    });
+    
     const statsCards = stats ? [
         {
             label: "Total Images",
@@ -300,19 +337,19 @@ export default function DashboardPage() {
             icon: Image // Explicitly reusing Image icon or similar suitable one
         },
         {
-            label: "Free Credits",
-            value: stats.freeCredits.toString(),
-            // subValue removed as requested by user - only show dynamic credit count
+            label: "Total Credits",
+            value: walletLoading ? "..." : displayTotalCredits.toString(),
+            // Shows total credits dynamically from wallet context
             icon: Zap,
-            progress: (stats.freeCredits / stats.maxFreeCredits) * 100,
+            progress: Math.min((displayTotalCredits / 500) * 100, 100),
             color: "bg-blue-500"
         },
         {
-            label: "Total Spent",
-            value: `₹${stats.totalSpent}`,
+            label: "Credits Used",
+            value: walletLoading ? "..." : displayCreditsUsed.toLocaleString(),
             trend: stats.spendingTrend >= 0 ? `+${stats.spendingTrend}%` : `${stats.spendingTrend}%`,
             trendUp: stats.spendingTrend < 0, // Down spending is good
-            progress: Math.min((stats.totalSpent / 1000) * 100, 100),
+            progress: Math.min((displayCreditsUsed / 1000) * 100, 100),
             color: "bg-indigo-500",
             icon: Wallet // Using Wallet as a proxy for "Spent"
         },
@@ -326,14 +363,13 @@ export default function DashboardPage() {
     ] : [
         { label: "Total Images", value: isLoading ? "..." : "0", trend: "+0%", trendUp: true, progress: 0, color: "bg-teal-500", icon: Image },
         {
-            label: "Free Credits",
-            value: userProfile?.freeCredits !== undefined ? userProfile.freeCredits.toString() : (isLoading ? "..." : "0"),
-            subValue: "/ 1",
+            label: "Total Credits",
+            value: walletLoading ? "..." : displayTotalCredits.toString(),
             icon: Zap,
-            progress: userProfile?.freeCredits ? Math.min((userProfile.freeCredits / 1) * 100, 100) : 0,
+            progress: Math.min((displayTotalCredits / 500) * 100, 100),
             color: "bg-blue-500"
         },
-        { label: "Total Spent", value: isLoading ? "₹..." : "₹0", trend: "+0%", trendUp: true, progress: 0, color: "bg-indigo-500", icon: Wallet },
+        { label: "Credits Used", value: walletLoading ? "..." : displayCreditsUsed.toLocaleString(), trend: "+0%", trendUp: true, progress: Math.min((displayCreditsUsed / 1000) * 100, 100), color: "bg-indigo-500", icon: Wallet },
         { label: "Favorite Style", value: isLoading ? "..." : "N/A", subText: isLoading ? "Loading..." : undefined, icon: Sparkles, color: "bg-violet-500" },
     ];
 
@@ -376,7 +412,7 @@ export default function DashboardPage() {
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "Dashboard" }
                     ]}
                     freeCredits={userFreeCredits}
@@ -437,11 +473,57 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:flex-1 lg:min-h-0">
                             {/* Area Chart - Fills height */}
                             <div className="opacity-0 animate-fade-in bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-full hover:shadow-md transition-shadow duration-300">
-                                <div className="flex items-center justify-between mb-3 shrink-0">
+                                <div className="flex items-center justify-between mb-3 shrink-0" ref={dropdownRef}>
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Image Generation</h3>
-                                    <select className="text-[10px] border border-slate-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded px-1.5 py-0.5 outline-none focus:border-teal-500">
-                                        <option>Last 7 Days</option>
-                                    </select>
+
+                                    {/* Days Filter Dropdown Custom */}
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setActiveDropdown(activeDropdown === 'days' ? null : 'days')}
+                                            className={`pl-8 pr-8 py-2 rounded-xl border text-[10px] font-semibold flex items-center shadow-sm transition-all
+                                            ${activeDropdown === 'days'
+                                                    ? 'bg-white dark:bg-gray-800 border-teal-500 ring-2 ring-teal-500/10 text-teal-700 dark:text-teal-400'
+                                                    : 'bg-slate-50/50 dark:bg-gray-800/50 backdrop-blur-md border-slate-200/60 dark:border-gray-700/60 text-slate-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-gray-700/60 hover:border-slate-300 dark:hover:border-gray-500'}`}
+                                        >
+                                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <Calendar className={`w-3.5 h-3.5 transition-colors ${activeDropdown === 'days' ? 'text-teal-500' : 'text-slate-500 dark:text-gray-400'}`} />
+                                            </div>
+                                            <span className="truncate">
+                                                {selectedDaysFilter === '7' ? 'Last 7 Days' : 'This Month'}
+                                            </span>
+                                            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'days' ? 'rotate-180 text-teal-500' : 'text-slate-400'}`} />
+                                            </div>
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {activeDropdown === 'days' && (
+                                            <div className="absolute top-full right-0 mt-2 w-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-teal-100 dark:border-teal-900/30 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                                                <div className="p-1 flex flex-col gap-0.5">
+                                                    {[
+                                                        { value: '7', label: 'Last 7 Days' },
+                                                        { value: '30', label: 'This Month' }
+                                                    ].map((option) => (
+                                                        <button
+                                                            key={option.value}
+                                                            onClick={() => {
+                                                                setSelectedDaysFilter(option.value);
+                                                                setActiveDropdown(null);
+                                                            }}
+                                                            className={`w-full text-left px-3 py-2 rounded-lg text-[10px] font-medium transition-colors flex items-center justify-between
+                                                            ${selectedDaysFilter === option.value
+                                                                    ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400'
+                                                                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white'
+                                                                }`}
+                                                        >
+                                                            {option.label}
+                                                            {selectedDaysFilter === option.value && <Check className="w-3 h-3 text-teal-500" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex-1 relative min-h-0">
                                     {/* Y-axis labels - Fixed scale: 0, 20, 40, 60, 80, 100 */}
@@ -594,7 +676,7 @@ export default function DashboardPage() {
                             {/* Bar Chart - Fills height */}
                             <div className="opacity-0 animate-fade-in-delay bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-gray-700 flex flex-col h-[200px] sm:h-[220px] lg:h-full hover:shadow-md transition-shadow duration-300">
                                 <div className="flex items-center justify-between mb-3 shrink-0">
-                                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Spending</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">Daily Credits Used</h3>
                                     <div className="flex items-center gap-3 text-[9px]">
                                         <div className="flex items-center gap-1">
                                             <div className="size-2 rounded-full bg-gradient-to-t from-teal-600 to-teal-400" />
@@ -607,14 +689,14 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <div className="flex-1 relative min-h-0">
-                                    {/* Y-axis labels - Fixed scale: $0, $20, $40, $60, $80, $100 */}
+                                    {/* Y-axis labels - Fixed scale: 0, 20, 40, 60, 80, 100 */}
                                     <div className="absolute left-0 top-0 bottom-4 w-8 flex flex-col justify-between text-[9px] text-slate-400 pr-1">
-                                        <span>₹100</span>
-                                        <span>₹80</span>
-                                        <span>₹60</span>
-                                        <span>₹40</span>
-                                        <span>₹20</span>
-                                        <span>₹0</span>
+                                        <span>100</span>
+                                        <span>80</span>
+                                        <span>60</span>
+                                        <span>40</span>
+                                        <span>20</span>
+                                        <span>0</span>
                                     </div>
                                     {/* Chart area */}
                                     <div className="ml-9 h-full flex flex-col">
@@ -658,7 +740,7 @@ export default function DashboardPage() {
                                                             {/* Hover tooltip */}
                                                             <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-slate-800 text-white text-[10px] font-medium px-2 py-1.5 rounded shadow-lg whitespace-nowrap">
                                                                 <div className="font-semibold">{dayLabel}</div>
-                                                                <div>Total: ₹{height}</div>
+                                                                <div>Total: {height} Credits</div>
                                                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                                                             </div>
                                                         </div>

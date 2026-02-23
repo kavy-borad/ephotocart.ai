@@ -1,4 +1,5 @@
-// Disable skeleton loader for creative-builder pages
+import { CreativeBuilderSkeleton } from "@/components/skeletons/CreativeBuilderSkeleton";
+
 export default function CreativeBuilderLoading() {
-    return null;
+    return <CreativeBuilderSkeleton />;
 }

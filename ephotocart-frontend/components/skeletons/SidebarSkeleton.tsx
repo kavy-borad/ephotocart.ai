@@ -20,8 +20,8 @@ const navItems = [
 
 export default function SidebarSkeleton({ activeNav = "dashboard" }: SidebarSkeletonProps) {
     const context = useContext(SidebarContext);
-    // Default to open (pinned) state if context is missing to avoid crashes
-    const isOpen = context?.isOpen ?? true;
+    // Force open (pinned) state for the skeleton so it always appears full-width as requested
+    const isOpen = true;
 
     return (
         <motion.aside

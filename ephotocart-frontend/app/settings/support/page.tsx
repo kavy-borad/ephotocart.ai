@@ -144,7 +144,7 @@ export default function EmailSupportPage() {
                 {/* Header */}
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "Settings", href: "/settings" },
                         { label: "Email Support" }
                     ]}

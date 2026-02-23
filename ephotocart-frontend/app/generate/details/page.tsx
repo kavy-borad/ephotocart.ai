@@ -440,7 +440,7 @@ export default function DetailsPage() {
                     {/* Reusable Header with dynamic breadcrumbs */}
                     <Header
                         breadcrumbs={[
-                            { label: "Home", href: "/?view=landing" },
+                            { label: "Home", href: "/dashboard" },
                             { label: "Generate", href: "/generate" },
                             { label: "Details" }
                         ]}
@@ -449,7 +449,7 @@ export default function DetailsPage() {
                     {/* Main Content Area */}
                     <main className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] dark:bg-gray-900">
                         {/* Content - Scrollable on mobile, Fixed on Desktop */}
-                        <div className="flex-1 p-4 sm:p-5 overflow-y-auto lg:overflow-hidden flex flex-col">
+                        <div className="flex-1 px-4 sm:px-5 pb-4 sm:pb-5 pt-2 sm:pt-3 overflow-y-auto lg:overflow-hidden flex flex-col">
                             <div className="flex flex-col gap-2 min-h-full lg:min-h-0 lg:flex-1">
                                 {/* Page Header */}
                                 <div className="mb-2 shrink-0">

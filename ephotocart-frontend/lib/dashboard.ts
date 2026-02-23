@@ -18,6 +18,8 @@ const normalizeImageUrl = (url: string | null | undefined): string => {
 export interface DashboardStats {
     totalImages: number;
     freeCredits: number;
+    purchasedCredits: number;
+    totalCredits: number;  // freeCredits + purchasedCredits from backend
     maxFreeCredits: number;
     totalSpent: number;
     favoriteStyle: string;
@@ -103,9 +105,28 @@ export const dashboardApi = {
             else if (data.max_free_credits !== undefined) maxFreeCredits = data.max_free_credits;
 
             // Map Backend 'overview' to Frontend 'stats'
+            // Get paidCredits/purchasedCredits
+            let purchasedCredits = 0;
+            if (data.overview?.paidCredits !== undefined) purchasedCredits = data.overview.paidCredits;
+            else if (data.overview?.paid_credits !== undefined) purchasedCredits = data.overview.paid_credits;
+            else if (data.overview?.purchasedCredits !== undefined) purchasedCredits = data.overview.purchasedCredits;
+            else if (data.overview?.purchased_credits !== undefined) purchasedCredits = data.overview.purchased_credits;
+            else if (data.paidCredits !== undefined) purchasedCredits = data.paidCredits;
+            else if (data.purchasedCredits !== undefined) purchasedCredits = data.purchasedCredits;
+
+            // Get totalCredits from backend or calculate
+            let totalCredits = 0;
+            if (data.overview?.totalCredits !== undefined) totalCredits = data.overview.totalCredits;
+            else if (data.overview?.total_credits !== undefined) totalCredits = data.overview.total_credits;
+            else if (data.totalCredits !== undefined) totalCredits = data.totalCredits;
+            else if (data.total_credits !== undefined) totalCredits = data.total_credits;
+            else totalCredits = freeCredits + purchasedCredits;  // Fallback: calculate if not provided
+
             const stats: DashboardStats = {
                 totalImages: data.overview?.totalImages || 0,
                 freeCredits: freeCredits,
+                purchasedCredits: purchasedCredits,
+                totalCredits: totalCredits,
                 maxFreeCredits: maxFreeCredits,
                 totalSpent: data.overview?.totalSpent || 0,
                 favoriteStyle: data.overview?.favoriteStyle || 'None',
@@ -182,9 +203,24 @@ export const dashboardApi = {
             // Get maxFreeCredits dynamically
             const maxFreeCredits = data.maxFreeCredits ?? data.max_free_credits ?? 11;
 
+            // Get paidCredits/purchasedCredits for overview
+            let purchasedCredits = 0;
+            if (data.paidCredits !== undefined) purchasedCredits = data.paidCredits;
+            else if (data.paid_credits !== undefined) purchasedCredits = data.paid_credits;
+            else if (data.purchasedCredits !== undefined) purchasedCredits = data.purchasedCredits;
+            else if (data.purchased_credits !== undefined) purchasedCredits = data.purchased_credits;
+
+            // Get totalCredits from backend or calculate for overview
+            let totalCredits = 0;
+            if (data.totalCredits !== undefined) totalCredits = data.totalCredits;
+            else if (data.total_credits !== undefined) totalCredits = data.total_credits;
+            else totalCredits = freeCredits + purchasedCredits;
+
             const stats: DashboardStats = {
                 totalImages: data.totalImages ?? 0,
                 freeCredits: freeCredits,
+                purchasedCredits: purchasedCredits,
+                totalCredits: totalCredits,
                 maxFreeCredits: maxFreeCredits,
                 totalSpent: data.totalSpent ?? 0,
                 favoriteStyle: data.favoriteStyle ?? 'None',
@@ -227,9 +263,24 @@ export const dashboardApi = {
             // Get maxFreeCredits dynamically
             const maxFreeCredits = data.maxFreeCredits ?? data.max_free_credits ?? 11;
 
+            // Get paidCredits/purchasedCredits for stats
+            let purchasedCredits = 0;
+            if (data.paidCredits !== undefined) purchasedCredits = data.paidCredits;
+            else if (data.paid_credits !== undefined) purchasedCredits = data.paid_credits;
+            else if (data.purchasedCredits !== undefined) purchasedCredits = data.purchasedCredits;
+            else if (data.purchased_credits !== undefined) purchasedCredits = data.purchased_credits;
+
+            // Get totalCredits from backend or calculate for stats
+            let totalCredits = 0;
+            if (data.totalCredits !== undefined) totalCredits = data.totalCredits;
+            else if (data.total_credits !== undefined) totalCredits = data.total_credits;
+            else totalCredits = freeCredits + purchasedCredits;
+
             const stats: DashboardStats = {
                 totalImages: data.totalImages ?? 0,
                 freeCredits: freeCredits,
+                purchasedCredits: purchasedCredits,
+                totalCredits: totalCredits,
                 maxFreeCredits: maxFreeCredits,
                 totalSpent: data.totalSpent ?? 0,
                 favoriteStyle: data.favoriteStyle ?? 'None',

@@ -22,6 +22,7 @@ import {
     Shield,
     Sliders,
     Zap,
+    Plus,
     ChevronRight,
     ChevronDown,
     Mail,
@@ -353,8 +354,11 @@ export default function SettingsPage() {
 
     // Dynamic wallet state
     const [freeCredits, setFreeCredits] = useState(0);
+    const [purchasedCredits, setPurchasedCredits] = useState(0);
     const [balance, setBalance] = useState(0);
     const hasFetchedWallet = useRef(false);
+    // Total credits = purchasedCredits + freeCredits (from backend directly)
+    const totalCredits = purchasedCredits + freeCredits;
 
     // Fetch wallet credits on mount (with duplicate prevention)
     useEffect(() => {
@@ -366,6 +370,7 @@ export default function SettingsPage() {
                 const response = await walletApi.getUserCredits();
                 if (response.success && response.data) {
                     setFreeCredits(response.data.freeCredits);
+                    setPurchasedCredits(response.data.purchasedCredits || 0);
                     setBalance(response.data.balance);
                 }
             } catch (error) {
@@ -444,82 +449,86 @@ export default function SettingsPage() {
     // --- Render Components ---
 
     const renderProfileTab = () => (
-        <div className="space-y-6 max-w-2xl">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold text-2xl">
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-xl pt-1 pb-4"
+        >
+            <div className="bg-white dark:bg-[#151c2c] rounded-2xl border border-neutral-200 dark:border-gray-800 shadow-sm p-5 transition-colors duration-300">
+                <div className="flex flex-col items-center justify-center gap-2.5 mb-5">
+                    <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400 font-medium text-2xl shadow-sm border border-teal-100/50 dark:border-teal-900/50">
                         {displayInitial}
                     </div>
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{displayName}</h3>
-                        <p className="text-sm text-slate-500 dark:text-gray-400">{displayRole}</p>
+                    <div className="text-center">
+                        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-tight">{displayName}</h3>
+                        <p className="text-xs text-neutral-500 dark:text-gray-400 mt-0.5">{displayRole}</p>
                     </div>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-500 dark:text-gray-400 tracking-wider">Full Name</label>
+                <div className="space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-neutral-700 dark:text-gray-300">Full Name</label>
                         <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type="text"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 placeholder="Enter your name"
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                                className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-gray-700 bg-white dark:bg-gray-900/50 text-neutral-900 dark:text-white text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all duration-200 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                             />
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-500 dark:text-gray-400 tracking-wider">Email Address</label>
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-neutral-700 dark:text-gray-300">Email Address</label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 text-sm cursor-not-allowed"
+                                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-gray-800 bg-neutral-50 dark:bg-gray-800/50 text-neutral-500 dark:text-gray-400 text-sm cursor-not-allowed shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-8 flex items-center justify-between">
-                    {profileMessage ? (
-                        <div className={`flex items-center gap-2 text-sm ${profileMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
-                            {profileMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                            {profileMessage.text}
-                        </div>
-                    ) : <div></div>}
+                <div className="mt-6 flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-gray-800">
+                    <div className="h-5">
+                        {profileMessage ? (
+                            <div className={`flex items-center gap-1.5 text-xs font-medium ${profileMessage.type === 'success' ? 'text-teal-600' : 'text-red-500'}`}>
+                                {profileMessage.type === 'success' ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                                {profileMessage.text}
+                            </div>
+                        ) : <div />}
+                    </div>
                     <button
                         onClick={handleSaveProfile}
                         disabled={isSavingProfile}
                         className="bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                        {isSavingProfile && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {isSavingProfile && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                         {isSavingProfile ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 
     const renderSecurityTab = () => (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm max-w-2xl">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-sm max-w-2xl">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Change Password</h3>
-            <p className="text-sm text-slate-500 dark:text-gray-400 mb-6">Ensure your account is using a long, random password to stay secure.</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mb-5">Ensure your account is using a long, random password to stay secure.</p>
 
-            <div className="space-y-5">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300">Current Password</label>
+            <div className="space-y-4">
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-700 dark:text-gray-300">Current Password</label>
                     <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type={showCurrentPassword ? "text" : "password"}
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                            className="w-full pl-9 pr-10 py-2 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
                             placeholder="Enter current password"
                         />
                         <button
@@ -532,16 +541,16 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-gray-300">New Password</label>
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700 dark:text-gray-300">New Password</label>
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type={showNewPassword ? "text" : "password"}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                                className="w-full pl-9 pr-10 py-2 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
                                 placeholder="Min 8 characters"
                             />
                             <button
@@ -553,15 +562,15 @@ export default function SettingsPage() {
                             </button>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-gray-300">Confirm Password</label>
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700 dark:text-gray-300">Confirm Password</label>
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type={showConfirmPassword ? "text" : "password"}
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
+                                className="w-full pl-9 pr-10 py-2 rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/50 text-slate-900 dark:text-white text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all"
                                 placeholder="Confirm new password"
                             />
                             <button
@@ -575,19 +584,22 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-slate-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-gray-700 flex items-center justify-between">
                     {passwordMessage ? (
-                        <div className={`flex items-center gap-2 text-sm ${passwordMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
-                            {passwordMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                        <div className={`flex items-center gap-1.5 text-xs font-medium ${passwordMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                            {passwordMessage.type === 'success' ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                             {passwordMessage.text}
                         </div>
                     ) : (
-                        <button
-                            onClick={() => setShowForgotPassword(true)}
-                            className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium hover:underline transition-colors"
-                        >
-                            Forgot Password?
-                        </button>
+                        <div />
+                        // {/*
+                        // <button
+                        //     onClick={() => setShowForgotPassword(true)}
+                        //     className="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium hover:underline transition-colors"
+                        // >
+                        //     Forgot Password?
+                        // </button>
+                        // */}
                     )}
                     <button
                         onClick={handleChangePassword}
@@ -893,137 +905,174 @@ export default function SettingsPage() {
     const renderBillingTab = () => (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Total Balance Card */}
-                <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Wallet className="w-24 h-24" />
+                {/* Total Balance Card commented out
+                <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-[#151c2c] p-5 relative overflow-hidden h-full flex flex-col justify-between group transition-all duration-300 hover:border-teal-500/30">
+                    <div className="absolute top-4 right-4 text-slate-100 dark:text-[#1e2738] group-hover:text-teal-50 dark:group-hover:text-teal-900/20 transition-all duration-300 pointer-events-none">
+                        <Wallet className="w-20 h-20 stroke-[1.5]" />
                     </div>
-                    <div className="relative z-10 flex flex-col items-start justify-between h-full">
-                        <div>
-                            <p className="text-slate-300 text-sm font-medium mb-1">Total Balance</p>
-                            <h3 className="text-3xl font-bold tracking-tight">₹{balance.toFixed(2)}</h3>
-                        </div>
-                        <div className="mt-6 w-full">
-                            <Link href="/wallet" className="flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all text-white text-sm font-semibold py-2 rounded-lg border border-white/10">
-                                <Wallet className="w-4 h-4" />
-                                <span>Wallet</span>
-                            </Link>
-                        </div>
+
+                    <div className="relative z-10 text-center sm:text-left">
+                        <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1">
+                            Total Balance
+                        </p>
+                        <h3 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                            ₹{balance.toFixed(2)}
+                        </h3>
+                    </div>
+
+                    <div className="mt-5 w-full relative z-10">
+                        <Link href="/wallet" className="flex items-center justify-center gap-2 w-full bg-slate-100 dark:bg-[#20293a] hover:bg-slate-200 dark:hover:bg-[#2a3446] text-slate-700 dark:text-white transition-all duration-200 text-xs font-semibold py-2 rounded-lg border border-transparent dark:border-gray-700/50">
+                            <Wallet className="w-3.5 h-3.5" />
+                            <span>Wallet</span>
+                        </Link>
                     </div>
                 </div>
+                */}
 
                 {/* Credits Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-teal-100 dark:border-teal-900/30 p-6 shadow-sm relative overflow-hidden group hover:border-teal-300 dark:hover:border-teal-700 transition-all">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 dark:bg-teal-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                <div className="rounded-xl border border-teal-100 dark:border-teal-900/30 bg-white dark:bg-[#151c2c] p-5 relative overflow-hidden h-full flex flex-col justify-between group transition-all duration-300 hover:border-teal-300 dark:hover:border-teal-700">
+                    {/* Top right corner accent */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-teal-50 dark:bg-teal-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform duration-300 group-hover:scale-110"></div>
+
                     <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-teal-100 dark:bg-teal-900/40 rounded-lg text-teal-600 dark:text-teal-400">
-                                <Zap className="w-5 h-5" />
+                        <div className="flex items-center gap-2.5 mb-3">
+                            <div className="p-1.5 bg-teal-50 dark:bg-teal-900/30 rounded-lg text-teal-600 dark:text-teal-400">
+                                <Zap className="w-4 h-4" />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active Credits</h3>
+                            <h3 className="text-base font-bold text-slate-900 dark:text-white">Active Credits</h3>
                         </div>
-                        <div className="mb-6">
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-slate-900 dark:text-white">{freeCredits}</span>
-                                <span className="text-sm text-slate-500 dark:text-gray-400">available</span>
+                        <div className="mb-3 text-center sm:text-left">
+                            <div className="flex items-baseline justify-center sm:justify-start gap-1">
+                                <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{totalCredits}</span>
+                                <span className="text-xs text-slate-500 dark:text-gray-400">available</span>
                             </div>
-                            <p className="text-xs text-slate-400 dark:text-gray-500 mt-1">Refreshes monthly based on plan.</p>
+                            {purchasedCredits > 0 && freeCredits > 0 ? (
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
+                                    {purchasedCredits} purchased + {freeCredits} free
+                                </p>
+                            ) : purchasedCredits > 0 ? (
+                                // <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
+                                //     From ₹{balance.toFixed(0)} wallet balance
+                                // </p>
+                                <div />
+                            ) : (
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">Add money to get credits.</p>
+                            )}
                         </div>
-                        <Link href="/wallet" className="flex items-center justify-center gap-2 w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold py-2 rounded-lg transition-all shadow-sm hover:shadow-md">
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="mt-4 w-full relative z-10">
+                        <Link href="/wallet" className="flex items-center justify-center gap-2 w-full bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-md hover:shadow-lg text-sm font-medium py-2.5 rounded-lg">
                             Get More Credits
                         </Link>
                     </div>
                 </div>
 
                 {/* Plan Card (Mock) */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-6 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Current Plan</h3>
-                            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300 text-xs font-bold uppercase tracking-wide">Free</span>
+                <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-[#151c2c] p-5 relative overflow-hidden h-full flex flex-col justify-between group transition-all duration-300">
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-white">Current Plan</h3>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-300 text-[10px] font-bold uppercase tracking-wide border border-transparent dark:border-gray-700">
+                                Free
+                            </span>
                         </div>
-                        <ul className="space-y-3 mb-6">
+                        <ul className="space-y-2.5 mb-5">
                             {[
                                 "Basic Generation Quality",
                                 "Standard Access Speed",
                                 "Community Support"
                             ].map((item, i) => (
-                                <li key={i} className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
-                                    <CheckCircle className="w-4 h-4 text-teal-500 shrink-0" />
+                                <li key={i} className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-gray-400">
+                                    <CheckCircle className="w-3.5 h-3.5 text-teal-500 shrink-0" />
                                     <span>{item}</span>
                                 </li>
                             ))}
                         </ul>
                     </div>
-                    <button className="w-full py-2 rounded-lg border border-slate-200 dark:border-gray-600 text-slate-700 dark:text-gray-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
-                        Upgrade Plan
-                    </button>
+
+                    {/* Action Button */}
+                    <div className="mt-3 w-full relative z-10">
+                        <button className="flex items-center justify-center gap-2 w-full bg-white dark:bg-transparent hover:bg-slate-50 dark:hover:bg-gray-800 text-slate-700 dark:text-gray-300 transition-all duration-200 text-xs font-semibold py-2 rounded-lg border border-slate-200 dark:border-gray-700">
+                            Upgrade Plan
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 
     const renderNotificationsTab = () => (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 h-full">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 overflow-hidden shadow-sm h-full flex flex-col">
-                <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Preferences</h3>
+                <div className="p-3 border-b border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Preferences</h3>
                 </div>
                 <div className="divide-y divide-slate-100 dark:divide-gray-700">
-                    <div className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex gap-3">
                             <div className="mt-0.5">
-                                <Mail className="w-5 h-5 text-slate-400" />
+                                <Mail className="w-4 h-4 text-slate-400" />
                             </div>
                             <div>
                                 <h4 className="text-sm font-medium text-slate-900 dark:text-white">Email Notifications</h4>
-                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Receive updates about your account via email.</p>
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">Receive updates about your account via email.</p>
                             </div>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked={emailNotif} onChange={() => setEmailNotif(!emailNotif)} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-teal-500"></div>
-                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setEmailNotif(!emailNotif)}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${emailNotif ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                        >
+                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${emailNotif ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
                     </div>
 
-                    <div className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex gap-3">
                             <div className="mt-0.5">
-                                <Bell className="w-5 h-5 text-slate-400" />
+                                <Bell className="w-4 h-4 text-slate-400" />
                             </div>
                             <div>
                                 <h4 className="text-sm font-medium text-slate-900 dark:text-white">Push Notifications</h4>
-                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Receive real-time alerts on your device.</p>
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">Receive real-time alerts on your device.</p>
                             </div>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked={pushNotif} onChange={() => setPushNotif(!pushNotif)} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-teal-500"></div>
-                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setPushNotif(!pushNotif)}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${pushNotif ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                        >
+                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${pushNotif ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
                     </div>
 
-                    <div className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex gap-3">
                             <div className="mt-0.5">
-                                <Sparkles className="w-5 h-5 text-slate-400" />
+                                <Sparkles className="w-4 h-4 text-slate-400" />
                             </div>
                             <div>
                                 <h4 className="text-sm font-medium text-slate-900 dark:text-white">Marketing & Offers</h4>
-                                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Receive updates about new features and promotions.</p>
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">Receive updates about new features and promotions.</p>
                             </div>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked={marketingNotif} onChange={() => setMarketingNotif(!marketingNotif)} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-teal-500"></div>
-                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setMarketingNotif(!marketingNotif)}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${marketingNotif ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                        >
+                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${marketingNotif ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 overflow-hidden shadow-sm h-full flex flex-col">
-                <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50 flex justify-between items-center">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Activity</h3>
-                    <button className="text-xs text-teal-600 hover:text-teal-700 font-medium hover:underline">Mark all read</button>
+                <div className="p-3 border-b border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50 flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Activity</h3>
+                    <button className="text-[11px] text-teal-600 hover:text-teal-700 font-medium hover:underline">Mark all read</button>
                 </div>
                 <div className="divide-y divide-slate-100 dark:divide-gray-700 max-h-60 overflow-y-auto">
                     {[
@@ -1046,28 +1095,28 @@ export default function SettingsPage() {
     );
 
     const renderPreferencesTab = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-sm h-full flex flex-col">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
-                        {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-4 shadow-sm h-full flex flex-col transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-gray-600">
+                <div className="flex items-center gap-2.5 mb-4">
+                    <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+                        {darkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                     </div>
                     <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Appearance</h3>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">Customize your visual experience</p>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Appearance</h3>
+                        <p className="text-[11px] text-slate-500 dark:text-gray-400">Customize your visual experience</p>
                     </div>
                 </div>
 
-                <div className="space-y-4 mb-8 flex-1">
-                    <div className="p-4 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30 flex items-center justify-between">
+                <div className="space-y-3 mb-4 flex-1">
+                    <div className="p-3 rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-900/30 flex items-center justify-between">
                         <span className="text-sm font-medium text-slate-700 dark:text-gray-300">Theme Mode</span>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5">
                             <Sun className={`w-4 h-4 ${!darkMode ? 'text-amber-500' : 'text-slate-400'}`} />
                             <button
                                 onClick={toggleTheme}
-                                className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${darkMode ? 'bg-teal-600' : 'bg-slate-300'}`}
+                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${darkMode ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-700'}`}
                             >
-                                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${darkMode ? 'left-6' : 'left-1'}`} />
+                                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${darkMode ? 'translate-x-5' : 'translate-x-0'}`} />
                             </button>
                             <Moon className={`w-4 h-4 ${darkMode ? 'text-indigo-400' : 'text-slate-400'}`} />
                         </div>
@@ -1075,27 +1124,27 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-5 shadow-sm h-full flex flex-col border-l-4 border-l-red-500">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
-                        <LogOut className="w-5 h-5" />
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-4 shadow-sm h-full flex flex-col border-l-4 border-l-red-500 transition-all duration-300 hover:shadow-md hover:border-red-200 dark:hover:border-red-900/50">
+                <div className="flex items-center gap-2.5 mb-4">
+                    <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
+                        <LogOut className="w-4 h-4" />
                     </div>
                     <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Session Management</h3>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">Control your login session</p>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Session Management</h3>
+                        <p className="text-[11px] text-slate-500 dark:text-gray-400">Control your login session</p>
                     </div>
                 </div>
 
-                <div className="space-y-4 flex-1 flex flex-col justify-end">
-                    <p className="text-sm text-slate-600 dark:text-gray-400 bg-slate-50 dark:bg-gray-900/50 p-3 rounded-lg border border-slate-100 dark:border-gray-700 italic">
+                <div className="space-y-3 flex-1 flex flex-col justify-end">
+                    <p className="text-xs text-slate-600 dark:text-gray-400 bg-slate-50 dark:bg-gray-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-gray-700 italic">
                         "Signing out will return you to the login screen. You will need your credentials to access your account again."
                     </p>
                     <button
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-2.5 rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 hover:shadow-md disabled:opacity-50"
+                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-2 rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 hover:shadow-md disabled:opacity-50"
                     >
-                        {isLoggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                        {isLoggingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
                         {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
                     </button>
                 </div>
@@ -1123,14 +1172,14 @@ export default function SettingsPage() {
             {/* Left Column - FAQ Accordion */}
             <div className="lg:col-span-2 space-y-4">
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-teal-600 dark:text-teal-400">
-                                <CircleHelp className="w-6 h-6" />
+                    <div className="p-4 border-b border-slate-100 dark:border-gray-700">
+                        <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-teal-600 dark:text-teal-400">
+                                <CircleHelp className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Help & Support</h3>
-                                <p className="text-sm text-slate-500 dark:text-gray-400">Common questions and troubleshooting guides</p>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Help & Support</h3>
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400">Common questions and troubleshooting guides</p>
                             </div>
                         </div>
                     </div>
@@ -1241,34 +1290,33 @@ export default function SettingsPage() {
     );
 
     return (
-        <div className="h-screen flex overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300 font-sans">
+        <div className="h-screen flex overflow-hidden bg-neutral-50 dark:bg-[#0b1120] font-sans text-neutral-900 dark:text-white transition-colors duration-300">
             <Sidebar activeNav="settings" />
 
-            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-100 dark:bg-gray-900 transition-colors duration-300">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-neutral-50 dark:bg-[#0b1120] transition-colors duration-300">
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
-                        { label: "Settings" }
+                        { label: "Home", href: "/dashboard" },
+                        { label: "Account Settings" }
                     ]}
                     freeCredits={freeCredits}
                     balance={balance}
                     disableWalletFetch={true}
                 />
 
-                <div className="flex-1 overflow-y-auto p-4 md:p-8">
-                    <PageTransition className="max-w-5xl w-full space-y-4 pb-10">
-
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 md:pt-6">
+                    <PageTransition className="flex flex-col w-full min-h-full space-y-4 pb-4">
                         {/* Page Title & Intro */}
-                        <div>
+                        <div className="shrink-0 mb-3">
                             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Account <span className="text-teal-500">Settings</span></h1>
-                            <p className="text-slate-500 dark:text-gray-400 mt-1 max-w-2xl">
+                            <p className="text-slate-500 dark:text-gray-400 text-xs mt-0.5">
                                 Manage your profile details, security preferences, and billing information.
                             </p>
                         </div>
 
                         {/* Tabs Navigation */}
-                        <div className="border-b border-slate-200 dark:border-gray-700">
-                            <div className="flex items-center gap-1 overflow-x-auto w-full no-scrollbar pb-1">
+                        <div className="mb-4">
+                            <div className="flex items-center gap-1.5 overflow-x-auto w-full no-scrollbar pb-1.5">
                                 {tabs.map((tab) => {
                                     const isActive = activeTab === tab.id;
                                     const Icon = tab.icon;
@@ -1277,19 +1325,12 @@ export default function SettingsPage() {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`
-                                                relative px-4 py-3 flex items-center gap-2.5 text-sm font-medium transition-all whitespace-nowrap outline-none shrink-0
-                                                ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300'}
+                                                relative px-3.5 py-1.5 flex items-center gap-2 text-sm font-medium transition-all duration-200 whitespace-nowrap outline-none shrink-0 rounded-lg
+                                                ${isActive ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100/80 dark:hover:bg-gray-800'}
                                             `}
                                         >
-                                            <Icon className={`w-4 h-4 ${isActive ? 'stroke-2' : 'stroke-[1.5]'}`} />
+                                            <Icon className={`w-4 h-4 ${isActive ? 'stroke-[2] opacity-100' : 'stroke-[1.5] opacity-70'}`} />
                                             {tab.label}
-                                            {isActive && (
-                                                <motion.div
-                                                    layoutId="activeTabIndicator"
-                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500"
-                                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                />
-                                            )}
                                         </button>
                                     );
                                 })}
@@ -1315,7 +1356,6 @@ export default function SettingsPage() {
                                 </motion.div>
                             </AnimatePresence>
                         </div>
-
                     </PageTransition>
                 </div>
             </main>

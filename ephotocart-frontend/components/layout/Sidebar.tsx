@@ -39,7 +39,7 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
 
     return (
         <motion.aside
-            className="h-full hidden lg:flex flex-col bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 z-30 shrink-0 shadow-sm relative overflow-hidden"
+            className="h-full hidden lg:flex flex-col bg-white dark:bg-gray-900 border-r border-neutral-200 dark:border-gray-800 z-30 shrink-0 shadow-[1px_0_2px_rgba(0,0,0,0.02)] relative overflow-hidden transition-colors duration-300"
             initial={false}
             animate={{ width: isOpen ? 210 : 72 }} // Reduced from 256 to fit content tightly
             transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -58,7 +58,7 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
                         initial={false}
                         animate={{ opacity: isOpen ? 1 : 0, x: isOpen ? 0 : -10 }}
                         transition={{ duration: 0.3 }}
-                        className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 whitespace-nowrap absolute left-16"
+                        className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-700 dark:from-white dark:to-gray-300 whitespace-nowrap absolute left-16"
                     >
                         ephotocart
                     </motion.span>
@@ -82,13 +82,13 @@ export default function Sidebar({ activeNav = "dashboard" }: SidebarProps) {
                     <Link
                         key={item.id}
                         href={item.href}
-                        className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 whitespace-nowrap overflow-hidden ${activeNav === item.id
-                            ? "bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 border-teal-500 shadow-sm ring-1 ring-teal-500/10"
-                            : "text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-800 hover:text-teal-600 dark:hover:text-teal-400"
+                        className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap overflow-hidden ${activeNav === item.id
+                            ? "bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 shadow-sm"
+                            : "text-neutral-500 dark:text-gray-400 hover:bg-neutral-50 dark:hover:bg-gray-800 hover:text-neutral-900 dark:hover:text-white"
                             }`}
                         title={!isOpen ? item.label : undefined}
                     >
-                        <item.icon className={`w-5 h-5 shrink-0 transition-colors ${activeNav === item.id ? "text-teal-600 dark:text-teal-400" : "text-slate-400 group-hover:text-teal-500 dark:text-gray-500"}`} />
+                        <item.icon className={`w-5 h-5 shrink-0 opacity-70 transition-colors ${activeNav === item.id ? "text-teal-600 dark:text-teal-400" : "text-neutral-500 dark:text-gray-500 group-hover:text-neutral-700 dark:group-hover:text-gray-300"}`} />
                         <motion.span
                             className={`text-sm tracking-wide ${activeNav === item.id ? "font-semibold" : "font-medium"}`}
                             initial={false}

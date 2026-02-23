@@ -188,7 +188,7 @@ export default function UploadPage() {
                 {/* Reusable Header with dynamic breadcrumbs */}
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "Generate", href: "/generate" },
                         { label: "Upload" }
                     ]}
@@ -201,7 +201,7 @@ export default function UploadPage() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: isExiting ? 0 : 1, x: isExiting ? -20 : 0, scale: isExiting ? 0.95 : 1 }}
                         transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-                        className="flex-1 p-4 sm:p-5 overflow-y-auto flex flex-col"
+                        className="flex-1 px-4 sm:px-5 pb-4 sm:pb-5 pt-2 sm:pt-3 overflow-y-auto flex flex-col"
                     >
                         <div className="flex flex-col gap-2 min-h-full">
                             {/* Page Header */}

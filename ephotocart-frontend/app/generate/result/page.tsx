@@ -149,7 +149,7 @@ export default function ResultPage() {
                 <main className="flex-1 flex flex-col min-w-0 h-full">
                     <Header
                         breadcrumbs={[
-                            { label: "Home", href: "/?view=landing" },
+                            { label: "Home", href: "/dashboard" },
                             { label: "Generate", href: "/generate" },
                             { label: "Result" }
                         ]}
@@ -184,7 +184,7 @@ export default function ResultPage() {
             <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "Generate", href: "/generate" },
                         { label: "Result" }
                     ]}

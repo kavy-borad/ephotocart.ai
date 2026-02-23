@@ -27,7 +27,7 @@ function CreativeBuilderLayoutContent({ children }: { children: React.ReactNode 
             <Sidebar activeNav="creative-builder" />
             <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 {!isComingSoon && <Header
-                    breadcrumbs={[{ label: "Home", href: "/?view=landing" }, { label: "Ads Creative Builder" }]}
+                    breadcrumbs={[{ label: "Home", href: "/dashboard" }, { label: "Ads Creative Builder" }]}
                     freeCredits={freeCredits}
                     balance={balance}
                 />}

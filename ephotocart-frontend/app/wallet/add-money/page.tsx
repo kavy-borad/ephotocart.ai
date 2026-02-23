@@ -290,7 +290,7 @@ export default function AddMoneyPage() {
                 {/* Header */}
                 <Header
                     breadcrumbs={[
-                        { label: "Home", href: "/?view=landing" },
+                        { label: "Home", href: "/dashboard" },
                         { label: "Wallet", href: "/wallet" },
                         { label: "Add Money" }
                     ]}
