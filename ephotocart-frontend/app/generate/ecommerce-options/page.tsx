@@ -417,12 +417,9 @@ export default function EcommerceOptionsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-100/80 dark:bg-gray-950/80 backdrop-blur-sm"
                     >
-                        <div className="flex flex-col items-center gap-3">
-                            <Loader2 className="w-12 h-12 text-teal-500 animate-spin" />
-                            <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Loading...</p>
-                        </div>
+                        <Loader2 className="w-12 h-12 text-teal-500/80 animate-spin" />
                     </motion.div>
                 )}
 
