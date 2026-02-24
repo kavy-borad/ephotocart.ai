@@ -250,7 +250,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
                             </div>
                         </div>
                     </main>
-                </div>
+                </div >
             );
         }
 

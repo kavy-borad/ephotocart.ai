@@ -172,21 +172,26 @@ function MarqueeItem({ item, index }: { item: any, index: number }) {
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 pointer-events-none" />
 
-            {/* Label - Compact & Safe from clipping */}
-            <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none">
+            {/* Animated Badge - Ultra Compact & Premium */}
+            <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
                 {/* ORIGINAL Badge */}
-                <div className="absolute transition-opacity duration-300 animate-raw-cycle" style={{ animationDelay: delay }}>
-                    <span className="text-[9px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-black/60 text-white border border-white/20 whitespace-nowrap">
-                        ORIGINAL
-                    </span>
+                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-raw-cycle flex items-center justify-end" style={{ animationDelay: delay }}>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 shadow-lg whitespace-nowrap">
+                        <div className="w-1 h-1 rounded-full bg-white/80 shadow-[0_0_6px_rgba(255,255,255,0.5)] shrink-0" />
+                        <span className="text-[9px] font-semibold tracking-wide text-white/90 uppercase">
+                            Original
+                        </span>
+                    </div>
                 </div>
 
                 {/* AI GENERATED Badge */}
-                <div className="absolute transition-opacity duration-300 animate-ai-cycle" style={{ animationDelay: delay }}>
-                    <span className="text-[9px] items-center gap-1 font-extrabold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-sm bg-emerald-600/90 text-white border border-emerald-400/30 flex shadow-emerald-900/20 whitespace-nowrap">
-                        <Sparkles className="w-2.5 h-2.5 text-emerald-100 shrink-0" />
-                        AI GENERATED
-                    </span>
+                <div className="absolute bottom-0 right-0 transition-opacity duration-500 animate-ai-cycle flex items-center justify-end" style={{ animationDelay: delay }}>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-black/80 to-slate-900/80 backdrop-blur-xl rounded-full border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)] whitespace-nowrap">
+                        <Sparkles className="w-2.5 h-2.5 text-emerald-400 fill-emerald-400/20 shrink-0" />
+                        <span className="text-[9px] font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-emerald-200 uppercase">
+                            AI Generated
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

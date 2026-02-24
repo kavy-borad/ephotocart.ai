@@ -11,6 +11,9 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react'], // Reduces client-side bundle size drastically
+  },
 };
 
 export default nextConfig;
